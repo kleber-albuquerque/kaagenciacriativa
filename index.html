@@ -1029,5 +1029,43 @@ var I18N = {
   });
 </script>
 
+
+<!-- Botão Flutuante de Demonstração da IA (HTML Puro) -->
+<a href="https://unreal-nuzzle-alive.ngrok-free.dev" target="_blank" rel="noopener" id="ka-ai-float-btn" style="
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, #FFD400 0%, #e6be00 100%);
+  color: #000000; text-decoration: none;
+  box-shadow: 0 8px 24px rgba(255, 212, 0, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s ease; font-family: 'Inter', sans-serif;
+  animation: pulse-ka 2s infinite;
+">
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+</a>
+
+<!-- Tooltip ao passar o mouse -->
+<div style="
+  position: fixed; bottom: 36px; right: 100px; z-index: 9998;
+  background: #111111; color: #ffffff; padding: 8px 16px;
+  border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #333;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+  Testar Assistente de Voz IA 🎙️
+</div>
+
+<style>
+  @keyframes pulse-ka {
+    0% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 212, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0); }
+  }
+  #ka-ai-float-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px rgba(255, 212, 0, 0.6);
+  }
+</style>
+
 </body>
 </html>
