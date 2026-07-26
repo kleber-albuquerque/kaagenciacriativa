@@ -1,0 +1,5 @@
+# Substitua SUA_API_KEY_AQUI pela sua chave real do Pexels
+export PEXELS_API_KEY="PyGJUS600AplVImUMNOFyzlFwo2dSMd41xYNuJNzP9xYEYsZOhGoa9Da"
+
+# Teste rápido
+curl -H "Authorization: $PEXELS_API_KEY" "https://api.pexels.com/videos/search?query=business&per_page=1" | head -50
