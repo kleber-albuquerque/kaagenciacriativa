@@ -972,100 +972,93 @@ var I18N = {
   }(document, 'script', 'dograh-widget'));
 </script>
 
-<!-- Botão Flutuante Premium da Agência KA -->
-<button id="ka-ai-btn" onclick="document.getElementById('ka-ai-modal').style.display='flex'" style="
-  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-  width: 60px; height: 60px; border-radius: 50%;
-  background: linear-gradient(135deg, #FFD400 0%, #e6be00 100%);
-  color: #000000; border: none; cursor: pointer;
-  box-shadow: 0 8px 24px rgba(255, 212, 0, 0.3);
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s ease; font-family: 'Inter', sans-serif;
-">
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-</button>
 
-<!-- Modal de Demonstração da IA -->
-<div id="ka-ai-modal" style="
-  position: fixed; inset: 0; z-index: 10000;
-  background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-  display: none; align-items: center; justify-content: center;
-  font-family: 'Inter', sans-serif;
-" onclick="if(event.target === this) this.style.display='none'">
-  <div style="
-    background: #111111; border: 1px solid #333333; border-radius: 20px;
-    width: 90%; max-width: 420px; padding: 32px; text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.8); color: #ffffff;
-  ">
-    <div style="font-size: 40px; margin-bottom: 16px;">🎙️</div>
-    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #FFD400;">Assistente Virtual KA</h3>
-    <p style="font-size: 14px; color: #a1a1aa; line-height: 1.6; margin-bottom: 24px;">
-      Para garantir a melhor experiência de áudio e segurança, a assistente de voz roda em um ambiente dedicado.
-    </p>
-    <a href="https://unreal-nuzzle-alive.ngrok-free.dev" target="_blank" rel="noopener" style="
-      display: inline-block; width: 100%; padding: 14px; border-radius: 12px;
-      background: #FFD400; color: #000000; font-weight: 600; font-size: 15px;
-      text-decoration: none; transition: transform 0.2s;
-    " onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
-      Iniciar Teste de Voz Ao Vivo →
-    </a>
-    <p style="font-size: 12px; color: #52525b; margin-top: 16px;">
-      * O link abre uma sessão segura de demonstração.
-    </p>
-  </div>
+
+
+<!-- Widget de Voz IA da Agência KA (Funcional) -->
+<div id="ka-voice-widget" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
+  <div id="ka-voice-status" style="background: #111111; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #333333; opacity: 0; transform: translateY(10px); transition: all 0.3s ease; pointer-events: none;">Clique para falar com a IA 🎙️</div>
+  <button id="ka-voice-btn" onclick="toggleRecording()" style="width: 64px; height: 64px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #FFD400 0%, #e6be00 100%); color: #000000; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(255, 212, 0, 0.4); transition: all 0.3s ease;">
+    <svg id="ka-icon-mic" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    <svg id="ka-icon-stop" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:none;"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
+  </button>
 </div>
-
+<audio id="ka-voice-audio" style="display:none;"></audio>
 <script>
-  // Animação suave de entrada do botão
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('ka-ai-btn');
-    btn.style.opacity = '0';
-    btn.style.transform = 'translateY(20px)';
+  let mediaRecorder;
+  let audioChunks = [];
+  let isRecording = false;
+  const API_URL = 'https://ka-voice-backend-ricdla6nd-ka-agencia-criativa-de-bolso.vercel.app/api/voice';
+
+  function showStatus(msg) {
+    const el = document.getElementById('ka-voice-status');
+    el.innerText = msg;
+    el.style.opacity = '1';
+    el.style.transform = 'translateY(0)';
     setTimeout(() => {
-      btn.style.transition = 'all 0.5s ease';
-      btn.style.opacity = '1';
-      btn.style.transform = 'translateY(0)';
-    }, 1000);
-  });
+      if (!isRecording && document.getElementById('ka-voice-audio').paused) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+      }
+    }, 4000);
+  }
+
+  async function toggleRecording() {
+    const btn = document.getElementById('ka-voice-btn');
+    const iconMic = document.getElementById('ka-icon-mic');
+    const iconStop = document.getElementById('ka-icon-stop');
+
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          await sendAudioToBackend(audioBlob);
+          stream.getTracks().forEach(track => track.stop());
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        btn.style.background = '#ef4444';
+        btn.style.boxShadow = '0 0 0 8px rgba(239, 68, 68, 0.3)';
+        iconMic.style.display = 'none';
+        iconStop.style.display = 'block';
+        showStatus('Ouvindo... (clique para parar)');
+      } catch (err) {
+        showStatus('Permissão de microfone negada.');
+      }
+    } else {
+      mediaRecorder.stop();
+      isRecording = false;
+      btn.style.background = 'linear-gradient(135deg, #FFD400 0%, #e6be00 100%)';
+      btn.style.boxShadow = '0 8px 24px rgba(255, 212, 0, 0.4)';
+      iconMic.style.display = 'block';
+      iconStop.style.display = 'none';
+      showStatus('Processando resposta... ⏳');
+    }
+  }
+
+  async function sendAudioToBackend(audioBlob) {
+    try {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+      const response = await fetch(API_URL, { method: 'POST', body: formData });
+      if (!response.ok) throw new Error('Erro na API');
+      const audioBlobResponse = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlobResponse);
+      const audioEl = document.getElementById('ka-voice-audio');
+      audioEl.src = audioUrl;
+      showStatus('Respondendo... 🔊');
+      audioEl.play();
+      audioEl.onended = () => { showStatus('Clique para falar com a IA 🎙️'); };
+    } catch (error) {
+      console.error('Erro:', error);
+      showStatus('Erro ao processar. Tente novamente.');
+    }
+  }
 </script>
-
-
-<!-- Botão Flutuante de Demonstração da IA (HTML Puro) -->
-<a href="https://unreal-nuzzle-alive.ngrok-free.dev" target="_blank" rel="noopener" id="ka-ai-float-btn" style="
-  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-  width: 64px; height: 64px; border-radius: 50%;
-  background: linear-gradient(135deg, #FFD400 0%, #e6be00 100%);
-  color: #000000; text-decoration: none;
-  box-shadow: 0 8px 24px rgba(255, 212, 0, 0.4);
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.3s ease; font-family: 'Inter', sans-serif;
-  animation: pulse-ka 2s infinite;
-">
-  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-</a>
-
-<!-- Tooltip ao passar o mouse -->
-<div style="
-  position: fixed; bottom: 36px; right: 100px; z-index: 9998;
-  background: #111111; color: #ffffff; padding: 8px 16px;
-  border-radius: 8px; font-size: 13px; font-family: 'Inter', sans-serif;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5); border: 1px solid #333;
-  opacity: 0; pointer-events: none; transition: opacity 0.3s;
-" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
-  Testar Assistente de Voz IA 🎙️
-</div>
-
-<style>
-  @keyframes pulse-ka {
-    0% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(255, 212, 0, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 212, 0, 0); }
-  }
-  #ka-ai-float-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 12px 32px rgba(255, 212, 0, 0.6);
-  }
-</style>
 
 </body>
 </html>
