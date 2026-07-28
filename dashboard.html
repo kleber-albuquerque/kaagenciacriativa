@@ -40,7 +40,12 @@
 
     <!-- LEADS RECENTES -->
     <div class="card">
-      <h2>Leads Recentes <span id="lead-count" class="badge">0</span></h2>
+      <h2>
+  Leads Recentes <span id="lead-count" class="badge">0</span>
+  <button onclick="exportCSV()" style="background:#FFD400;color:#000;border:none;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-left:auto;display:flex;align-items:center;gap:4px;">
+    📥 Exportar CSV
+  </button>
+</h2>
       <table id="leads-table">
         <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
         <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente</td></tr></tbody>
