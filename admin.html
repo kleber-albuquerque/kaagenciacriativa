@@ -107,25 +107,40 @@
 
 <script>
   const API_BASE = 'https://ka-voice-backend.onrender.com';
-  const ADMIN_PASSWORD = 'ka2026';
+  // Detecta client_id automaticamente pelo domínio
+const CLIENT_ID = window.location.hostname.includes('localhost') ? 'ka_agencia' : window.location.hostname.split('.')[0];
+let ADMIN_PASSWORD = 'ka2026'; // Será carregado do backend
 
   function login() {
-    const pwd = document.getElementById('admin-password').value;
-    if (pwd === ADMIN_PASSWORD) {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadConfig();
-    } else {
-      const err = document.getElementById('login-error');
-      err.innerText = '❌ Senha incorreta';
-      err.style.display = 'block';
-      setTimeout(() => err.style.display = 'none', 3000);
-    }
+  const pwd = document.getElementById('admin-password').value;
+  if (pwd === ADMIN_PASSWORD) {
+    // Salva sessão temporária no localStorage (expira ao fechar aba)
+    sessionStorage.setItem('ka_admin_auth', 'true');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadConfig();
+  } else {
+    const err = document.getElementById('login-error');
+    err.innerText = '❌ Senha incorreta';
+    err.style.display = 'block';
+    setTimeout(() => err.style.display = 'none', 3000);
   }
+}
+
+// Verifica autenticação ao carregar a página
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('ka_admin_auth') === 'true') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadConfig();
+  }
+});
 
   async function loadConfig() {
     try {
-      const res = await fetch(API_BASE + '/admin/config');
+      const res = await fetch(API_BASE + `/admin/config?client_id=${CLIENT_ID}`, {
+      headers: { 'Origin': window.location.origin }
+    });
       const config = await res.json();
       document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
       document.getElementById('brand_name').value = config.brand_name || '';
@@ -173,6 +188,7 @@
     form.append('brand_name', document.getElementById('brand_name').value);
     form.append('tone', document.getElementById('tone').value);
     form.append('system_prompt', document.getElementById('system_prompt').value);
+    form.append('client_id', CLIENT_ID);
 
     const status = document.getElementById('status');
     try {
