@@ -2,43 +2,41 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🔐 Dashboard Admin - KA Voice</title>
+<title>🔐 Painel Admin - KA Voice SaaS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
   body { background: #0a0a0a; color: #fff; min-height: 100vh; padding: 40px 20px; }
-  .container { max-width: 800px; margin: 0 auto; }
+  .container { max-width: 900px; margin: 0 auto; }
   h1 { font-size: 28px; margin-bottom: 8px; }
   .subtitle { color: #888; margin-bottom: 32px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+  .tab-btn { background: transparent; color: #888; border: 1px solid #333; padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; }
+  .tab-btn.active { background: #151515; color: #FFD400; border-color: #FFD400; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
   .card { background: #151515; border: 1px solid #252525; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
   .card h2 { font-size: 18px; margin-bottom: 16px; color: #FFD400; }
   label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; font-weight: 500; }
-  input, select, textarea { 
-    width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; 
-    padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;
-    font-family: 'Inter', sans-serif;
-  }
+  input, select, textarea { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
   textarea { min-height: 120px; resize: vertical; }
-  .btn-primary { 
-    background: #FFD400; color: #000; border: none; padding: 14px 28px; 
-    border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;
-    transition: all 0.2s; width: 100%;
-  }
-  .btn-primary:hover { background: #e6be00; }
-  .btn-secondary {
-    background: #333; color: #fff; border: 1px solid #444; padding: 12px;
-    border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s;
-    white-space: nowrap; margin-left: 8px;
-  }
+  .btn { border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+  .btn-primary { background: #FFD400; color: #000; width: 100%; }
+  .btn-secondary { background: #333; color: #fff; border: 1px solid #444; white-space: nowrap; margin-left: 8px; }
   .btn-secondary:hover { background: #444; }
-  .voice-row { display: flex; align-items: flex-end; gap: 8px; }
-  .voice-row select { flex: 1; margin-bottom: 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; font-size: 14px; }
+  th { color: #888; font-size: 12px; text-transform: uppercase; }
+  a { color: #FFD400; text-decoration: none; }
   .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center;}
   .status.success { background: #064e3b; color: #6ee7b7; display: block; }
   .status.error { background: #7f1d1d; color: #fca5a5; display: block; }
   .login-screen { text-align: center; padding: 60px 20px; }
   .login-screen input { max-width: 300px; margin: 0 auto 16px; }
+  .voice-row { display: flex; align-items: flex-end; gap: 8px; }
+  .voice-row select { flex: 1; margin-bottom: 0; }
+  .empty { text-align: center; color: #666; padding: 20px; }
 </style>
 </head>
 <body>
@@ -47,156 +45,269 @@
   <h1>🔐 Acesso Restrito</h1>
   <p class="subtitle">Digite a senha de administrador</p>
   <input type="password" id="admin-password" placeholder="Senha" onkeypress="if(event.key==='Enter') login()">
-  <br>
-  <button class="btn-primary" style="max-width:300px;" onclick="login()">Entrar</button>
+  <br><br>
+  <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar</button>
   <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
 </div>
 
 <div id="dashboard" class="container" style="display:none;">
-  <h1>⚙️ Dashboard KA Voice</h1>
-  <p class="subtitle">Configure a personalidade do assistente de voz</p>
+  <h1>🚀 KA Voice SaaS</h1>
+  <p class="subtitle">Gerencie clientes, assistentes e leads</p>
 
-  <div class="card">
-    <h2>🎤 Voz do Assistente</h2>
-    <label>Selecione a voz</label>
-    <div class="voice-row">
-      <select id="voice">
-        <option value="pt-BR-FranciscaNeural">Francisca (Feminina)</option>
-        <option value="pt-BR-AntonioNeural">Antonio (Masculino)</option>
-        <option value="pt-BR-BrendaNeural">Brenda (Feminina Jovem)</option>
-        <option value="pt-BR-DonatoNeural">Donato (Masculino Grave)</option>
-        <option value="pt-BR-LeilaNeural">Leila (Feminina Suave)</option>
-        <option value="pt-BR-FabioNeural">Fabio (Masculino Jovem)</option>
-        <option value="pt-BR-ValerioNeural">Valerio (Masculina Madura)</option>
-        <option value="pt-BR-SantoNeural">Santo (Masculino Dramática)</option>
-      </select>
-      <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Testar</button>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
+    <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
+    <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
+  </div>
+
+  <!-- ABA CONFIGURAÇÃO -->
+  <div id="tab-config" class="tab-content active">
+    <div class="card">
+      <h2>Cliente Ativo</h2>
+      <select id="config-client-id" onchange="loadConfig()"></select>
+    </div>
+    <div class="card">
+      <h2>🎤 Voz do Assistente</h2>
+      <div class="voice-row">
+        <select id="voice">
+          <option value="pt-BR-FranciscaNeural">Francisca (Feminina)</option>
+          <option value="pt-BR-AntonioNeural">Antonio (Masculino)</option>
+          <option value="pt-BR-BrendaNeural">Brenda (Feminina Jovem)</option>
+          <option value="pt-BR-DonatoNeural">Donato (Masculino Grave)</option>
+          <option value="pt-BR-LeilaNeural">Leila (Feminina Suave)</option>
+          <option value="pt-BR-FabioNeural">Fabio (Masculino Jovem)</option>
+        </select>
+        <button class="btn btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Testar</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🏷️ Marca & 🧠 Prompt</h2>
+      <label>Nome da Marca</label>
+      <input type="text" id="brand_name" placeholder="Ex: Agência KA">
+      <label>Prompt do Sistema</label>
+      <textarea id="system_prompt" placeholder="Regras, preços, tom de voz..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
+    <div id="status-config" class="status"></div>
+  </div>
+
+  <!-- ABA CLIENTES -->
+  <div id="tab-clients" class="tab-content">
+    <div class="card">
+      <h2>Adicionar Novo Cliente</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div><label>Slug (ID único do widget)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
+        <div><label>Nome da Marca</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
+      </div>
+      <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Cliente</button>
+      <div id="status-client" class="status"></div>
+    </div>
+    <div class="card">
+      <h2>Clientes Cadastrados</h2>
+      <table>
+        <thead><tr><th>Slug (ID)</th><th>Marca</th><th>Ação</th></tr></thead>
+        <tbody id="clients-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+      </table>
     </div>
   </div>
 
-  <div class="card">
-    <h2>🏷️ Marca</h2>
-    <label>Nome da marca</label>
-    <input type="text" id="brand_name" placeholder="Ex: Agência KA">
+  <!-- ABA LEADS -->
+  <div id="tab-leads" class="tab-content">
+    <div class="card">
+      <h2>Filtrar Leads <button class="btn btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
+      <select id="lead-filter" onchange="loadLeads()"></select>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
+        <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente</td></tr></tbody>
+      </table>
+    </div>
   </div>
-
-  <div class="card">
-    <h2>🎭 Tom de Voz</h2>
-    <label>Estilo de comunicação</label>
-    <select id="tone">
-      <option value="profissional">Profissional</option>
-      <option value="amigavel">Amigável e descontraído</option>
-      <option value="formal">Formal e corporativo</option>
-      <option value="jovem">Jovem e descolado</option>
-      <option value="premium">Premium e sofisticado</option>
-    </select>
-  </div>
-
-  <div class="card">
-    <h2>🧠 Prompt do Sistema</h2>
-    <label>O que o assistente sabe e como deve responder</label>
-    <textarea id="system_prompt" placeholder="Ex: Você é a assistente virtual da Agência KA..."></textarea>
-    <p style="font-size:12px;color:#666;margin-top:-10px;margin-bottom:16px;">
-      💡 Dica: Seja específico sobre serviços, preços, diferenciais e tom de voz.
-    </p>
-  </div>
-
-  <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
-  <div id="status" class="status"></div>
 </div>
 
 <script>
-  const API_BASE = '/api';
-  const CLIENT_ID = 'ka_agencia'; // Fixo para o seu painel atual
-  let ADMIN_PASSWORD = 'ka2026';
+  const API = '/api';
+  const ADMIN_PWD = 'ka2026';
+  let currentClient = null;
 
   function login() {
-    const pwd = document.getElementById('admin-password').value;
-    if (pwd === ADMIN_PASSWORD) {
-      sessionStorage.setItem('ka_admin_auth', 'true');
+    if (document.getElementById('admin-password').value === ADMIN_PWD) {
+      sessionStorage.setItem('ka_auth', '1');
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
-      loadConfig();
+      init();
     } else {
-      const err = document.getElementById('login-error');
-      err.innerText = '❌ Senha incorreta';
-      err.style.display = 'block';
-      setTimeout(() => err.style.display = 'none', 3000);
+      const e = document.getElementById('login-error');
+      e.innerText = '❌ Senha incorreta'; e.style.display = 'block';
+      setTimeout(() => e.style.display = 'none', 3000);
     }
   }
-
   window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('ka_admin_auth') === 'true') {
+    if (sessionStorage.getItem('ka_auth') === '1') {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
-      loadConfig();
+      init();
     }
   });
 
-  async function loadConfig() {
+  async function init() {
+    await loadClientsList();
+    if(document.getElementById('config-client-id').options.length > 0) {
+      document.getElementById('config-client-id').selectedIndex = 0;
+      loadConfig();
+    }
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // --- CLIENTES ---
+  async function loadClientsList() {
     try {
-      const res = await fetch(API_BASE + `/admin/config?client_id=${CLIENT_ID}`);
+      const res = await fetch(API + '/admin/clients');
+      const clients = await res.json();
+      const selectConfig = document.getElementById('config-client-id');
+      const selectLeads = document.getElementById('lead-filter');
+      const tbody = document.getElementById('clients-body');
+      
+      selectConfig.innerHTML = '';
+      selectLeads.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(clients) || clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>';
+        return;
+      }
+
+      clients.forEach(c => {
+        const slug = c.slug || c.id;
+        const name = c.brand_name || slug;
+        
+        selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
+        selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
+        
+        tbody.innerHTML += `<tr>
+          <td>${slug}</td>
+          <td>${name}</td>
+          <td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td>
+        </tr>`;
+      });
+    } catch (e) { console.error(e); }
+  }
+
+  function selectAndGoToConfig(slug) {
+    document.getElementById('config-client-id').value = slug;
+    switchTab('config', document.querySelectorAll('.tab-btn')[0]);
+    loadConfig();
+  }
+
+  async function addClient() {
+    const slug = document.getElementById('new-slug').value.trim();
+    const brand = document.getElementById('new-brand').value.trim();
+    if (!slug) return alert('Digite um slug');
+    
+    const form = new FormData();
+    form.append('client_id', slug);
+    form.append('brand_name', brand);
+    form.append('voice', 'pt-BR-FranciscaNeural');
+    form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
+
+    try {
+      const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
+      const data = await res.json();
+      if(data.error) throw new Error(data.error);
+      document.getElementById('new-slug').value = '';
+      document.getElementById('new-brand').value = '';
+      loadClientsList();
+      const st = document.getElementById('status-client');
+      st.className = 'status success'; st.innerText = '✅ Cliente criado!';
+      setTimeout(() => st.style.display = 'none', 3000);
+    } catch (e) {
+      const st = document.getElementById('status-client');
+      st.className = 'status error'; st.innerText = '❌ ' + e.message;
+      st.style.display = 'block';
+    }
+  }
+
+  // --- CONFIGURAÇÃO ---
+  async function loadConfig() {
+    const cid = document.getElementById('config-client-id').value;
+    if (!cid) return;
+    try {
+      const res = await fetch(API + `/admin/config?client_id=${cid}`);
       const config = await res.json();
       document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
       document.getElementById('brand_name').value = config.brand_name || '';
-      document.getElementById('tone').value = config.tone || 'profissional';
       document.getElementById('system_prompt').value = config.system_prompt || '';
-    } catch (err) {
-      console.error('Erro ao carregar config:', err);
-    }
+    } catch (e) { console.error(e); }
   }
 
   async function previewVoice() {
     const btn = document.getElementById('btn-preview');
     const voice = document.getElementById('voice').value;
-    const originalText = btn.innerText;
-    
-    btn.innerText = '⏳ Gerando...';
-    btn.disabled = true;
-
+    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
     try {
-      const form = new FormData();
-      form.append('voice', voice);
-      
-      const res = await fetch(API_BASE + '/admin/preview-voice', { method: 'POST', body: form });
-      if (!res.ok) throw new Error('Erro ao gerar áudio');
-      
+      const form = new FormData(); form.append('voice', voice);
+      const res = await fetch(API + '/admin/preview-voice', { method: 'POST', body: form });
       const data = await res.json();
-      const audioDataUri = "data:audio/mpeg;base64," + data.audio;
-      const audio = new Audio(audioDataUri);
-      audio.play().catch(e => console.error("Erro ao tocar:", e));
-      
-      audio.onended = () => {
-        btn.innerText = originalText;
-        btn.disabled = false;
-      };
-    } catch (err) {
-      console.error(err);
-      btn.innerText = '❌ Erro';
-      setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+      if(data.error) throw new Error(data.error);
+      const audio = new Audio("data:audio/mpeg;base64," + data.audio);
+      audio.play().catch(e => alert("Erro ao tocar no navegador"));
+      audio.onended = () => { btn.innerText = '🔊 Testar'; btn.disabled = false; };
+    } catch (e) {
+      alert('Erro: ' + e.message);
+      btn.innerText = '🔊 Testar'; btn.disabled = false;
     }
   }
 
   async function saveConfig() {
+    const cid = document.getElementById('config-client-id').value;
     const form = new FormData();
+    form.append('client_id', cid);
     form.append('voice', document.getElementById('voice').value);
     form.append('brand_name', document.getElementById('brand_name').value);
-    form.append('tone', document.getElementById('tone').value);
     form.append('system_prompt', document.getElementById('system_prompt').value);
-    form.append('client_id', CLIENT_ID);
 
-    const status = document.getElementById('status');
+    const st = document.getElementById('status-config');
     try {
-      const res = await fetch(API_BASE + '/admin/config', { method: 'POST', body: form });
+      const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
       const data = await res.json();
-      status.className = 'status success';
-      status.innerText = '✅ ' + (data.message || 'Salvo!') + ' (Aplicado imediatamente!)';
-      setTimeout(() => status.style.display = 'none', 4000);
-    } catch (err) {
-      status.className = 'status error';
-      status.innerText = '❌ Erro ao salvar: ' + err.message;
-      status.style.display = 'block';
+      if(data.error) throw new Error(data.error);
+      st.className = 'status success'; st.innerText = '✅ ' + data.message;
+      loadClientsList();
+      setTimeout(() => st.style.display = 'none', 4000);
+    } catch (e) {
+      st.className = 'status error'; st.innerText = '❌ ' + e.message;
+      st.style.display = 'block';
     }
+  }
+
+  // --- LEADS ---
+  async function loadLeads() {
+    const cid = document.getElementById('lead-filter').value;
+    document.getElementById('btn-csv').disabled = !cid;
+    if (!cid) return;
+    try {
+      const res = await fetch(API + `/admin/leads/${cid}`);
+      const leads = await res.json();
+      const tbody = document.getElementById('leads-body');
+      if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sem leads</td></tr>'; return; }
+      tbody.innerHTML = leads.map(l => `<tr>
+        <td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td>
+        <td>${String(l.summary||'-').substring(0,60)}</td>
+        <td>${new Date(l.date||Date.now()).toLocaleDateString()}</td>
+      </tr>`).join('');
+    } catch (e) { console.error(e); }
+  }
+
+  function exportCSV() {
+    const cid = document.getElementById('lead-filter').value;
+    if (cid) window.open(API + `/admin/leads/${cid}/export`, '_blank');
   }
 </script>
 </body>
