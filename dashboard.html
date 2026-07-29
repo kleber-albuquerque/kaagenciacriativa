@@ -187,15 +187,15 @@
     btn.classList.add('active');
   }
 
-  async function apiCall(url, options = {}) {
+    async function apiCall(url, options = {}) {
     const res = await fetch(API + url, { ...options, headers: { ...headers, ...options.headers } });
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({ detail: "Erro desconhecido" }));
-      throw new Error(errData.detail || `Erro ${res.status}`);
+      const errData = await res.json().catch(() => ({ error: "Erro desconhecido", detail: "Erro desconhecido" }));
+      // Procura a chave "error" (nossos erros) ou "detail" (erros do FastAPI)
+      throw new Error(errData.error || errData.detail || `Erro ${res.status}`);
     }
     return res.json();
   }
-
   // --- CLIENTES ---
   async function loadClientsList() {
     try {
