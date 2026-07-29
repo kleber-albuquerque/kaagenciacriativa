@@ -2,118 +2,133 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🔐 Painel Admin - KA Voice SaaS</title>
+<title>KA Voice SaaS - Painel Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  :root { --bg: #0a0a0a; --card: #151515; --border: #252525; --accent: #FFD400; --text: #fff; --muted: #888; --error: #fca5a5; --success: #6ee7b7; }
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-  body { background: #0a0a0a; color: #fff; min-height: 100vh; padding: 40px 20px; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px; }
   .container { max-width: 900px; margin: 0 auto; }
-  h1 { font-size: 28px; margin-bottom: 8px; }
-  .subtitle { color: #888; margin-bottom: 32px; }
-  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-  .tab-btn { background: transparent; color: #888; border: 1px solid #333; padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; }
-  .tab-btn.active { background: #151515; color: #FFD400; border-color: #FFD400; }
+  h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  h1 span { font-size: 14px; background: var(--border); color: var(--muted); padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 15px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .tab-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+  .tab-btn.active { background: var(--card); color: var(--accent); border-color: var(--accent); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-  .card { background: #151515; border: 1px solid #252525; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
-  .card h2 { font-size: 18px; margin-bottom: 16px; color: #FFD400; }
-  label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; font-weight: 500; }
-  input, select, textarea { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
-  textarea { min-height: 120px; resize: vertical; }
-  .btn { border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; }
-  .btn-primary { background: #FFD400; color: #000; width: 100%; }
-  .btn-secondary { background: #333; color: #fff; border: 1px solid #444; white-space: nowrap; margin-left: 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin-bottom: 16px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; outline: none; transition: 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
+  .btn { border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s; }
+  .btn-primary { background: var(--accent); color: #000; width: 100%; }
+  .btn-primary:hover { filter: brightness(0.9); }
+  .btn-secondary { background: #333; color: var(--text); border: 1px solid var(--border); white-space: nowrap; margin-left: 8px; }
   table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-  th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; font-size: 14px; }
-  th { color: #888; font-size: 12px; text-transform: uppercase; }
-  a { color: #FFD400; text-decoration: none; }
-  .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center;}
-  .status.success { background: #064e3b; color: #6ee7b7; display: block; }
-  .status.error { background: #7f1d1d; color: #fca5a5; display: block; }
-  .login-screen { text-align: center; padding: 60px 20px; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+  a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-size: 14px; font-weight: 500;}
+  .status.success { background: #064e3b; color: var(--success); display: block; }
+  .status.error { background: #7f1d1d; color: var(--error); display: block; }
+  .login-screen { text-align: center; padding: 80px 20px; }
   .login-screen input { max-width: 300px; margin: 0 auto 16px; }
   .voice-row { display: flex; align-items: flex-end; gap: 8px; }
   .voice-row select { flex: 1; margin-bottom: 0; }
-  .empty { text-align: center; color: #666; padding: 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .empty { text-align: center; color: #555; padding: 30px; font-size: 14px; }
+  .info-box { background: #1a1a1a; border: 1px dashed var(--border); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
 </style>
 </head>
 <body>
 
 <div id="login-screen" class="login-screen">
-  <h1>🔐 Acesso Restrito</h1>
-  <p class="subtitle">Digite a senha de administrador</p>
-  <input type="password" id="admin-password" placeholder="Senha" onkeypress="if(event.key==='Enter') login()">
+  <h1 style="justify-content:center;">🔐 Painel Admin</h1>
+  <p class="subtitle">Acesso restrito ao sistema KA Voice</p>
+  <input type="password" id="admin-password" placeholder="Digite a senha mestra" onkeypress="if(event.key==='Enter') login()">
   <br><br>
-  <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar</button>
+  <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar no Painel</button>
   <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
 </div>
 
 <div id="dashboard" class="container" style="display:none;">
-  <h1>🚀 KA Voice SaaS</h1>
-  <p class="subtitle">Gerencie clientes, assistentes e leads</p>
+  <h1>KA Voice SaaS <span>Admin v1.0</span></h1>
+  <p class="subtitle">Gerencie assistentes, vozes, leads e configurações</p>
+
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
     <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
   </div>
 
+  <!-- ABA CONFIGURAÇÃO -->
   <div id="tab-config" class="tab-content active">
-    <div class="card"><h2>Cliente Ativo</h2><select id="config-client-id" onchange="loadConfig()"></select></div>
+    <div class="card">
+      <h2>Selecione o Cliente</h2>
+      <select id="config-client-id" onchange="loadConfig()"></select>
+    </div>
     <div class="card">
       <h2>🎤 Voz do Assistente</h2>
       <div class="voice-row">
         <select id="voice">
-          <option value="pt-BR-FranciscaNeural">Francisca (Feminina)</option>
-          <option value="pt-BR-AntonioNeural">Antonio (Masculino)</option>
-          <option value="pt-BR-BrendaNeural">Brenda (Feminina Jovem)</option>
-          <option value="pt-BR-DonatoNeural">Donato (Masculino Grave)</option>
-          <option value="pt-BR-LeilaNeural">Leila (Feminina Suave)</option>
-          <option value="pt-BR-FabioNeural">Fabio (Masculino Jovem)</option>
+          <option value="pt-BR-FranciscaNeural">Francisca (Feminina - Natural)</option>
+          <option value="pt-BR-AntonioNeural">Antonio (Masculino - Profissional)</option>
+          <option value="pt-BR-BrendaNeural">Brenda (Feminina - Jovem)</option>
+          <option value="pt-BR-DonatoNeural">Donato (Masculino - Grave)</option>
+          <option value="pt-BR-LeilaNeural">Leila (Feminina - Suave)</option>
+          <option value="pt-BR-FabioNeural">Fabio (Masculino - Jovem)</option>
         </select>
-        <button class="btn btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Testar</button>
+        <button class="btn btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir Exemplo</button>
       </div>
     </div>
     <div class="card">
       <h2>🎭 Tom de Voz</h2>
       <select id="tone">
-        <option value="profissional">Profissional</option>
-        <option value="amigavel">Amigável e descontraído</option>
-        <option value="formal">Formal e corporativo</option>
-        <option value="jovem">Jovem e descolado</option>
-        <option value="premium">Premium e sofisticado</option>
+        <option value="profissional">Profissional e Corporativo</option>
+        <option value="amigavel">Amigável e Descontraído</option>
+        <option value="formal">Formal e Objetivo</option>
+        <option value="jovem">Jovem e Descolado</option>
+        <option value="premium">Premium e Sofisticado</option>
       </select>
     </div>
     <div class="card">
-      <h2>🏷️ Marca & 🧠 Prompt</h2>
+      <h2>🏷️ Marca & Prompt</h2>
       <label>Nome da Marca</label>
       <input type="text" id="brand_name" placeholder="Ex: Agência KA">
-      <label>Prompt do Sistema</label>
-      <textarea id="system_prompt" placeholder="Regras, preços, tom de voz..."></textarea>
+      <label>Sistema (Prompt)</label>
+      <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
     </div>
     <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
     <div id="status-config" class="status"></div>
   </div>
 
+  <!-- ABA CLIENTES -->
   <div id="tab-clients" class="tab-content">
     <div class="card">
+      <div class="info-box">💡 O "Slug" é o identificador único que será usado no código do widget do cliente (ex: joao-pizza). Não use espaços ou caracteres especiais.</div>
       <h2>Adicionar Novo Cliente</h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div><label>Slug (ID único do widget)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
+      <div class="grid-2">
+        <div><label>Slug (ID)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
         <div><label>Nome da Marca</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
       </div>
-      <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Cliente</button>
+      <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Novo Cliente</button>
       <div id="status-client" class="status"></div>
     </div>
     <div class="card">
-      <h2>Clientes Cadastrados</h2>
+      <h2>Base de Clientes</h2>
       <table>
-        <thead><tr><th>Slug (ID)</th><th>Marca</th><th>Ação</th></tr></thead>
+        <thead><tr><th>Slug</th><th>Marca</th><th>Ação</th></tr></thead>
         <tbody id="clients-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
       </table>
     </div>
   </div>
 
+  <!-- ABA LEADS -->
   <div id="tab-leads" class="tab-content">
     <div class="card">
       <h2>Filtrar Leads <button class="btn btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
@@ -122,15 +137,20 @@
     <div class="card">
       <table>
         <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
-        <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente</td></tr></tbody>
+        <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente acima</td></tr></tbody>
       </table>
     </div>
   </div>
 </div>
 
 <script>
-  const API = '/api'; // Vazio pois as rotas do Python já têm o nome completo
+  // CONFIGURAÇÃO DIRETA (Sem Proxy, sem falhas de FormData)
+  const API = 'https://ka-voice-backend.onrender.com';
+  const SECRET_KEY = 'ka_super_secret_2024';
   const ADMIN_PWD = 'ka2026';
+
+  // Headers padrão para autenticar direto no Render
+  const headers = { 'x-secret-key': SECRET_KEY };
 
   function login() {
     if (document.getElementById('admin-password').value === ADMIN_PWD) {
@@ -167,20 +187,29 @@
     btn.classList.add('active');
   }
 
+  async function apiCall(url, options = {}) {
+    const res = await fetch(API + url, { ...options, headers: { ...headers, ...options.headers } });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ detail: "Erro desconhecido" }));
+      throw new Error(errData.detail || `Erro ${res.status}`);
+    }
+    return res.json();
+  }
+
+  // --- CLIENTES ---
   async function loadClientsList() {
     try {
-      const res = await fetch(API + '/admin/clients');
-      const clients = await res.json();
+      const clients = await apiCall('/admin/clients');
       const selectConfig = document.getElementById('config-client-id');
       const selectLeads = document.getElementById('lead-filter');
       const tbody = document.getElementById('clients-body');
       selectConfig.innerHTML = ''; selectLeads.innerHTML = ''; tbody.innerHTML = '';
-      if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente</td></tr>'; return; }
+      if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>'; return; }
       clients.forEach(c => {
         const slug = c.slug || c.id, name = c.brand_name || slug;
         selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
         selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
-        tbody.innerHTML += `<tr><td>${slug}</td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td></tr>`;
+        tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td></tr>`;
       });
     } catch (e) { console.error(e); }
   }
@@ -200,22 +229,21 @@
     form.append('voice', 'pt-BR-FranciscaNeural');
     form.append('tone', 'profissional');
     form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
+    const st = document.getElementById('status-client');
     try {
-      const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
-      const data = await res.json();
-      if(data.error) throw new Error(data.error);
+      const data = await apiCall('/admin/config', { method: 'POST', body: form });
       document.getElementById('new-slug').value = ''; document.getElementById('new-brand').value = '';
       loadClientsList();
-      const st = document.getElementById('status-client'); st.className = 'status success'; st.innerText = '✅ Cliente criado!'; setTimeout(() => st.style.display = 'none', 3000);
-    } catch (e) { const st = document.getElementById('status-client'); st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
+      st.className = 'status success'; st.innerText = '✅ ' + data.message; setTimeout(() => st.style.display = 'none', 3000);
+    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
   }
 
+  // --- CONFIGURAÇÃO ---
   async function loadConfig() {
     const cid = document.getElementById('config-client-id').value;
     if (!cid) return;
     try {
-      const res = await fetch(API + `/admin/config?client_id=${cid}`);
-      const config = await res.json();
+      const config = await apiCall(`/admin/config?client_id=${cid}`);
       document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
       document.getElementById('tone').value = config.tone || 'profissional';
       document.getElementById('brand_name').value = config.brand_name || '';
@@ -228,13 +256,11 @@
     btn.innerText = '⏳ Gerando...'; btn.disabled = true;
     try {
       const form = new FormData(); form.append('voice', document.getElementById('voice').value);
-      const res = await fetch(API + '/admin/preview-voice', { method: 'POST', body: form });
-      const data = await res.json();
-      if(data.error) throw new Error(data.error);
+      const data = await apiCall('/admin/preview-voice', { method: 'POST', body: form });
       const audio = new Audio("data:audio/mpeg;base64," + data.audio);
-      audio.play().catch(e => alert("Erro ao tocar no navegador"));
-      audio.onended = () => { btn.innerText = '🔊 Testar'; btn.disabled = false; };
-    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Testar'; btn.disabled = false; }
+      audio.play().catch(e => alert("Navegador bloqueou o áudio automático."));
+      audio.onended = () => { btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; };
+    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; }
   }
 
   async function saveConfig() {
@@ -247,30 +273,28 @@
     form.append('system_prompt', document.getElementById('system_prompt').value);
     const st = document.getElementById('status-config');
     try {
-      const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
-      const data = await res.json();
-      if(data.error) throw new Error(data.error);
+      const data = await apiCall('/admin/config', { method: 'POST', body: form });
       st.className = 'status success'; st.innerText = '✅ ' + data.message;
       loadClientsList(); setTimeout(() => st.style.display = 'none', 4000);
     } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
   }
 
+  // --- LEADS ---
   async function loadLeads() {
     const cid = document.getElementById('lead-filter').value;
     document.getElementById('btn-csv').disabled = !cid;
     if (!cid) return;
     try {
-      const res = await fetch(API + `/admin/leads/${cid}`);
-      const leads = await res.json();
+      const leads = await apiCall(`/admin/leads/${cid}`);
       const tbody = document.getElementById('leads-body');
-      if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sem leads</td></tr>'; return; }
-      tbody.innerHTML = leads.map(l => `<tr><td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td><td>${String(l.summary||'-').substring(0,60)}</td><td>${new Date(l.date||Date.now()).toLocaleDateString()}</td></tr>`).join('');
+      if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado ainda</td></tr>'; return; }
+      tbody.innerHTML = leads.map(l => `<tr><td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td><td>${String(l.summary||'-').substring(0,80)}</td><td>${new Date(l.date||Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
     } catch (e) { console.error(e); }
   }
 
   function exportCSV() {
     const cid = document.getElementById('lead-filter').value;
-    if (cid) window.open(API + `/admin/leads/${cid}/export`, '_blank');
+    if (cid) window.open(`${API}/admin/leads/${cid}/export`, '_blank');
   }
 </script>
 </body>
