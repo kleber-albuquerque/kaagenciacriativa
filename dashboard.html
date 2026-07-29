@@ -2,88 +2,202 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Geral - KA Voice</title>
+<title>🔐 Dashboard Admin - KA Voice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  body { background: #0a0a0a; color: #fff; font-family: system-ui, sans-serif; padding: 40px; }
-  .card { background: #151515; border: 1px solid #333; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-  th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
-  th { color: #888; font-size: 13px; }
-  button { background: #FFD400; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  a { color: #FFD400; text-decoration: none; }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: #0a0a0a; color: #fff; min-height: 100vh; padding: 40px 20px; }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #888; margin-bottom: 32px; }
+  .card { background: #151515; border: 1px solid #252525; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .card h2 { font-size: 18px; margin-bottom: 16px; color: #FFD400; }
+  label { display: block; font-size: 13px; color: #aaa; margin-bottom: 6px; font-weight: 500; }
+  input, select, textarea { 
+    width: 100%; background: #0a0a0a; border: 1px solid #333; color: #fff; 
+    padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;
+    font-family: 'Inter', sans-serif;
+  }
+  textarea { min-height: 120px; resize: vertical; }
+  .btn-primary { 
+    background: #FFD400; color: #000; border: none; padding: 14px 28px; 
+    border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px;
+    transition: all 0.2s; width: 100%;
+  }
+  .btn-primary:hover { background: #e6be00; }
+  .btn-secondary {
+    background: #333; color: #fff; border: 1px solid #444; padding: 12px;
+    border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s;
+    white-space: nowrap; margin-left: 8px;
+  }
+  .btn-secondary:hover { background: #444; }
+  .voice-row { display: flex; align-items: flex-end; gap: 8px; }
+  .voice-row select { flex: 1; margin-bottom: 0; }
+  .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center;}
+  .status.success { background: #064e3b; color: #6ee7b7; display: block; }
+  .status.error { background: #7f1d1d; color: #fca5a5; display: block; }
+  .login-screen { text-align: center; padding: 60px 20px; }
+  .login-screen input { max-width: 300px; margin: 0 auto 16px; }
 </style>
 </head>
 <body>
-<h1>📊 Dashboard Geral</h1>
 
-<div class="card">
-  <h2>Clientes Ativos</h2>
-  <table id="clients-table">
-    <thead><tr><th>Marca</th><th>Domínio</th><th>Ações</th></tr></thead>
-    <tbody id="clients-body"><tr><td colspan="3">Carregando...</td></tr></tbody>
-  </table>
+<div id="login-screen" class="login-screen">
+  <h1>🔐 Acesso Restrito</h1>
+  <p class="subtitle">Digite a senha de administrador</p>
+  <input type="password" id="admin-password" placeholder="Senha" onkeypress="if(event.key==='Enter') login()">
+  <br>
+  <button class="btn-primary" style="max-width:300px;" onclick="login()">Entrar</button>
+  <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
 </div>
 
-<div class="card">
-  <h2>Leads Recentes <button id="btn-export" disabled onclick="doExport()"> Exportar CSV</button></h2>
-  <table id="leads-table">
-    <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
-    <tbody id="leads-body"><tr><td colspan="3">Selecione um cliente</td></tr></tbody>
-  </table>
+<div id="dashboard" class="container" style="display:none;">
+  <h1>⚙️ Dashboard KA Voice</h1>
+  <p class="subtitle">Configure a personalidade do assistente de voz</p>
+
+  <div class="card">
+    <h2>🎤 Voz do Assistente</h2>
+    <label>Selecione a voz</label>
+    <div class="voice-row">
+      <select id="voice">
+        <option value="pt-BR-FranciscaNeural">Francisca (Feminina)</option>
+        <option value="pt-BR-AntonioNeural">Antonio (Masculino)</option>
+        <option value="pt-BR-BrendaNeural">Brenda (Feminina Jovem)</option>
+        <option value="pt-BR-DonatoNeural">Donato (Masculino Grave)</option>
+        <option value="pt-BR-LeilaNeural">Leila (Feminina Suave)</option>
+        <option value="pt-BR-FabioNeural">Fabio (Masculino Jovem)</option>
+        <option value="pt-BR-ValerioNeural">Valerio (Masculina Madura)</option>
+        <option value="pt-BR-SantoNeural">Santo (Masculino Dramática)</option>
+      </select>
+      <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Testar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🏷️ Marca</h2>
+    <label>Nome da marca</label>
+    <input type="text" id="brand_name" placeholder="Ex: Agência KA">
+  </div>
+
+  <div class="card">
+    <h2>🎭 Tom de Voz</h2>
+    <label>Estilo de comunicação</label>
+    <select id="tone">
+      <option value="profissional">Profissional</option>
+      <option value="amigavel">Amigável e descontraído</option>
+      <option value="formal">Formal e corporativo</option>
+      <option value="jovem">Jovem e descolado</option>
+      <option value="premium">Premium e sofisticado</option>
+    </select>
+  </div>
+
+  <div class="card">
+    <h2>🧠 Prompt do Sistema</h2>
+    <label>O que o assistente sabe e como deve responder</label>
+    <textarea id="system_prompt" placeholder="Ex: Você é a assistente virtual da Agência KA..."></textarea>
+    <p style="font-size:12px;color:#666;margin-top:-10px;margin-bottom:16px;">
+      💡 Dica: Seja específico sobre serviços, preços, diferenciais e tom de voz.
+    </p>
+  </div>
+
+  <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
+  <div id="status" class="status"></div>
 </div>
 
 <script>
-const API = '/api/admin'; // ← MUDAR PARA URL DO RENDER APÓS DEPLOY
-let currentClient = null;
+  const API_BASE = '/api';
+  const CLIENT_ID = 'ka_agencia'; // Fixo para o seu painel atual
+  let ADMIN_PASSWORD = 'ka2026';
 
-async function loadClients() {
-  try {
-    const res = await fetch(API + '/admin/clients');
-    const data = await res.json();
-    const clients = Array.isArray(data) ? data : [];
-    
-    document.getElementById('clients-body').innerHTML = clients.length === 0 
-      ? '<tr><td colspan="3">Nenhum cliente</td></tr>'
-      : clients.map(c => `<tr>
-          <td>${c.name || c.id}</td>
-          <td>${c.domain}</td>
-          <td><a href="#" onclick="loadLeads('${c.client_id || c.id}'); return false;">Ver Leads →</a></td>
-        </tr>`).join('');
-        
-    if (clients.length > 0) loadLeads(clients[0].client_id || clients[0].id);
-  } catch (e) {
-    document.getElementById('clients-body').innerHTML = `<tr><td colspan="3">Erro: ${e.message}</td></tr>`;
+  function login() {
+    const pwd = document.getElementById('admin-password').value;
+    if (pwd === ADMIN_PASSWORD) {
+      sessionStorage.setItem('ka_admin_auth', 'true');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadConfig();
+    } else {
+      const err = document.getElementById('login-error');
+      err.innerText = '❌ Senha incorreta';
+      err.style.display = 'block';
+      setTimeout(() => err.style.display = 'none', 3000);
+    }
   }
-}
 
-async function loadLeads(cid) {
-  currentClient = cid;
-  document.getElementById('btn-export').disabled = false;
-  
-  try {
-    const res = await fetch(API + `/admin/leads/${cid}`);
-    const data = await res.json();
-    const leads = Array.isArray(data) ? data : [];
-    
-    document.getElementById('leads-body').innerHTML = leads.length === 0
-      ? '<tr><td colspan="3">Sem leads</td></tr>'
-      : leads.map(l => `<tr>
-          <td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td>
-          <td>${String(l.summary||'-').substring(0,60)}</td>
-          <td>${new Date(l.date||Date.now()).toLocaleDateString()}</td>
-        </tr>`).join('');
-  } catch (e) {
-    document.getElementById('leads-body').innerHTML = `<tr><td colspan="3">Erro: ${e.message}</td></tr>`;
+  window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('ka_admin_auth') === 'true') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadConfig();
+    }
+  });
+
+  async function loadConfig() {
+    try {
+      const res = await fetch(API_BASE + `/admin/config?client_id=${CLIENT_ID}`);
+      const config = await res.json();
+      document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
+      document.getElementById('brand_name').value = config.brand_name || '';
+      document.getElementById('tone').value = config.tone || 'profissional';
+      document.getElementById('system_prompt').value = config.system_prompt || '';
+    } catch (err) {
+      console.error('Erro ao carregar config:', err);
+    }
   }
-}
 
-function doExport() {
-  if (!currentClient) return alert('Selecione um cliente');
-  window.open(API + `/admin/leads/${currentClient}/export`, '_blank');
-}
+  async function previewVoice() {
+    const btn = document.getElementById('btn-preview');
+    const voice = document.getElementById('voice').value;
+    const originalText = btn.innerText;
+    
+    btn.innerText = '⏳ Gerando...';
+    btn.disabled = true;
 
-window.onload = loadClients;
+    try {
+      const form = new FormData();
+      form.append('voice', voice);
+      
+      const res = await fetch(API_BASE + '/admin/preview-voice', { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Erro ao gerar áudio');
+      
+      const data = await res.json();
+      const audioDataUri = "data:audio/mpeg;base64," + data.audio;
+      const audio = new Audio(audioDataUri);
+      audio.play().catch(e => console.error("Erro ao tocar:", e));
+      
+      audio.onended = () => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      };
+    } catch (err) {
+      console.error(err);
+      btn.innerText = '❌ Erro';
+      setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+    }
+  }
+
+  async function saveConfig() {
+    const form = new FormData();
+    form.append('voice', document.getElementById('voice').value);
+    form.append('brand_name', document.getElementById('brand_name').value);
+    form.append('tone', document.getElementById('tone').value);
+    form.append('system_prompt', document.getElementById('system_prompt').value);
+    form.append('client_id', CLIENT_ID);
+
+    const status = document.getElementById('status');
+    try {
+      const res = await fetch(API_BASE + '/admin/config', { method: 'POST', body: form });
+      const data = await res.json();
+      status.className = 'status success';
+      status.innerText = '✅ ' + (data.message || 'Salvo!') + ' (Aplicado imediatamente!)';
+      setTimeout(() => status.style.display = 'none', 4000);
+    } catch (err) {
+      status.className = 'status error';
+      status.innerText = '❌ Erro ao salvar: ' + err.message;
+      status.style.display = 'block';
+    }
+  }
 </script>
 </body>
 </html>
