@@ -2,7 +2,7 @@
   console.log('🚀 KA Widget inicializando...');
 
   const CONFIG = {
-    apiUrl: 'https://ka-voice-backend.onrender.com',
+    apiUrl: '/api/proxy',
     clientId: 'ka_agencia'
   };
 
