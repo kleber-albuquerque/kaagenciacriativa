@@ -35,10 +35,10 @@
   document.head.appendChild(link);
 
   let kaIsListening = false;
+  let kaIsPlaying = false; // NOVA VARIÁVEL: Controla o estado do áudio
   let kaRecognizer = null;
   let kaAudioUrl = null;
 
-  // --- INICIALIZAÇÃO DO MICROFONE (STT no Navegador) ---
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRecognition) {
     kaRecognizer = new SpeechRecognition();
@@ -48,16 +48,14 @@
 
     kaRecognizer.onresult = function(event) {
       const transcript = event.results[0][0].transcript;
-      kaToggleMic(); // Para o botão
-      kaSendVoice(transcript); // Envia o texto transcrito
+      kaToggleMic();
+      kaSendVoice(transcript);
     };
 
     kaRecognizer.onerror = function(event) {
       console.error('Erro de voz:', event.error);
       kaToggleMic();
-      if (event.error === 'not-allowed') {
-        window.kaAddMsg('assistant', 'Permita o acesso ao microfone.');
-      }
+      if (event.error === 'not-allowed') window.kaAddMsg('assistant', 'Permita o acesso ao microfone.');
     };
 
     kaRecognizer.onend = function() {
@@ -65,7 +63,6 @@
     };
   }
 
-  // --- FUNÇÕES DO CHAT ---
   window.getChatHistory = function() {
     const msgs = document.getElementById('ka-messages').children;
     const history = [];
@@ -74,10 +71,7 @@
       const div = msgs[i];
       const text = div.innerText.trim();
       if (!text) continue;
-      history.push({
-        role: div.style.alignSelf === 'flex-end' ? 'user' : 'assistant',
-        content: text
-      });
+      history.push({ role: div.style.alignSelf === 'flex-end' ? 'user' : 'assistant', content: text });
     }
     return JSON.stringify(history);
   };
@@ -111,7 +105,6 @@
     if (chat) chat.style.display = 'block';
   };
 
-  // --- ENVIAR VOZ (Transcrita) ---
   window.kaSendVoice = async function(transcript) {
     window.kaStartRec();
     window.kaAddMsg('user', transcript);
@@ -119,7 +112,7 @@
     document.getElementById('ka-play-btn').style.display = 'none';
 
     const form = new FormData();
-    form.append('transcript', transcript); // Envia como transcript para a rota /api/voice
+    form.append('transcript', transcript);
     form.append('client_id', CONFIG.clientId);
     form.append('history', window.getChatHistory());
 
@@ -127,15 +120,10 @@
       const res = await fetch(CONFIG.apiUrl + '/api/voice', { method: 'POST', body: form });
       if (!res.ok) throw new Error('Erro no servidor');
       const data = await res.json();
-
       window.kaAddMsg('assistant', data.response);
-
       if (data.audio_base64) {
         kaAudioUrl = "data:audio/mp3;base64," + data.audio_base64;
-        const playBtn = document.getElementById('ka-play-btn');
-        playBtn.style.display = 'block';
-        playBtn.innerText = '▶️ Ouvir Resposta';
-        window.kaPlayAudio(); // Toca automaticamente
+        window.kaPlayAudio();
       }
     } catch (err) {
       console.error(err);
@@ -143,7 +131,6 @@
     }
   };
 
-  // --- ENVIAR TEXTO ---
   window.kaSendText = async function() {
     const input = document.getElementById('ka-text-input');
     const text = input.value.trim();
@@ -164,15 +151,10 @@
       const res = await fetch(CONFIG.apiUrl + '/api/text', { method: 'POST', body: form });
       if (!res.ok) throw new Error('Erro no servidor');
       const data = await res.json();
-
       window.kaAddMsg('assistant', data.response);
-
       if (data.audio_base64) {
         kaAudioUrl = "data:audio/mp3;base64," + data.audio_base64;
-        const playBtn = document.getElementById('ka-play-btn');
-        playBtn.style.display = 'block';
-        playBtn.innerText = '▶️ Ouvir Resposta';
-        window.kaPlayAudio(); // Toca automaticamente
+        window.kaPlayAudio();
       }
     } catch (err) {
       console.error(err);
@@ -180,47 +162,50 @@
     }
   };
 
-  // --- TOCAR ÁUDIO BASE64 ---
+  // --- LÓGICA CORRIGIDA DO BOTÃO PARAR/PLAY ---
   window.kaPlayAudio = function() {
     if (!kaAudioUrl) return;
     const audio = document.getElementById('ka-audio');
     const playBtn = document.getElementById('ka-play-btn');
 
-    audio.pause();
-    audio.currentTime = 0;
-    audio.src = kaAudioUrl;
+    if (kaIsPlaying) {
+      // Se já estiver tocando, PARAR
+      audio.pause();
+      audio.currentTime = 0;
+      kaIsPlaying = false;
+      playBtn.innerText = '▶️ Ouvir de novo';
+      return;
+    }
 
+    // Se não estiver tocando, TOCAR
+    audio.src = kaAudioUrl;
     audio.play().then(function() {
+      kaIsPlaying = true;
+      playBtn.style.display = 'block';
       playBtn.innerText = '⏹️ Parar';
     }).catch(function(e) {
-      console.error('Erro ao tocar áudio:', e);
-      playBtn.innerText = '▶️ Ouvir Resposta';
+      console.error('Erro ao tocar:', e);
+      playBtn.innerText = '▶️ Ouvir de novo';
     });
 
     audio.onended = function() {
-      playBtn.innerText = '▶️ Ouvir Resposta';
+      kaIsPlaying = false;
+      playBtn.innerText = '▶️ Ouvir de novo';
     };
   };
 
-  // --- CONTROLE DO MICROFONE ---
   window.kaToggleMic = function() {
     window.kaStartRec();
     const btn = document.getElementById('ka-mic-btn');
-
     if (!kaIsListening) {
-      if (!kaRecognizer) {
-        window.kaAddMsg('assistant', 'Navegador não suporta voz. Use o texto.');
-        return;
-      }
+      if (!kaRecognizer) { window.kaAddMsg('assistant', 'Navegador não suporta voz.'); return; }
       try {
         kaRecognizer.start();
         kaIsListening = true;
         btn.style.background = '#ef4444';
         btn.innerText = '⏹️';
         window.kaSetStatus('Ouvindo... (clique para parar)');
-      } catch(e) {
-        console.error(e);
-      }
+      } catch(e) { console.error(e); }
     } else {
       kaRecognizer.stop();
       kaIsListening = false;
@@ -230,7 +215,6 @@
     }
   };
 
-  // --- INICIALIZAÇÃO ---
   setTimeout(function() {
     const tooltip = document.getElementById('ka-tooltip');
     const micBtn = document.getElementById('ka-mic-btn');
@@ -242,10 +226,8 @@
     if (micBtn) micBtn.addEventListener('click', window.kaToggleMic);
     if (sendBtn) sendBtn.addEventListener('click', window.kaSendText);
     if (playBtn) playBtn.addEventListener('click', window.kaPlayAudio);
-    if (textInput) textInput.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') window.kaSendText();
-    });
+    if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') window.kaSendText(); });
 
-    console.log('🎉 KA Widget Arquitetura Original Restaturada!');
+    console.log('🎉 KA Widget Finalizado!');
   }, 100);
 })();
