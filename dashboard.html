@@ -2,159 +2,88 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>📊 Dashboard Geral - KA Voice</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Dashboard Geral - KA Voice</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-  body { background: #0a0a0a; color: #fff; min-height: 100vh; padding: 40px 20px; }
-  .container { max-width: 1200px; margin: 0 auto; }
-  h1 { font-size: 28px; margin-bottom: 8px; }
-  .subtitle { color: #888; margin-bottom: 32px; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-  .card { background: #151515; border: 1px solid #252525; border-radius: 16px; padding: 24px; }
-  .card h2 { font-size: 18px; margin-bottom: 16px; color: #FFD400; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  body { background: #0a0a0a; color: #fff; font-family: system-ui, sans-serif; padding: 40px; }
+  .card { background: #151515; border: 1px solid #333; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
   table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-  th, td { text-align: left; padding: 12px; border-bottom: 1px solid #252525; font-size: 14px; }
-  th { color: #888; font-weight: 500; }
-  .btn-link { color: #FFD400; text-decoration: none; font-size: 13px; cursor: pointer; }
-  .btn-link:hover { text-decoration: underline; }
-  .badge { background: #064e3b; color: #6ee7b7; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-  .empty { color: #666; font-style: italic; padding: 20px 0; text-align: center; }
-  .btn-export { 
-    background:#FFD400; color:#000; border:none; padding:8px 16px; 
-    border-radius:6px; font-size:13px; cursor:pointer; font-weight:600;
-    display:inline-flex; align-items:center; gap:6px; transition: all 0.2s;
-  }
-  .btn-export:hover { background: #e6be00; transform: translateY(-1px); }
-  .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; }
+  th { color: #888; font-size: 13px; }
+  button { background: #FFD400; color: #000; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  a { color: #FFD400; text-decoration: none; }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>📊 Dashboard Geral</h1>
-  <p class="subtitle">Visão consolidada de clientes e leads capturados</p>
+<h1>📊 Dashboard Geral</h1>
 
-  <div class="grid">
-    <!-- LISTA DE CLIENTES -->
-    <div class="card">
-      <h2>Clientes Ativos <span id="client-count" class="badge">0</span></h2>
-      <table id="clients-table">
-        <thead><tr><th>Marca</th><th>Domínio</th><th>Ações</th></tr></thead>
-        <tbody id="clients-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
-      </table>
-    </div>
+<div class="card">
+  <h2>Clientes Ativos</h2>
+  <table id="clients-table">
+    <thead><tr><th>Marca</th><th>Domínio</th><th>Ações</th></tr></thead>
+    <tbody id="clients-body"><tr><td colspan="3">Carregando...</td></tr></tbody>
+  </table>
+</div>
 
-    <!-- LEADS RECENTES -->
-    <div class="card">
-      <h2>
-        Leads Recentes <span id="lead-count" class="badge">0</span>
-        <button id="btn-export" class="btn-export" onclick="window.exportCSV()" disabled>
-          📥 Exportar CSV
-        </button>
-      </h2>
-      <table id="leads-table">
-        <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
-        <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+<div class="card">
+  <h2>Leads Recentes <button id="btn-export" disabled onclick="doExport()"> Exportar CSV</button></h2>
+  <table id="leads-table">
+    <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
+    <tbody id="leads-body"><tr><td colspan="3">Selecione um cliente</td></tr></tbody>
+  </table>
 </div>
 
 <script>
-const API_BASE = 'https://ka-voice-backend.onrender.com';
-let currentClientId = null;
+const API = 'https://ka-voice-backend.onrender.com'; // ← MUDAR PARA URL DO RENDER APÓS DEPLOY
+let currentClient = null;
 
-// Carrega lista de clientes ao iniciar
 async function loadClients() {
   try {
-    const res = await fetch(`${API_BASE}/admin/clients`);
-    if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`);
-    
+    const res = await fetch(API + '/admin/clients');
     const data = await res.json();
-    // Garante que seja um array mesmo se a API retornar objeto
     const clients = Array.isArray(data) ? data : [];
     
-    document.getElementById('client-count').innerText = clients.length;
-    const tbody = document.getElementById('clients-body');
-    
-    if (clients.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = clients.map(c => `
-      <tr>
-        <td>${c.name || c.client_id || 'Sem nome'}</td>
-        <td>${c.domain || '-'}</td>
-        <td><span class="btn-link" onclick="loadLeads('${c.client_id}')">Ver Leads →</span></td>
-      </tr>
-    `).join('');
-    
-    // Carrega leads do primeiro cliente automaticamente
-    if (clients.length > 0) loadLeads(clients[0].client_id);
-  } catch (err) {
-    console.error('Erro ao carregar clientes:', err);
-    document.getElementById('clients-body').innerHTML = 
-      `<tr><td colspan="3" class="empty">Erro: ${err.message}</td></tr>`;
+    document.getElementById('clients-body').innerHTML = clients.length === 0 
+      ? '<tr><td colspan="3">Nenhum cliente</td></tr>'
+      : clients.map(c => `<tr>
+          <td>${c.name || c.id}</td>
+          <td>${c.domain}</td>
+          <td><a href="#" onclick="loadLeads('${c.client_id || c.id}'); return false;">Ver Leads →</a></td>
+        </tr>`).join('');
+        
+    if (clients.length > 0) loadLeads(clients[0].client_id || clients[0].id);
+  } catch (e) {
+    document.getElementById('clients-body').innerHTML = `<tr><td colspan="3">Erro: ${e.message}</td></tr>`;
   }
 }
 
-// Carrega leads de um cliente específico
-async function loadLeads(clientId) {
-  currentClientId = clientId;
-  const btnExport = document.getElementById('btn-export');
-  btnExport.disabled = false;
+async function loadLeads(cid) {
+  currentClient = cid;
+  document.getElementById('btn-export').disabled = false;
   
   try {
-    const res = await fetch(`${API_BASE}/admin/leads/${clientId}`);
-    if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`);
-    
+    const res = await fetch(API + `/admin/leads/${cid}`);
     const data = await res.json();
     const leads = Array.isArray(data) ? data : [];
     
-    document.getElementById('lead-count').innerText = leads.length;
-    const tbody = document.getElementById('leads-body');
-    
-    if (leads.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado ainda</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = leads.map(l => {
-      const phoneClean = l.phone ? String(l.phone).replace(/\D/g,'') : '';
-      const waLink = phoneClean ? `https://wa.me/55${phoneClean.startsWith('55') ? '' : '55'}${phoneClean}` : '#';
-      const summary = l.summary ? (String(l.summary).length > 60 ? String(l.summary).substring(0,60)+'...' : l.summary) : '-';
-      const date = l.date ? new Date(l.date).toLocaleDateString('pt-BR') + ' ' + new Date(l.date).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) : '-';
-      
-      return `
-        <tr>
-          <td><a href="${waLink}" target="_blank" style="color:#FFD400;text-decoration:none;font-weight:500">${l.phone || '-'}</a></td>
-          <td>${summary}</td>
-          <td style="white-space:nowrap">${date}</td>
-        </tr>
-      `;
-    }).join('');
-  } catch (err) {
-    console.error('Erro ao carregar leads:', err);
-    document.getElementById('leads-body').innerHTML = 
-      `<tr><td colspan="3" class="empty">Erro: ${err.message}</td></tr>`;
+    document.getElementById('leads-body').innerHTML = leads.length === 0
+      ? '<tr><td colspan="3">Sem leads</td></tr>'
+      : leads.map(l => `<tr>
+          <td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td>
+          <td>${String(l.summary||'-').substring(0,60)}</td>
+          <td>${new Date(l.date||Date.now()).toLocaleDateString()}</td>
+        </tr>`).join('');
+  } catch (e) {
+    document.getElementById('leads-body').innerHTML = `<tr><td colspan="3">Erro: ${e.message}</td></tr>`;
   }
 }
 
-// Exporta leads do cliente atual para CSV
-window.exportCSV = function() {
-  if (!currentClientId) {
-    alert('Selecione um cliente primeiro!');
-    return;
-  }
-  
-  const url = `${API_BASE}/admin/leads/${currentClientId}/export`;
-  window.open(url, '_blank');
-};
+function doExport() {
+  if (!currentClient) return alert('Selecione um cliente');
+  window.open(API + `/admin/leads/${currentClient}/export`, '_blank');
+}
 
-// Inicializa
-window.addEventListener('DOMContentLoaded', loadClients);
+window.onload = loadClients;
 </script>
 </body>
 </html>

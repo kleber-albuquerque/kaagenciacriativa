@@ -419,59 +419,39 @@
 
       <!-- SITES -->
       <a class="work-card" href="https://www.kleberalbuquerque.com.br" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/ka_site_hero_mockup.jpg" alt="Mockup site Kléber Albuquerque - Notebook" loading="lazy" onerror="this.style.opacity=0" />
-          <img src="imagens/ka_site_hero_mockup_1.jpg" alt="Mockup site Kléber Albuquerque - Detalhe" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">01</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n1">Artista / Música</span><span class="name">Kléber Albuquerque</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://www.flavvioalves.com.br" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/flavvio_alves_1.jpg" alt="Mockup site Flávio Alves" loading="lazy" onerror="this.style.opacity=0" />
-          <img src="imagens/flavvio_alves_2.jpg" alt="Mockup site Flávio Alves" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">02</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n2">Artista / Música</span><span class="name">Flávio Alves</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://clinicaesteticamockup.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/clinica_estetica_nobili.jpg" alt="Mockup site Clínica Estética" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">03</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n3">Saúde / Estética</span><span class="name">Clínica Estética</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://lumiereesteticaavanced.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/clinica_estetica_lumiere.jpg" alt="Mockup site Lumière Estética" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">04</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n4">Saúde / Estética</span><span class="name">Lumière Estética</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://verticeadvogados.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/vertice_advogados_1.jpg" alt="Mockup site Vértice Advogados" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">05</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n5">Jurídico</span><span class="name">Vértice Advogados</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://k-kal-engenharia.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/kkal_engenharia_mockup.jpg" alt="Mockup site K-Kal Engenharia" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">06</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n6">Engenharia</span><span class="name">K-Kal Engenharia</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://estudiopordosol.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/por_do_sol_mockup.jpg" alt="Mockup site Pôr do Sol" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">07</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n7">Estúdio Musical</span><span class="name">Pôr do Sol</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://jenipapobistro.netlify.app/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/jenipapo_bistro_mockup.jpg" alt="Mockup site Jenipapo Bistrô" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">08</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n8">Gastronomia</span><span class="name">Jenipapo Bistrô</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
       <a class="work-card" href="https://vivi-content-studio.onrender.com/" target="_blank" rel="noopener">
-        <div class="work-media imgs">
-          <img src="imagens/burila_mockup.jpg" alt="Mockup site Burila" loading="lazy" onerror="this.style.opacity=0" />
-        </div>
+        <div class="work-media ph"><span class="ph-num">09</span></div>
         <div class="work-foot"><span class="niche" data-i18n="work.n9">SaaS / Marca</span><span class="name">Burila</span><span class="go"><span data-i18n="work.go">Ver projeto</span> <span class="arr">→</span></span></div>
       </a>
 
@@ -997,22 +977,169 @@ var I18N = {
 
 
 
+<!-- Widget de Voz IA da Agência KA (Versão Pública Limpa) -->
+
+
 
 <!-- WIDGET FINAL KA VOICE -->
 
 
 
+<!-- WIDGET KA VOICE (VERSÃO ESTÁVEL) -->
 
 
-<script src="https://kleber-albuquerque.github.io/ka-voice-widget/widget.js?v=9"></script>
 
-})();
+<!-- WIDGET KA VOICE (COM TEXTO E VOZ) -->
+<div id="ka-widget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Inter',sans-serif;display:flex;flex-direction:column;align-items:flex-end;gap:12px;">
+  <div id="ka-tooltip" onclick="startRec()" style="background:#fff;color:#000;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);cursor:pointer;border:1px solid #e5e5e5;">
+    💬 Fale ou digite para nossa assistente
+  </div>
+  <div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:300px;max-height:320px;overflow-y:auto;">
+    <div id="ka-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="ka-text-input" placeholder="Digite sua mensagem..." style="flex:1;background:#222;border:1px solid #444;color:#fff;padding:10px;border-radius:8px;font-size:13px;outline:none;" onkeypress="if(event.key==='Enter') sendText()">
+      <button onclick="sendText()" style="background:#FFD400;color:#000;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">➤</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button id="ka-play-btn" onclick="playAudio()" style="display:none;background:#10b981;color:#fff;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:600;">▶️ Ouvir Resposta</button>
+    <button id="ka-mic-btn" onclick="toggleMic()" style="width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:#FFD400;color:#000;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(255,212,0,0.4);font-size:24px;">🎙️</button>
+  </div>
+</div>
+<audio id="ka-audio" style="display:none;"></audio>
+<script>
+  let isRec = false, recorder, chunks = [], audioUrl = null;
+  const API_VOICE = 'https://ka-voice-backend.onrender.com/api/voice';
+  const API_TEXT = 'https://ka-voice-backend.onrender.com/api/text';
+
+  function addMsg(role, text) {
+    const chat = document.getElementById('ka-chat');
+    const msgs = document.getElementById('ka-messages');
+    chat.style.display = 'block';
+    const div = document.createElement('div');
+    div.style.cssText = role === 'user' 
+      ? 'background:#FFD400;color:#000;padding:10px 14px;border-radius:12px 12px 0 12px;align-self:flex-end;max-width:85%;font-size:13px;font-weight:500;'
+      : 'background:#333;color:#fff;padding:10px 14px;border-radius:12px 12px 12px 0;align-self:flex-start;max-width:85%;font-size:13px;';
+    div.innerText = text;
+    msgs.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function startRec() {
+    document.getElementById('ka-tooltip').style.display = 'none';
+    document.getElementById('ka-chat').style.display = 'block';
+  }
+
+  function toggleMic() {
+    startRec();
+    const btn = document.getElementById('ka-mic-btn');
+    if (!isRec) {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        recorder = new MediaRecorder(stream);
+        chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = sendAudio;
+        recorder.start();
+        isRec = true;
+        btn.style.background = '#ef4444';
+        btn.innerText = '⏹️';
+        addMsg('user', 'Ouvindo... (clique no vermelho para parar)');
+      }).catch(() => addMsg('assistant', 'Erro: Permissão de mic negada.'));
+    } else {
+      recorder.stop();
+      isRec = false;
+      btn.style.background = '#FFD400';
+      btn.innerText = '🎙️';
+      addMsg('user', 'Processando... ⏳');
+      document.getElementById('ka-play-btn').style.display = 'none';
+    }
+  }
+
+  async function sendAudio() {
+    const blob = new Blob(chunks, { type: 'audio/webm' });
+    const form = new FormData();
+    form.append('audio', blob, 'rec.webm');
+    try {
+      const res = await fetch(API_VOICE, { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Erro: ' + res.status);
+      const data = await res.json();
+      document.getElementById('ka-messages').lastChild.innerText = data.transcription;
+      addMsg('assistant', data.response);
+      audioUrl = "data:audio/mpeg;base64," + data.audio;
+      const playBtn = document.getElementById('ka-play-btn');
+      playBtn.style.display = 'block';
+      playBtn.innerText = '▶️ Ouvir Resposta';
+    } catch (err) {
+      console.error(err);
+      addMsg('assistant', 'Erro de conexão. Tente novamente.');
+    }
+  }
+
+  async function sendText() {
+    const input = document.getElementById('ka-text-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    startRec();
+    addMsg('user', text);
+    input.value = '';
+    addMsg('assistant', 'Processando... ⏳');
+    document.getElementById('ka-play-btn').style.display = 'none';
+
+    const form = new FormData();
+    form.append('message', text);
+    try {
+      const res = await fetch(API_TEXT, { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Erro: ' + res.status);
+      const data = await res.json();
+      document.getElementById('ka-messages').lastChild.innerText = data.response;
+      audioUrl = "data:audio/mpeg;base64," + data.audio;
+      const playBtn = document.getElementById('ka-play-btn');
+      playBtn.style.display = 'block';
+      playBtn.innerText = '▶️ Ouvir Resposta';
+    } catch (err) {
+      console.error(err);
+      document.getElementById('ka-messages').lastChild.innerText = 'Erro de conexão. Tente novamente.';
+    }
+  }
+
+  function playAudio() {
+    if (!audioUrl) {
+      console.error('❌ Nenhum áudio disponível para tocar');
+      return;
+    }
+    const audio = document.getElementById('ka-audio');
+    const playBtn = document.getElementById('ka-play-btn');
+    
+    // Reseta o elemento de áudio completamente
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = audioUrl;
+    
+    console.log('🔊 Tentando tocar áudio. URL (início):', audioUrl.substring(0, 60));
+    
+    audio.play().then(() => {
+      console.log('✅ Áudio tocando com sucesso!');
+      playBtn.innerText = '⏹️ Parar';
+      playBtn.onclick = () => {
+        audio.pause();
+        audio.currentTime = 0;
+        playBtn.style.display = 'none';
+        playBtn.onclick = playAudio;
+      };
+    }).catch(err => {
+      console.error('❌ ERRO AO TOCAR ÁUDIO:', err);
+      playBtn.innerText = '❌ Erro ao tocar';
+      setTimeout(() => { playBtn.innerText = '▶️ Ouvir Resposta'; }, 2000);
+    });
+    
+    audio.onended = () => {
+      playBtn.style.display = 'none';
+      playBtn.onclick = playAudio;
+    };
+  }
 </script>
 
-<script src="widget.js"></script>
-
-</body>
-</html>
-
+<script src="https://kleber-albuquerque.github.io/ka-voice-widget/widget.js"></script>
 </body>
 </html>
