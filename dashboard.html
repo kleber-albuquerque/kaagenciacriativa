@@ -24,7 +24,6 @@
   .btn { border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: all 0.2s; }
   .btn-primary { background: #FFD400; color: #000; width: 100%; }
   .btn-secondary { background: #333; color: #fff; border: 1px solid #444; white-space: nowrap; margin-left: 8px; }
-  .btn-secondary:hover { background: #444; }
   table { width: 100%; border-collapse: collapse; margin-top: 16px; }
   th, td { text-align: left; padding: 12px; border-bottom: 1px solid #333; font-size: 14px; }
   th { color: #888; font-size: 12px; text-transform: uppercase; }
@@ -53,19 +52,14 @@
 <div id="dashboard" class="container" style="display:none;">
   <h1>🚀 KA Voice SaaS</h1>
   <p class="subtitle">Gerencie clientes, assistentes e leads</p>
-
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
     <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
   </div>
 
-  <!-- ABA CONFIGURAÇÃO -->
   <div id="tab-config" class="tab-content active">
-    <div class="card">
-      <h2>Cliente Ativo</h2>
-      <select id="config-client-id" onchange="loadConfig()"></select>
-    </div>
+    <div class="card"><h2>Cliente Ativo</h2><select id="config-client-id" onchange="loadConfig()"></select></div>
     <div class="card">
       <h2>🎤 Voz do Assistente</h2>
       <div class="voice-row">
@@ -81,6 +75,16 @@
       </div>
     </div>
     <div class="card">
+      <h2>🎭 Tom de Voz</h2>
+      <select id="tone">
+        <option value="profissional">Profissional</option>
+        <option value="amigavel">Amigável e descontraído</option>
+        <option value="formal">Formal e corporativo</option>
+        <option value="jovem">Jovem e descolado</option>
+        <option value="premium">Premium e sofisticado</option>
+      </select>
+    </div>
+    <div class="card">
       <h2>🏷️ Marca & 🧠 Prompt</h2>
       <label>Nome da Marca</label>
       <input type="text" id="brand_name" placeholder="Ex: Agência KA">
@@ -91,7 +95,6 @@
     <div id="status-config" class="status"></div>
   </div>
 
-  <!-- ABA CLIENTES -->
   <div id="tab-clients" class="tab-content">
     <div class="card">
       <h2>Adicionar Novo Cliente</h2>
@@ -111,7 +114,6 @@
     </div>
   </div>
 
-  <!-- ABA LEADS -->
   <div id="tab-leads" class="tab-content">
     <div class="card">
       <h2>Filtrar Leads <button class="btn btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
@@ -127,9 +129,8 @@
 </div>
 
 <script>
-  const API = '';
+  const API = ''; // Vazio pois as rotas do Python já têm o nome completo
   const ADMIN_PWD = 'ka2026';
-  let currentClient = null;
 
   function login() {
     if (document.getElementById('admin-password').value === ADMIN_PWD) {
@@ -166,7 +167,6 @@
     btn.classList.add('active');
   }
 
-  // --- CLIENTES ---
   async function loadClientsList() {
     try {
       const res = await fetch(API + '/admin/clients');
@@ -174,28 +174,13 @@
       const selectConfig = document.getElementById('config-client-id');
       const selectLeads = document.getElementById('lead-filter');
       const tbody = document.getElementById('clients-body');
-      
-      selectConfig.innerHTML = '';
-      selectLeads.innerHTML = '';
-      tbody.innerHTML = '';
-
-      if (!Array.isArray(clients) || clients.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>';
-        return;
-      }
-
+      selectConfig.innerHTML = ''; selectLeads.innerHTML = ''; tbody.innerHTML = '';
+      if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente</td></tr>'; return; }
       clients.forEach(c => {
-        const slug = c.slug || c.id;
-        const name = c.brand_name || slug;
-        
+        const slug = c.slug || c.id, name = c.brand_name || slug;
         selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
         selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
-        
-        tbody.innerHTML += `<tr>
-          <td>${slug}</td>
-          <td>${name}</td>
-          <td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td>
-        </tr>`;
+        tbody.innerHTML += `<tr><td>${slug}</td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td></tr>`;
       });
     } catch (e) { console.error(e); }
   }
@@ -208,33 +193,23 @@
 
   async function addClient() {
     const slug = document.getElementById('new-slug').value.trim();
-    const brand = document.getElementById('new-brand').value.trim();
     if (!slug) return alert('Digite um slug');
-    
     const form = new FormData();
     form.append('client_id', slug);
-    form.append('brand_name', brand);
+    form.append('brand_name', document.getElementById('new-brand').value.trim());
     form.append('voice', 'pt-BR-FranciscaNeural');
+    form.append('tone', 'profissional');
     form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
-
     try {
       const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
       const data = await res.json();
       if(data.error) throw new Error(data.error);
-      document.getElementById('new-slug').value = '';
-      document.getElementById('new-brand').value = '';
+      document.getElementById('new-slug').value = ''; document.getElementById('new-brand').value = '';
       loadClientsList();
-      const st = document.getElementById('status-client');
-      st.className = 'status success'; st.innerText = '✅ Cliente criado!';
-      setTimeout(() => st.style.display = 'none', 3000);
-    } catch (e) {
-      const st = document.getElementById('status-client');
-      st.className = 'status error'; st.innerText = '❌ ' + e.message;
-      st.style.display = 'block';
-    }
+      const st = document.getElementById('status-client'); st.className = 'status success'; st.innerText = '✅ Cliente criado!'; setTimeout(() => st.style.display = 'none', 3000);
+    } catch (e) { const st = document.getElementById('status-client'); st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
   }
 
-  // --- CONFIGURAÇÃO ---
   async function loadConfig() {
     const cid = document.getElementById('config-client-id').value;
     if (!cid) return;
@@ -242,6 +217,7 @@
       const res = await fetch(API + `/admin/config?client_id=${cid}`);
       const config = await res.json();
       document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
+      document.getElementById('tone').value = config.tone || 'profissional';
       document.getElementById('brand_name').value = config.brand_name || '';
       document.getElementById('system_prompt').value = config.system_prompt || '';
     } catch (e) { console.error(e); }
@@ -249,20 +225,16 @@
 
   async function previewVoice() {
     const btn = document.getElementById('btn-preview');
-    const voice = document.getElementById('voice').value;
     btn.innerText = '⏳ Gerando...'; btn.disabled = true;
     try {
-      const form = new FormData(); form.append('voice', voice);
+      const form = new FormData(); form.append('voice', document.getElementById('voice').value);
       const res = await fetch(API + '/admin/preview-voice', { method: 'POST', body: form });
       const data = await res.json();
       if(data.error) throw new Error(data.error);
       const audio = new Audio("data:audio/mpeg;base64," + data.audio);
       audio.play().catch(e => alert("Erro ao tocar no navegador"));
       audio.onended = () => { btn.innerText = '🔊 Testar'; btn.disabled = false; };
-    } catch (e) {
-      alert('Erro: ' + e.message);
-      btn.innerText = '🔊 Testar'; btn.disabled = false;
-    }
+    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Testar'; btn.disabled = false; }
   }
 
   async function saveConfig() {
@@ -270,24 +242,19 @@
     const form = new FormData();
     form.append('client_id', cid);
     form.append('voice', document.getElementById('voice').value);
+    form.append('tone', document.getElementById('tone').value);
     form.append('brand_name', document.getElementById('brand_name').value);
     form.append('system_prompt', document.getElementById('system_prompt').value);
-
     const st = document.getElementById('status-config');
     try {
       const res = await fetch(API + '/admin/config', { method: 'POST', body: form });
       const data = await res.json();
       if(data.error) throw new Error(data.error);
       st.className = 'status success'; st.innerText = '✅ ' + data.message;
-      loadClientsList();
-      setTimeout(() => st.style.display = 'none', 4000);
-    } catch (e) {
-      st.className = 'status error'; st.innerText = '❌ ' + e.message;
-      st.style.display = 'block';
-    }
+      loadClientsList(); setTimeout(() => st.style.display = 'none', 4000);
+    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
   }
 
-  // --- LEADS ---
   async function loadLeads() {
     const cid = document.getElementById('lead-filter').value;
     document.getElementById('btn-csv').disabled = !cid;
@@ -297,11 +264,7 @@
       const leads = await res.json();
       const tbody = document.getElementById('leads-body');
       if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Sem leads</td></tr>'; return; }
-      tbody.innerHTML = leads.map(l => `<tr>
-        <td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td>
-        <td>${String(l.summary||'-').substring(0,60)}</td>
-        <td>${new Date(l.date||Date.now()).toLocaleDateString()}</td>
-      </tr>`).join('');
+      tbody.innerHTML = leads.map(l => `<tr><td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td><td>${String(l.summary||'-').substring(0,60)}</td><td>${new Date(l.date||Date.now()).toLocaleDateString()}</td></tr>`).join('');
     } catch (e) { console.error(e); }
   }
 
