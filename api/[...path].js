@@ -5,12 +5,20 @@ const SECRET = 'ka_super_secret_2024';
 
 export default async function handler(request) {
   const url = new URL(request.url);
-  // Pega o caminho completo (ex: /api/text) e envia pro Render
   const destUrl = `${RENDER_URL}${url.pathname}${url.search}`;
 
-  const headers = new Headers(request.headers);
-  headers.set('x-secret-key', SECRET);
-  headers.delete('host');
+  // Pega o content-type exato (importante para FormData/multipart)
+  const contentType = request.headers.get('content-type') || '';
+
+  // Monta os cabeçalhos de forma limpa, sem herdar sujeira do Vercel
+  const headers = {
+    'x-secret-key': SECRET,
+  };
+
+  // Só adiciona o content-type se existir (essencial para arquivos/formulários)
+  if (contentType) {
+    headers['content-type'] = contentType;
+  }
 
   try {
     const response = await fetch(destUrl, {
@@ -19,8 +27,8 @@ export default async function handler(request) {
       body: request.method !== 'GET' ? request.body : undefined,
     });
 
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('text/csv')) {
+    // Se for CSV, devolve como texto
+    if ((response.headers.get('content-type') || '').includes('text/csv')) {
       const text = await response.text();
       return new Response(text, { status: 200, headers: { 'Content-Type': 'text/csv' }});
     }
@@ -31,6 +39,6 @@ export default async function handler(request) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erro no proxy' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Erro de conexão com o servidor principal' }), { status: 500 });
   }
 }
