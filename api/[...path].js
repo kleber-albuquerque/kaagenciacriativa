@@ -5,6 +5,7 @@ const SECRET = 'ka_super_secret_2024';
 
 export default async function handler(request) {
   const url = new URL(request.url);
+  // Repassa exatamente o que chegou, sem tirar nem pôr nada
   const destUrl = `${RENDER_URL}${url.pathname}${url.search}`;
 
   const headers = { 'x-secret-key': SECRET };
@@ -18,37 +19,20 @@ export default async function handler(request) {
       body: request.method !== 'GET' ? request.body : undefined,
     });
 
-    const resContentType = response.headers.get('content-type') || '';
-
-    if (resContentType.includes('text/csv')) {
-      const text = await response.text();
-      return new Response(text, { status: 200, headers: { 'Content-Type': 'text/csv' }});
-    }
-
-    // BLINDAGEM: Lê sempre como texto primeiro para não quebrar o JSON
+    // Tenta ler como JSON. Se não for, devolve o erro de forma segura.
     const text = await response.text();
-    
     try {
-      const data = JSON.parse(text);
-      return new Response(JSON.stringify(data), {
+      return new Response(text, {
         status: response.status,
         headers: { 'Content-Type': 'application/json' }
       });
     } catch (e) {
-      // Se não for JSON (ex: HTML de erro do Render), devolve um erro seguro
       return new Response(JSON.stringify({ 
-        error: "O servidor retornou uma resposta inesperada.", 
+        error: "Resposta inválida do servidor", 
         details: text.substring(0, 150) 
-      }), { 
-        status: response.status, 
-        headers: { 'Content-Type': 'application/json' } 
-      });
+      }), { status: 500, headers: { 'Content-Type': 'application/json' }});
     }
-
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erro de conexão com o servidor principal' }), { 
-      status: 500, 
-      headers: { 'Content-Type': 'application/json' } 
-    });
+    return new Response(JSON.stringify({ error: 'Erro de conexão' }), { status: 500, headers: { 'Content-Type': 'application/json' }});
   }
 }
