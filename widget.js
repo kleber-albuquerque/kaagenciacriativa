@@ -2,7 +2,7 @@
   console.log('🚀 KA Widget inicializando...');
 
   const CONFIG = {
-    apiUrl: '/api/proxy',
+    apiUrl: '',
     clientId: 'ka_agencia'
   };
 
