@@ -4,7 +4,7 @@
     // Pega o ID do cliente pela URL (ex: ?client=joao-pizza). Se não achar, usa o padrão.
   const urlParams = new URLSearchParams(window.location.search);
   const CONFIG = {
-    apiUrl: 'https://kaagenciacriativa.vercel.app/api', // URL absoluta para funcionar em qualquer site
+    apiUrl: 'https://ka-voice-backend.onrender.com', // URL absoluta para funcionar em qualquer site
     clientId: urlParams.get('client') || 'ka_agencia'
   };
 
