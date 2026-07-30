@@ -1,9 +1,11 @@
 (function() {
   console.log('🚀 KA Widget inicializando...');
 
+    // Pega o ID do cliente pela URL (ex: ?client=joao-pizza). Se não achar, usa o padrão.
+  const urlParams = new URLSearchParams(window.location.search);
   const CONFIG = {
-    apiUrl: '',
-    clientId: 'ka_agencia'
+    apiUrl: 'https://kaagenciacriativa.vercel.app/api', // URL absoluta para funcionar em qualquer site
+    clientId: urlParams.get('client') || 'ka_agencia'
   };
 
   const widgetHTML = `
