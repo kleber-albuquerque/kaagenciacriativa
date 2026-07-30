@@ -144,12 +144,9 @@
 </div>
 
 <script>
-  // CONFIGURAÇÃO DIRETA (Sem Proxy, sem falhas de FormData)
   const API = 'https://ka-voice-backend.onrender.com';
   const SECRET_KEY = 'ka_super_secret_2024';
   const ADMIN_PWD = 'ka2026';
-
-  // Headers padrão para autenticar direto no Render
   const headers = { 'x-secret-key': SECRET_KEY };
 
   function login() {
@@ -180,22 +177,6 @@
     }
   }
 
-    function copyScript(slug) {
-    // Gera a tag exata que o cliente vai colar no site dele
-    const scriptTag = `<script src="https://kaagenciacriativa.vercel.app/widget.js?client=${slug}"><\/script>`;
-
-    navigator.clipboard.writeText(scriptTag).then(() => {
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = '✅ Copiado!';
-      btn.style.color = '#6ee7b7';
-      setTimeout(() => { btn.innerText = originalText; btn.style.color = '#10b981'; }, 2000);
-    }).catch(err => {
-      // Fallback caso o navegador bloqueie a área de transferência
-      prompt("Copie o código abaixo e cole no HTML do site do cliente:", scriptTag);
-    });
-  }
-
   function switchTab(tab, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -203,15 +184,29 @@
     btn.classList.add('active');
   }
 
-    async function apiCall(url, options = {}) {
+  async function apiCall(url, options = {}) {
     const res = await fetch(API + url, { ...options, headers: { ...headers, ...options.headers } });
     if (!res.ok) {
       const errData = await res.json().catch(() => ({ error: "Erro desconhecido", detail: "Erro desconhecido" }));
-      // Procura a chave "error" (nossos erros) ou "detail" (erros do FastAPI)
       throw new Error(errData.error || errData.detail || `Erro ${res.status}`);
     }
     return res.json();
   }
+
+  // --- GERADOR DE SCRIPT ---
+  function copyScript(slug) {
+    const scriptTag = `<script src="https://kaagenciacriativa.vercel.app/widget.js?client=${slug}"><\/script>`;
+    navigator.clipboard.writeText(scriptTag).then(() => {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      btn.innerText = '✅ Copiado!';
+      btn.style.color = '#6ee7b7';
+      setTimeout(() => { btn.innerText = originalText; btn.style.color = '#10b981'; }, 2000);
+    }).catch(err => {
+      prompt("Copie o código abaixo e cole no HTML do site do cliente:", scriptTag);
+    });
+  }
+
   // --- CLIENTES ---
   async function loadClientsList() {
     try {
@@ -225,7 +220,9 @@
         const slug = c.slug || c.id, name = c.brand_name || slug;
         selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
         selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
-        tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td></tr>`;
+
+        // A LINHA CORRIGIDA ABAIXO:
+        tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a> | <a href="#" onclick="copyScript('${slug}'); return false;" style="color:#10b981;">📋 Copiar Script</a></td></tr>`;
       });
     } catch (e) { console.error(e); }
   }
@@ -308,9 +305,34 @@
     } catch (e) { console.error(e); }
   }
 
+  // EXPORTAR CSV CORRIGIDO (Envia a chave secreta)
   function exportCSV() {
     const cid = document.getElementById('lead-filter').value;
-    if (cid) window.open(`${API}/admin/leads/${cid}/export`, '_blank');
+    if (!cid) return;
+
+    const btn = document.getElementById('btn-csv');
+    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
+
+    fetch(`${API}/admin/leads/${cid}/export`, { headers })
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao gerar arquivo');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${cid}_leads.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
+      })
+      .catch(e => {
+        alert('Erro: ' + e.message);
+        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
+      });
   }
 </script>
 </body>
