@@ -1,4 +1,4 @@
-(function() {
+ (function() {
   console.log('🚀 KA Widget inicializando...');
 
     // Pega o ID do cliente pela URL (ex: ?client=joao-pizza). Se não achar, usa o padrão.
