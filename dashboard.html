@@ -64,6 +64,7 @@
     <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
     <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
+    <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
   </div>
 
   <!-- ABA CONFIGURAÇÃO -->
@@ -83,7 +84,7 @@
           <option value="pt-BR-LeilaNeural">Leila (Feminina - Suave)</option>
           <option value="pt-BR-FabioNeural">Fabio (Masculino - Jovem)</option>
         </select>
-        <button class="btn btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir Exemplo</button>
+        <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir Exemplo</button>
       </div>
     </div>
     <div class="card">
@@ -91,7 +92,7 @@
       <select id="tone">
         <option value="profissional">Profissional e Corporativo</option>
         <option value="amigavel">Amigável e Descontraído</option>
-        <option value="formal">Formal e Objetivo</option>
+        <formal">Formal e Objetivo</option>
         <option value="jovem">Jovem e Descolado</option>
         <option value="premium">Premium e Sofisticado</option>
       </select>
@@ -103,7 +104,7 @@
       <label>Sistema (Prompt)</label>
       <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
     </div>
-    <button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
+    <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
     <div id="status-config" class="status"></div>
   </div>
 
@@ -114,7 +115,7 @@
       <h2>Adicionar Novo Cliente</h2>
       <div class="grid-2">
         <div><label>Slug (ID)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
-        <div><label>Nome da Marca</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
+        <div><label>Nome da Marça</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
       </div>
       <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Novo Cliente</button>
       <div id="status-client" class="status"></div>
@@ -131,13 +132,27 @@
   <!-- ABA LEADS -->
   <div id="tab-leads" class="tab-content">
     <div class="card">
-      <h2>Filtrar Leads <button class="btn btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
+      <h2>Filtrar Leads <button class="btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
       <select id="lead-filter" onchange="loadLeads()"></select>
     </div>
     <div class="card">
       <table>
         <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
         <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente acima</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABA HISTÓRICO (A NOVA) -->
+  <div id="tab-history" class="tab-content">
+    <div class="card">
+      <h2>Transcrições & Chat</h2>
+      <select id="history-filter" onchange="loadHistory()"></select>
+    </div>
+    <div class="card" style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead><tr><th>Quem</th><th>Mensagem</th><th>Quando</th></tr></thead>
+        <tbody id="history-body"><tr><td colspan="3" class="empty">Selecione um cliente acima</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -213,15 +228,21 @@
       const clients = await apiCall('/admin/clients');
       const selectConfig = document.getElementById('config-client-id');
       const selectLeads = document.getElementById('lead-filter');
+      const selectHistory = document.getElementById('history-filter'); // NOVO: Preenche o select do histórico
       const tbody = document.getElementById('clients-body');
-      selectConfig.innerHTML = ''; selectLeads.innerHTML = ''; tbody.innerHTML = '';
+      selectConfig.innerHTML = '';
+      selectLeads.innerHTML = '';
+      selectHistory.innerHTML = '';
+      tbody.innerHTML = '';
+
       if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>'; return; }
+
       clients.forEach(c => {
         const slug = c.slug || c.id, name = c.brand_name || slug;
         selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
         selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
+        selectHistory.innerHTML += `<option value="${slug}">${name}</option>`; // NOVO: Popula o select de histórico
 
-        // A LINHA CORRIGIDA ABAIXO:
         tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a> | <a href="#" onclick="copyScript('${slug}'); return false;" style="color:#10b981;">📋 Copiar Script</a></td></tr>`;
       });
     } catch (e) { console.error(e); }
@@ -239,7 +260,7 @@
     const form = new FormData();
     form.append('client_id', slug);
     form.append('brand_name', document.getElementById('new-brand').value.trim());
-    form.append('voice', 'pt-BR-FranciscaNeural');
+    form.append('voice', 'pt-BR-FrisciscaNeural');
     form.append('tone', 'profissional');
     form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
     const st = document.getElementById('status-client');
@@ -257,7 +278,7 @@
     if (!cid) return;
     try {
       const config = await apiCall(`/admin/config?client_id=${cid}`);
-      document.getElementById('voice').value = config.voice || 'pt-BR-FranciscaNeural';
+      document.getElementById('voice').value = config.voice || 'pt-BR-FrisciscaNeural';
       document.getElementById('tone').value = config.tone || 'profissional';
       document.getElementById('brand_name').value = config.brand_name || '';
       document.getElementById('system_prompt').value = config.system_prompt || '';
@@ -273,7 +294,7 @@
       const audio = new Audio("data:audio/mpeg;base64," + data.audio);
       audio.play().catch(e => alert("Navegador bloqueou o áudio automático."));
       audio.onended = () => { btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; };
-    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; }
+    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Oquvir Exemplo'; btn.disabled = false; }
   }
 
   async function saveConfig() {
@@ -305,7 +326,7 @@
     } catch (e) { console.error(e); }
   }
 
-  // EXPORTAR CSV CORRIGIDO (Envia a chave secreta)
+  // EXPORTAR CSV (Com segurança de chave)
   function exportCSV() {
     const cid = document.getElementById('lead-filter').value;
     if (!cid) return;
@@ -333,6 +354,18 @@
         alert('Erro: ' + e.message);
         btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
       });
+  }
+
+  // --- HISTÓRICO ---
+  async function loadHistory() {
+    const cid = document.getElementById('history-filter').value;
+    if (!cid) return;
+    try {
+      const logs = await apiCall(`/admin/chat-logs/${cid}`);
+      const tbody = document.getElementById('history-body');
+      if (!Array.isArray(logs) || !logs.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma mensagem registrada</td></tr>'; return; }
+      tbody.innerHTML = logs.map(l => `<tr><td style="color:${l.role === 'user' ? 'var(--accent)' : 'var(--muted)'}; font-weight:${l.role === 'user' ? '600' : '400'};">${l.role === 'user' ? '👤 Cliente' : '🤖 IA'}</td><td>${String(l.content).substring(0, 200)}</td><td style="color:var(--muted); font-size:12px;">${new Date(l.date || Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
+    } catch (e) { console.error(e); }
   }
 </script>
 </body>
