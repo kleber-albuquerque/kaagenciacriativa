@@ -97,6 +97,42 @@
       </select>
     </div>
     <div class="card">
+      <h2>🎨 Aparência do Widget</h2>
+      <div class="grid-2">
+        <div>
+          <label>Cor de Destaque</label>
+          <input type="color" id="accent_color" value="#FFD400" style="height:48px;padding:4px;cursor:pointer;">
+        </div>
+        <div>
+          <label>Posição do Widget</label>
+          <select id="position">
+            <option value="right">Canto Direito</option>
+            <option value="left">Canto Esquerdo</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin:4px 0 16px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:12px;color:var(--muted);">Preview:</span>
+        <span id="color-preview" style="display:inline-block;padding:8px 14px;border-radius:12px 12px 0 12px;font-size:13px;font-weight:500;background:#FFD400;color:#000;">Olá! Como posso ajudar? 👋</span>
+      </div>
+      <label>Texto do Tooltip (balãozinho)</label>
+      <input type="text" id="tooltip_text" placeholder="💬 Fale com a assistente da [marca]">
+      <label>Mensagem de Boas-vindas (automática)</label>
+      <textarea id="greeting" style="min-height:70px;" placeholder="Olá! ✨ Sou a assistente da [marca]. Como posso ajudar?"></textarea>
+    </div>
+    <script>
+    (function(){
+      var ac = document.getElementById('accent_color');
+      if (ac) ac.addEventListener('input', function() {
+        var prev = document.getElementById('color-preview');
+        prev.style.background = this.value;
+        var c = this.value.replace('#','');
+        var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+        prev.style.color = (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
+      });
+    })();
+    </script>
+    <div class="card">
       <h2>🏷 Marca & Prompt</h2>
       <label>Nome da Marca</label>
       <input type="text" id="brand_name" placeholder="Ex: Agência KA">
@@ -307,6 +343,11 @@ async function loadConfig() {
     document.getElementById('tone').value = cfg.tone || 'profissional';
     document.getElementById('brand_name').value = cfg.brand_name || '';
     document.getElementById('system_prompt').value = cfg.system_prompt || '';
+    document.getElementById('accent_color').value = cfg.accent_color || '#FFD400';
+    document.getElementById('tooltip_text').value = cfg.tooltip_text || '';
+    document.getElementById('greeting').value = cfg.greeting || '';
+    document.getElementById('position').value = cfg.position || 'right';
+    var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
   } catch (e) { console.error('loadConfig:', e); }
 }
 
@@ -320,7 +361,11 @@ async function saveConfig() {
         voice: document.getElementById('voice').value,
         tone: document.getElementById('tone').value,
         brand_name: document.getElementById('brand_name').value,
-        system_prompt: document.getElementById('system_prompt').value
+        system_prompt: document.getElementById('system_prompt').value,
+        accent_color: document.getElementById('accent_color').value,
+        tooltip_text: document.getElementById('tooltip_text').value,
+        greeting: document.getElementById('greeting').value,
+        position: document.getElementById('position').value
       })
     });
     st.className = 'status success';
