@@ -1,4 +1,4 @@
-// KA Widget v2.3 - Funcional, JSON puro e leitura de data-client-id
+// KA Widget v2.4 - JSON puro, data-client-id e Microfone Blindado
 (function() {
 console.log('🚀 KA Widget inicializando...');
 
@@ -32,18 +32,47 @@ if (SpeechRecognition) {
   kaRecognizer.lang = 'pt-BR';
   kaRecognizer.continuous = false;
   kaRecognizer.interimResults = false;
+  
   kaRecognizer.onresult = function(event) {
     const transcript = event.results[0][0].transcript;
-    kaToggleMic();
+    // Para de ouvir com segurança absoluta antes de enviar
+    if (kaIsListening) {
+      try { kaRecognizer.stop(); } catch(e) {}
+      kaIsListening = false;
+      const btn = document.getElementById('ka-mic-btn');
+      if (btn) {
+        btn.style.background = '#FFD400';
+        btn.innerText = '🎙️';
+      }
+      const status = document.getElementById('ka-status');
+      if (status) status.style.display = 'none';
+    }
     kaSendMessage(transcript); // Unificado para usar JSON
   };
+  
   kaRecognizer.onerror = function(event) {
     console.error('Erro de voz:', event.error);
-    kaToggleMic();
+    if (kaIsListening) {
+      try { kaRecognizer.stop(); } catch(e) {}
+      kaIsListening = false;
+      const btn = document.getElementById('ka-mic-btn');
+      if (btn) {
+        btn.style.background = '#FFD400';
+        btn.innerText = '🎙️';
+      }
+    }
     if (event.error === 'not-allowed') window.kaAddMsg('assistant', 'Permita o acesso ao microfone.');
   };
+  
   kaRecognizer.onend = function() {
-    if (kaIsListening) kaToggleMic();
+    if (kaIsListening) {
+      kaIsListening = false;
+      const btn = document.getElementById('ka-mic-btn');
+      if (btn) {
+        btn.style.background = '#FFD400';
+        btn.innerText = '🎙️';
+      }
+    }
   };
 }
 
@@ -57,21 +86,23 @@ window.getChatHistory = function() {
     if (!text) continue;
     history.push({ role: div.style.alignSelf === 'flex-end' ? 'user' : 'assistant', content: text });
   }
-  return history; // Retorna array (será stringificado no payload)
+  return history;
 };
 
 window.kaSetStatus = function(text) {
   const status = document.getElementById('ka-status');
-  status.innerText = text;
-  status.style.display = 'block';
+  if (status) {
+    status.innerText = text;
+    status.style.display = 'block';
+  }
 };
 
 window.kaAddMsg = function(role, text) {
   const chat = document.getElementById('ka-chat');
   const msgs = document.getElementById('ka-messages');
   const status = document.getElementById('ka-status');
-  chat.style.display = 'block';
-  status.style.display = 'none';
+  if (chat) chat.style.display = 'block';
+  if (status) status.style.display = 'none';
   const div = document.createElement('div');
   div.style.cssText = role === 'user'
     ? 'background:#FFD400;color:#000;padding:10px 14px;border-radius:12px 12px 0 12px;align-self:flex-end;max-width:85%;font-size:13px;font-weight:500;'
@@ -154,11 +185,16 @@ window.kaPlayAudio = function() {
   };
 };
 
+// ✅ MICROFONE BLINDADO COM TRY/CATCH E FALLBACK DE RESTART
 window.kaToggleMic = function() {
   window.kaStartRec();
   const btn = document.getElementById('ka-mic-btn');
+  
   if (!kaIsListening) {
-    if (!kaRecognizer) { window.kaAddMsg('assistant', 'Navegador não suporta voz.'); return; }
+    if (!kaRecognizer) { 
+      window.kaAddMsg('assistant', 'Navegador não suporta voz.'); 
+      return; 
+    }
     try {
       kaRecognizer.start();
       kaIsListening = true;
@@ -166,17 +202,32 @@ window.kaToggleMic = function() {
       btn.innerText = '⏹️';
       window.kaSetStatus('Ouvindo... (clique para parar)');
     } catch(e) { 
-      console.error('Erro ao iniciar mic:', e); 
+      console.error('Erro ao iniciar mic (já iniciado?):', e); 
+      // Fallback de segurança: forçar parada e tentar reiniciar
+      try { kaRecognizer.stop(); } catch(err) {}
       kaIsListening = false;
       btn.style.background = '#FFD400';
       btn.innerText = '🎙️';
+      setTimeout(() => {
+         try { 
+           kaRecognizer.start(); 
+           kaIsListening = true; 
+           btn.style.background = '#ef4444'; 
+           btn.innerText = '⏹️'; 
+         } catch(e2) { console.error('Falha no restart:', e2); }
+      }, 100);
     }
   } else {
-    try { kaRecognizer.stop(); } catch(e) {}
+    try {
+      kaRecognizer.stop();
+    } catch(e) {
+      console.error('Erro ao parar mic:', e);
+    }
     kaIsListening = false;
     btn.style.background = '#FFD400';
     btn.innerText = '🎙️';
-    document.getElementById('ka-status').style.display = 'none';
+    const status = document.getElementById('ka-status');
+    if (status) status.style.display = 'none';
   }
 };
 
@@ -191,6 +242,6 @@ setTimeout(function() {
   if (sendBtn) sendBtn.addEventListener('click', window.kaSendText);
   if (playBtn) playBtn.addEventListener('click', window.kaPlayAudio);
   if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') window.kaSendText(); });
-  console.log('🎉 KA Widget v2.3 Finalizado com Sucesso!');
+  console.log('🎉 KA Widget v2.4 Finalizado com Sucesso!');
 }, 100);
 })();
