@@ -13,7 +13,7 @@
   h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
   h1 span { font-size: 14px; background: var(--border); color: var(--muted); padding: 4px 10px; border-radius: 20px; font-weight: 500; }
   .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 15px; }
-  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
   .tab-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
   .tab-btn.active { background: var(--card); color: var(--accent); border-color: var(--accent); }
   .tab-content { display: none; }
@@ -57,17 +57,16 @@
 </div>
 
 <div id="dashboard" class="container" style="display:none;">
-  <h1>KA Voice SaaS <span>Admin v1.0</span></h1>
+  <h1>KA Voice SaaS <span>Admin v2.0</span></h1>
   <p class="subtitle">Gerencie assistentes, vozes, leads e configurações</p>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
+    <button class="tab-btn active" onclick="switchTab('config', this)">⚙ Configuração</button>
     <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
   </div>
 
-  <!-- ABA CONFIGURAÇÃO -->
   <div id="tab-config" class="tab-content active">
     <div class="card">
       <h2>Selecione o Cliente</h2>
@@ -84,12 +83,12 @@
           <option value="pt-BR-LeilaNeural">Leila (Feminina - Suave)</option>
           <option value="pt-BR-FabioNeural">Fabio (Masculino - Jovem)</option>
         </select>
-        <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir Exemplo</button>
+        <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir</button>
       </div>
     </div>
     <div class="card">
       <h2>🎭 Tom de Voz</h2>
-            <select id="tone">
+      <select id="tone">
         <option value="profissional">Profissional e Corporativo</option>
         <option value="amigavel">Amigável e Descontraído</option>
         <option value="formal">Formal e Objetivo</option>
@@ -98,7 +97,7 @@
       </select>
     </div>
     <div class="card">
-      <h2>🏷️ Marca & Prompt</h2>
+      <h2>🏷 Marca & Prompt</h2>
       <label>Nome da Marca</label>
       <input type="text" id="brand_name" placeholder="Ex: Agência KA">
       <label>Sistema (Prompt)</label>
@@ -108,14 +107,13 @@
     <div id="status-config" class="status"></div>
   </div>
 
-  <!-- ABA CLIENTES -->
   <div id="tab-clients" class="tab-content">
     <div class="card">
-      <div class="info-box">💡 O "Slug" é o identificador único que será usado no código do widget do cliente (ex: joao-pizza). Não use espaços ou caracteres especiais.</div>
+      <div class="info-box">💡 O "Slug" é o identificador único usado no widget (ex: joao-pizza). Não use espaços ou caracteres especiais.</div>
       <h2>Adicionar Novo Cliente</h2>
       <div class="grid-2">
         <div><label>Slug (ID)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
-        <div><label>Nome da Marça</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
+        <div><label>Nome da Marca</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
       </div>
       <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Novo Cliente</button>
       <div id="status-client" class="status"></div>
@@ -129,7 +127,6 @@
     </div>
   </div>
 
-  <!-- ABA LEADS -->
   <div id="tab-leads" class="tab-content">
     <div class="card">
       <h2>Filtrar Leads <button class="btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
@@ -143,7 +140,6 @@
     </div>
   </div>
 
-  <!-- ABA HISTÓRICO (A NOVA) -->
   <div id="tab-history" class="tab-content">
     <div class="card">
       <h2>Transcrições & Chat</h2>
@@ -159,214 +155,256 @@
 </div>
 
 <script>
-  const API = 'https://ka-voice-backend.onrender.com';
-  const SECRET_KEY = 'ka_super_secret_2024';
-  const ADMIN_PWD = 'ka2026';
-  const headers = { 'x-secret-key': SECRET_KEY };
+const API = 'https://ka-voice-backend.onrender.com';
+let TOKEN = sessionStorage.getItem('ka_token') || '';
 
-  function login() {
-    if (document.getElementById('admin-password').value === ADMIN_PWD) {
-      sessionStorage.setItem('ka_auth', '1');
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      init();
-    } else {
-      const e = document.getElementById('login-error');
-      e.innerText = '❌ Senha incorreta'; e.style.display = 'block';
-      setTimeout(() => e.style.display = 'none', 3000);
-    }
-  }
-  window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('ka_auth') === '1') {
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      init();
-    }
+function authHeaders() {
+  return { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
+}
+
+async function apiCall(url, options = {}) {
+  const res = await fetch(API + url, {
+    ...options,
+    headers: { ...authHeaders(), ...(options.headers || {}) }
   });
-
-  async function init() {
-    await loadClientsList();
-    if(document.getElementById('config-client-id').options.length > 0) {
-      document.getElementById('config-client-id').selectedIndex = 0;
-      loadConfig();
-    }
+  if (res.status === 401) { logout(); throw new Error('Sessão expirada. Faça login novamente.'); }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Erro ' + res.status }));
+    throw new Error(err.detail || err.error || 'Erro ' + res.status);
   }
+  return res.json();
+}
 
-  function switchTab(tab, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  async function apiCall(url, options = {}) {
-    const res = await fetch(API + url, { ...options, headers: { ...headers, ...options.headers } });
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({ error: "Erro desconhecido", detail: "Erro desconhecido" }));
-      throw new Error(errData.error || errData.detail || `Erro ${res.status}`);
-    }
-    return res.json();
-  }
-
-  // --- GERADOR DE SCRIPT ---
-  function copyScript(slug) {
-    const scriptTag = `<script src="https://kaagenciacriativa.vercel.app/widget.js?client=${slug}"><\/script>`;
-    navigator.clipboard.writeText(scriptTag).then(() => {
-      const btn = event.target;
-      const originalText = btn.innerText;
-      btn.innerText = '✅ Copiado!';
-      btn.style.color = '#6ee7b7';
-      setTimeout(() => { btn.innerText = originalText; btn.style.color = '#10b981'; }, 2000);
-    }).catch(err => {
-      prompt("Copie o código abaixo e cole no HTML do site do cliente:", scriptTag);
+async function login() {
+  const pwd = document.getElementById('admin-password').value;
+  const errEl = document.getElementById('login-error');
+  try {
+    const res = await fetch(API + '/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
     });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Senha incorreta');
+    TOKEN = data.access_token;
+    sessionStorage.setItem('ka_token', TOKEN);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  } catch (e) {
+    errEl.innerText = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    setTimeout(() => errEl.style.display = 'none', 3000);
   }
+}
 
-  // --- CLIENTES ---
-  async function loadClientsList() {
-    try {
-      const clients = await apiCall('/admin/clients');
-      const selectConfig = document.getElementById('config-client-id');
-      const selectLeads = document.getElementById('lead-filter');
-      const selectHistory = document.getElementById('history-filter'); // NOVO: Preenche o select do histórico
-      const tbody = document.getElementById('clients-body');
-      selectConfig.innerHTML = '';
-      selectLeads.innerHTML = '';
-      selectHistory.innerHTML = '';
-      tbody.innerHTML = '';
+function logout() {
+  TOKEN = '';
+  sessionStorage.removeItem('ka_token');
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+}
 
-      if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>'; return; }
-
-      clients.forEach(c => {
-        const slug = c.slug || c.id, name = c.brand_name || slug;
-        selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
-        selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
-        selectHistory.innerHTML += `<option value="${slug}">${name}</option>`; // NOVO: Popula o select de histórico
-
-        tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a> | <a href="#" onclick="copyScript('${slug}'); return false;" style="color:#10b981;">📋 Copiar Script</a></td></tr>`;
-      });
-    } catch (e) { console.error(e); }
+window.addEventListener('DOMContentLoaded', () => {
+  if (TOKEN) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
   }
+});
 
-  function selectAndGoToConfig(slug) {
-    document.getElementById('config-client-id').value = slug;
-    switchTab('config', document.querySelectorAll('.tab-btn')[0]);
-    loadConfig();
-  }
+async function init() {
+  await loadClientsList();
+  const sel = document.getElementById('config-client-id');
+  if (sel.options.length > 0) { sel.selectedIndex = 0; loadConfig(); }
+}
 
-  async function addClient() {
-    const slug = document.getElementById('new-slug').value.trim();
-    if (!slug) return alert('Digite um slug');
-    const form = new FormData();
-    form.append('client_id', slug);
-    form.append('brand_name', document.getElementById('new-brand').value.trim());
-    form.append('voice', 'pt-BR-FrisciscaNeural');
-    form.append('tone', 'profissional');
-    form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
-    const st = document.getElementById('status-client');
-    try {
-      const data = await apiCall('/admin/config', { method: 'POST', body: form });
-      document.getElementById('new-slug').value = ''; document.getElementById('new-brand').value = '';
-      loadClientsList();
-      st.className = 'status success'; st.innerText = '✅ ' + data.message; setTimeout(() => st.style.display = 'none', 3000);
-    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
-  }
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
 
-  // --- CONFIGURAÇÃO ---
-  async function loadConfig() {
-    const cid = document.getElementById('config-client-id').value;
-    if (!cid) return;
-    try {
-      const config = await apiCall(`/admin/config?client_id=${cid}`);
-      document.getElementById('voice').value = config.voice || 'pt-BR-FrisciscaNeural';
-      document.getElementById('tone').value = config.tone || 'profissional';
-      document.getElementById('brand_name').value = config.brand_name || '';
-      document.getElementById('system_prompt').value = config.system_prompt || '';
-    } catch (e) { console.error(e); }
-  }
+function copyScript(slug) {
+  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  navigator.clipboard.writeText(tag).then(() => {
+    const btn = event.target;
+    const orig = btn.innerText;
+    btn.innerText = '✅ Copiado!';
+    btn.style.color = '#6ee7b7';
+    setTimeout(() => { btn.innerText = orig; btn.style.color = '#10b981'; }, 2000);
+  }).catch(() => {
+    prompt('Copie o código abaixo e cole no HTML do site do cliente:', tag);
+  });
+}
 
-  async function previewVoice() {
-    const btn = document.getElementById('btn-preview');
-    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
-    try {
-      const form = new FormData(); form.append('voice', document.getElementById('voice').value);
-      const data = await apiCall('/admin/preview-voice', { method: 'POST', body: form });
-      const audio = new Audio("data:audio/mpeg;base64," + data.audio);
-      audio.play().catch(e => alert("Navegador bloqueou o áudio automático."));
-      audio.onended = () => { btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; };
-    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Oquvir Exemplo'; btn.disabled = false; }
-  }
+async function loadClientsList() {
+  try {
+    const clients = await apiCall('/admin/clients');
+    const selConfig = document.getElementById('config-client-id');
+    const selLeads = document.getElementById('lead-filter');
+    const selHistory = document.getElementById('history-filter');
+    const tbody = document.getElementById('clients-body');
+    selConfig.innerHTML = ''; selLeads.innerHTML = ''; selHistory.innerHTML = ''; tbody.innerHTML = '';
+    if (!Array.isArray(clients) || !clients.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente</td></tr>'; return;
+    }
+    clients.forEach(c => {
+      const slug = c.id || c.slug, name = c.name || c.brand_name || slug;
+      selConfig.innerHTML += '<option value="' + slug + '">' + name + ' (' + slug + ')</option>';
+      selLeads.innerHTML += '<option value="' + slug + '">' + name + '</option>';
+      selHistory.innerHTML += '<option value="' + slug + '">' + name + '</option>';
+      tbody.innerHTML += '<tr><td><code>' + slug + '</code></td><td>' + name + '</td><td>'
+        + '<a href="#" onclick="selectAndGoToConfig(\'' + slug + '\'); return false;">Configurar →</a> | '
+        + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a>'
+        + '</td></tr>';
+    });
+  } catch (e) { console.error('loadClientsList:', e); }
+}
 
-  async function saveConfig() {
-    const cid = document.getElementById('config-client-id').value;
-    const form = new FormData();
-    form.append('client_id', cid);
-    form.append('voice', document.getElementById('voice').value);
-    form.append('tone', document.getElementById('tone').value);
-    form.append('brand_name', document.getElementById('brand_name').value);
-    form.append('system_prompt', document.getElementById('system_prompt').value);
-    const st = document.getElementById('status-config');
-    try {
-      const data = await apiCall('/admin/config', { method: 'POST', body: form });
-      st.className = 'status success'; st.innerText = '✅ ' + data.message;
-      loadClientsList(); setTimeout(() => st.style.display = 'none', 4000);
-    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
-  }
+function selectAndGoToConfig(slug) {
+  document.getElementById('config-client-id').value = slug;
+  switchTab('config', document.querySelectorAll('.tab-btn')[0]);
+  loadConfig();
+}
 
-  // --- LEADS ---
-  async function loadLeads() {
-    const cid = document.getElementById('lead-filter').value;
-    document.getElementById('btn-csv').disabled = !cid;
-    if (!cid) return;
-    try {
-      const leads = await apiCall(`/admin/leads/${cid}`);
-      const tbody = document.getElementById('leads-body');
-      if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado ainda</td></tr>'; return; }
-      tbody.innerHTML = leads.map(l => `<tr><td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td><td>${String(l.summary||'-').substring(0,80)}</td><td>${new Date(l.date||Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
-    } catch (e) { console.error(e); }
-  }
-
-  // EXPORTAR CSV (Com segurança de chave)
-  function exportCSV() {
-    const cid = document.getElementById('lead-filter').value;
-    if (!cid) return;
-
-    const btn = document.getElementById('btn-csv');
-    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
-
-    fetch(`${API}/admin/leads/${cid}/export`, { headers })
-      .then(res => {
-        if (!res.ok) throw new Error('Erro ao gerar arquivo');
-        return res.blob();
+async function addClient() {
+  const slug = document.getElementById('new-slug').value.trim();
+  const brand = document.getElementById('new-brand').value.trim();
+  if (!slug) return alert('Digite um slug');
+  const st = document.getElementById('status-client');
+  try {
+    const data = await apiCall('/admin/clients', {
+      method: 'POST',
+      body: JSON.stringify({
+        client_id: slug,
+        brand_name: brand || slug,
+        domain: '',
+        system_prompt: 'Você é uma assistente virtual prestativa.'
       })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${cid}_leads.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
-      })
-      .catch(e => {
-        alert('Erro: ' + e.message);
-        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
-      });
+    });
+    document.getElementById('new-slug').value = '';
+    document.getElementById('new-brand').value = '';
+    loadClientsList();
+    st.className = 'status success';
+    st.innerText = '✅ Cliente "' + slug + '" criado com sucesso!';
+    st.style.display = 'block';
+    setTimeout(() => st.style.display = 'none', 4000);
+  } catch (e) {
+    st.className = 'status error';
+    st.innerText = '❌ ' + e.message;
+    st.style.display = 'block';
   }
+}
 
-  // --- HISTÓRICO ---
-  async function loadHistory() {
-    const cid = document.getElementById('history-filter').value;
-    if (!cid) return;
-    try {
-      const logs = await apiCall(`/admin/chat-logs/${cid}`);
-      const tbody = document.getElementById('history-body');
-      if (!Array.isArray(logs) || !logs.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma mensagem registrada</td></tr>'; return; }
-      tbody.innerHTML = logs.map(l => `<tr><td style="color:${l.role === 'user' ? 'var(--accent)' : 'var(--muted)'}; font-weight:${l.role === 'user' ? '600' : '400'};">${l.role === 'user' ? '👤 Cliente' : '🤖 IA'}</td><td>${String(l.content).substring(0, 200)}</td><td style="color:var(--muted); font-size:12px;">${new Date(l.date || Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
-    } catch (e) { console.error(e); }
+async function loadConfig() {
+  const cid = document.getElementById('config-client-id').value;
+  if (!cid) return;
+  try {
+    const cfg = await apiCall('/admin/clients/' + cid + '/config');
+    document.getElementById('voice').value = cfg.voice || 'pt-BR-FranciscaNeural';
+    document.getElementById('tone').value = cfg.tone || 'profissional';
+    document.getElementById('brand_name').value = cfg.brand_name || '';
+    document.getElementById('system_prompt').value = cfg.system_prompt || '';
+  } catch (e) { console.error('loadConfig:', e); }
+}
+
+async function saveConfig() {
+  const cid = document.getElementById('config-client-id').value;
+  const st = document.getElementById('status-config');
+  try {
+    const data = await apiCall('/admin/clients/' + cid + '/config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        voice: document.getElementById('voice').value,
+        tone: document.getElementById('tone').value,
+        brand_name: document.getElementById('brand_name').value,
+        system_prompt: document.getElementById('system_prompt').value
+      })
+    });
+    st.className = 'status success';
+    st.innerText = '✅ ' + data.message;
+    st.style.display = 'block';
+    loadClientsList();
+    setTimeout(() => st.style.display = 'none', 4000);
+  } catch (e) {
+    st.className = 'status error';
+    st.innerText = '❌ ' + e.message;
+    st.style.display = 'block';
   }
+}
+
+async function previewVoice() {
+  const btn = document.getElementById('btn-preview');
+  btn.innerText = '⏳'; btn.disabled = true;
+  try {
+    const data = await apiCall('/admin/preview-voice', {
+      method: 'POST',
+      body: JSON.stringify({ voice: document.getElementById('voice').value })
+    });
+    const audio = new Audio('data:audio/mpeg;base64,' + data.audio);
+    audio.play().catch(() => alert('Navegador bloqueou áudio automático.'));
+    audio.onended = () => { btn.innerText = '🔊 Ouvir'; btn.disabled = false; };
+  } catch (e) {
+    alert('Erro: ' + e.message);
+    btn.innerText = '🔊 Ouvir'; btn.disabled = false;
+  }
+}
+
+async function loadLeads() {
+  const cid = document.getElementById('lead-filter').value;
+  document.getElementById('btn-csv').disabled = !cid;
+  if (!cid) return;
+  try {
+    const leads = await apiCall('/admin/leads/' + cid);
+    const tbody = document.getElementById('leads-body');
+    if (!Array.isArray(leads) || !leads.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado</td></tr>'; return;
+    }
+    tbody.innerHTML = leads.map(l =>
+      '<tr><td><a href="https://wa.me/55' + String(l.phone||'').replace(/\D/g,'') + '" target="_blank">' + (l.phone||'-') + '</a></td>'
+      + '<td>' + String(l.summary||'-').substring(0,80) + '</td>'
+      + '<td>' + (l.date||'-') + '</td></tr>'
+    ).join('');
+  } catch (e) { console.error('loadLeads:', e); }
+}
+
+function exportCSV() {
+  const cid = document.getElementById('lead-filter').value;
+  if (!cid) return;
+  const btn = document.getElementById('btn-csv');
+  btn.innerText = '⏳'; btn.disabled = true;
+  fetch(API + '/admin/leads/' + cid + '/export', { headers: authHeaders() })
+    .then(res => { if (!res.ok) throw new Error('Erro'); return res.blob(); })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = cid + '_leads.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      window.URL.revokeObjectURL(url);
+      btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
+    })
+    .catch(e => { alert('Erro: ' + e.message); btn.innerText = '📥 Exportar CSV'; btn.disabled = false; });
+}
+
+async function loadHistory() {
+  const cid = document.getElementById('history-filter').value;
+  if (!cid) return;
+  try {
+    const logs = await apiCall('/admin/history/' + cid);
+    const tbody = document.getElementById('history-body');
+    if (!Array.isArray(logs) || !logs.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma mensagem</td></tr>'; return;
+    }
+    tbody.innerHTML = logs.map(l =>
+      '<tr><td style="color:' + (l.role==='user'?'var(--accent)':'var(--muted)') + ';font-weight:' + (l.role==='user'?'600':'400') + ';">'
+      + (l.role==='user'?'👤 Cliente':'🤖 IA') + '</td>'
+      + '<td>' + String(l.message).substring(0,200) + '</td>'
+      + '<td style="color:var(--muted);font-size:12px;">' + (l.date||'-') + '</td></tr>'
+    ).join('');
+  } catch (e) { console.error('loadHistory:', e); }
+}
 </script>
 </body>
 </html>
