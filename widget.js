@@ -67,7 +67,7 @@ if (SpeechRecognition) {
 }
 
 window.getChatHistory = function() {
-  const msgs = document.getElementById('ka-messages').children;
+  const msgs = document.getElementById('ka-messages')?.children || [];
   const history = [];
   const start = Math.max(0, msgs.length - 6);
   for (let i = start; i < msgs.length; i++) {
@@ -111,7 +111,8 @@ window.kaSendMessage = async function(text) {
   window.kaStartRec();
   window.kaAddMsg('user', text);
   window.kaSetStatus('Processando... ⏳');
-  document.getElementById('ka-play-btn').style.display = 'none';
+  const playBtn = document.getElementById('ka-play-btn');
+  if (playBtn) playBtn.style.display = 'none';
 
   const payload = {
     message: text,
