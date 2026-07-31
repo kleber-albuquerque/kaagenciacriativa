@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>KA Voice SaaS - Painel Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root { --bg: #0a0a0a; --card: #151515; --border: #252525; --accent: #FFD400; --text: #fff; --muted: #888; --error: #fca5a5; --success: #6ee7b7; }
   * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -57,7 +57,10 @@
 </div>
 
 <div id="dashboard" class="container" style="display:none;">
-  <h1>KA Voice SaaS <span>Admin v2.0</span></h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <h1>KA Voice SaaS <span>Admin v2.0</span></h1>
+    <button class="btn-secondary" style="margin-left:0;" onclick="openModal('modal-changepwd')">🔑 Trocar minha senha</button>
+  </div>
   <p class="subtitle">Gerencie assistentes, vozes, leads e configurações</p>
 
   <div class="tabs">
@@ -293,7 +296,8 @@ async function loadClientsList() {
       selHistory.innerHTML += '<option value="' + slug + '">' + name + '</option>';
       tbody.innerHTML += '<tr><td><code>' + slug + '</code></td><td>' + name + '</td><td>'
         + '<a href="#" onclick="selectAndGoToConfig(\'' + slug + '\'); return false;">Configurar →</a> | '
-        + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a>'
+        + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a> | '
+        + '<a href="#" onclick="generateClientPassword(\'' + slug + '\'); return false;" style="color:#f59e0b;">🔑 Senha</a>'
         + '</td></tr>';
     });
   } catch (e) { console.error('loadClientsList:', e); }
@@ -449,6 +453,130 @@ async function loadHistory() {
       + '<td style="color:var(--muted);font-size:12px;">' + (l.date||'-') + '</td></tr>'
     ).join('');
   } catch (e) { console.error('loadHistory:', e); }
+}
+</script>
+
+<!-- ===== GESTÃO DE SENHAS ===== -->
+<style>
+  .display { font-family:'Space Grotesk',sans-serif; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-card { background:#161616; border:1px solid #333; border-radius:16px; padding:28px; width:100%; max-width:440px; animation:modalIn .25s ease; box-shadow:0 24px 64px rgba(0,0,0,.5); }
+  @keyframes modalIn { from{opacity:0; transform:translateY(16px) scale(.97);} to{opacity:1; transform:none;} }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .modal-head h3 { font-size:18px; color:var(--accent); }
+  .modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; transition:color .2s; }
+  .modal-close:hover { color:var(--text); }
+  .pwd-field { position:relative; }
+  .pwd-field input { padding-right:48px; }
+  .pwd-eye { position:absolute; right:10px; top:11px; background:none; border:none; cursor:pointer; font-size:16px; }
+  .strength-track { height:5px; background:#2a2a2a; border-radius:3px; overflow:hidden; margin:2px 0 6px; }
+  .strength-bar { height:100%; width:0%; border-radius:3px; transition:width .3s, background .3s; }
+  .strength-label { font-size:12px; font-weight:600; margin-bottom:14px; min-height:16px; }
+  .genpwd-client { font-size:14px; color:var(--muted); margin-bottom:14px; }
+  .genpwd-client strong { color:var(--text); }
+  .genpwd-box { background:#0d0d0d; border:1.5px dashed var(--accent); border-radius:12px; padding:18px; text-align:center; margin-bottom:14px; }
+  .genpwd-box span { font-size:26px; font-weight:700; letter-spacing:2px; color:var(--accent); user-select:all; }
+  .genpwd-warning { background:#2a2008; border:1px solid #4a3a10; color:#fbbf24; font-size:13px; padding:12px 14px; border-radius:10px; margin-bottom:18px; line-height:1.5; }
+</style>
+
+<div id="modal-changepwd" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-changepwd')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">🔑 Trocar minha senha</h3>
+      <button class="modal-close" onclick="closeModal('modal-changepwd')">✕</button>
+    </div>
+    <label>Senha atual</label>
+    <input type="password" id="cur-pwd" placeholder="••••••••">
+    <label>Nova senha</label>
+    <div class="pwd-field">
+      <input type="password" id="new-pwd" placeholder="mínimo 8 caracteres" oninput="updateStrengthMeter()">
+      <button class="pwd-eye" type="button" onclick="togglePwdVisibility('new-pwd',this)">👁️</button>
+    </div>
+    <div class="strength-track"><div id="strength-bar" class="strength-bar"></div></div>
+    <div id="strength-label" class="strength-label"></div>
+    <label>Confirmar nova senha</label>
+    <input type="password" id="cf-pwd" placeholder="repita a nova senha">
+    <button class="btn-primary" onclick="changeAdminPassword()">Atualizar senha</button>
+    <div id="pwd-modal-status" class="status"></div>
+  </div>
+</div>
+
+<div id="modal-genpwd" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-genpwd')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">🔑 Nova senha gerada</h3>
+      <button class="modal-close" onclick="closeModal('modal-genpwd')">✕</button>
+    </div>
+    <p class="genpwd-client">Cliente: <strong id="gen-pwd-client"></strong></p>
+    <div class="genpwd-box"><span id="gen-pwd-value" class="display"></span></div>
+    <div class="genpwd-warning">⚠️ Esta senha é exibida <strong>uma única vez</strong>. Copie agora e entregue ao cliente. Ela já está ativa e a anterior foi revogada.</div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn-primary" id="btn-copy-pwd" style="width:auto;flex:1;" onclick="copyGeneratedPwd()">📋 Copiar senha</button>
+      <button class="btn-secondary" style="margin-left:0;" onclick="closeModal('modal-genpwd')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+function pwdStrength(pwd){
+  let s=0;
+  if(pwd.length>=8) s++;
+  if(pwd.length>=12) s++;
+  if(/[A-Z]/.test(pwd)&&/[a-z]/.test(pwd)) s++;
+  if(/\d/.test(pwd)) s++;
+  if(/[^A-Za-z0-9]/.test(pwd)) s++;
+  return s;
+}
+function updateStrengthMeter(){
+  const pwd=document.getElementById('new-pwd').value;
+  const bar=document.getElementById('strength-bar');
+  const lbl=document.getElementById('strength-label');
+  const s=pwdStrength(pwd);
+  const colors=['#ef4444','#ef4444','#f59e0b','#f59e0b','#10b981','#10b981'];
+  const labels=['Muito fraca','Fraca','Razoável','Boa','Forte','Excelente'];
+  bar.style.width=(s/5*100)+'%';
+  bar.style.background=colors[s];
+  lbl.textContent=pwd?labels[s]:'';
+  lbl.style.color=colors[s];
+}
+function togglePwdVisibility(inputId, btn){
+  const inp=document.getElementById(inputId);
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
+  else { inp.type='password'; btn.textContent='👁️'; }
+}
+async function changeAdminPassword(){
+  const cur=document.getElementById('cur-pwd').value;
+  const nw=document.getElementById('new-pwd').value;
+  const cf=document.getElementById('cf-pwd').value;
+  const st=document.getElementById('pwd-modal-status');
+  st.className='status'; st.style.display='none';
+  if(nw!==cf){ st.className='status error'; st.textContent='❌ As senhas novas não conferem.'; st.style.display='block'; return; }
+  try{
+    const d=await apiCall('/admin/change-password',{method:'POST',body:JSON.stringify({current_password:cur,new_password:nw})});
+    st.className='status success'; st.textContent='✅ '+d.message; st.style.display='block';
+    document.getElementById('cur-pwd').value=''; document.getElementById('new-pwd').value=''; document.getElementById('cf-pwd').value='';
+    updateStrengthMeter();
+  }catch(e){ st.className='status error'; st.textContent='❌ '+e.message; st.style.display='block'; }
+}
+async function generateClientPassword(slug){
+  if(!confirm('Gerar uma nova senha para "'+slug+'"?\n\nA senha atual deixará de funcionar imediatamente.')) return;
+  try{
+    const d=await apiCall('/admin/clients/'+slug+'/reset-password',{method:'POST'});
+    document.getElementById('gen-pwd-client').textContent=slug;
+    document.getElementById('gen-pwd-value').textContent=d.new_password;
+    openModal('modal-genpwd');
+  }catch(e){ alert('Erro: '+e.message); }
+}
+function copyGeneratedPwd(){
+  const pwd=document.getElementById('gen-pwd-value').textContent;
+  navigator.clipboard.writeText(pwd).then(()=>{
+    const btn=document.getElementById('btn-copy-pwd');
+    btn.textContent='✅ Copiado!';
+    setTimeout(()=>btn.textContent='📋 Copiar senha',2000);
+  }).catch(()=>prompt('Copie a senha:', pwd));
 }
 </script>
 </body>
