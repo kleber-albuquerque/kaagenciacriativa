@@ -146,19 +146,15 @@
       <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
     </div>
     <div class="card">
-      <h2>📲 Notificação WhatsApp</h2>
-      <div class="info-box">💡 Quando um lead deixar o telefone no widget, enviamos um alerta imediato para o WhatsApp abaixo.</div>
-      <div class="grid-2">
-        <div>
-          <label>WhatsApp do cliente (só números, com DDI)</label>
-          <input type="text" id="notify_whatsapp" placeholder="ex: 5511987654321">
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding-top:24px;">
-          <input type="checkbox" id="notify_enabled" style="width:20px;height:20px;margin:0;accent-color:var(--accent);cursor:pointer;">
-          <label style="margin:0;cursor:pointer;" onclick="document.getElementById('notify_enabled').click()">Notificações ativas</label>
-        </div>
+      <h2>📬 Notificação de Leads</h2>
+      <div class="info-box">💡 Quando um lead deixar o telefone no widget, enviamos um alerta imediato para o e-mail abaixo — com botão para responder no WhatsApp.</div>
+      <label>E-mail do cliente</label>
+      <input type="email" id="notify_email" placeholder="ex: cliente@email.com">
+      <div style="display:flex;align-items:center;gap:12px;margin:4px 0 16px;">
+        <input type="checkbox" id="notify_enabled" style="width:20px;height:20px;margin:0;accent-color:var(--accent);cursor:pointer;">
+        <label style="margin:0;cursor:pointer;" onclick="document.getElementById('notify_enabled').click()">Notificações ativas</label>
       </div>
-      <button class="btn-secondary" id="btn-test-notify" style="margin-left:0;" onclick="testNotification()">📤 Enviar notificação de teste</button>
+      <button class="btn-secondary" id="btn-test-notify" style="margin-left:0;" onclick="testNotification()">📧 Enviar e-mail de teste</button>
       <div id="status-notify" class="status"></div>
     </div>
     <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
@@ -372,7 +368,7 @@ async function loadConfig() {
     document.getElementById('greeting').value = cfg.greeting || '';
     document.getElementById('position').value = cfg.position || 'right';
     var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
-    document.getElementById('notify_whatsapp').value = cfg.notify_whatsapp || '';
+    document.getElementById('notify_email').value = cfg.notify_email || '';
     document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
   } catch (e) { console.error('loadConfig:', e); }
 }
@@ -392,7 +388,7 @@ async function saveConfig() {
         tooltip_text: document.getElementById('tooltip_text').value,
         greeting: document.getElementById('greeting').value,
         position: document.getElementById('position').value,
-        notify_whatsapp: document.getElementById('notify_whatsapp').value,
+        notify_email: document.getElementById('notify_email').value,
         notify_enabled: document.getElementById('notify_enabled').checked
       })
     });
