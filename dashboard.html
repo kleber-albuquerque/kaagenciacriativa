@@ -145,6 +145,22 @@
       <label>Sistema (Prompt)</label>
       <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
     </div>
+    <div class="card">
+      <h2>📲 Notificação WhatsApp</h2>
+      <div class="info-box">💡 Quando um lead deixar o telefone no widget, enviamos um alerta imediato para o WhatsApp abaixo.</div>
+      <div class="grid-2">
+        <div>
+          <label>WhatsApp do cliente (só números, com DDI)</label>
+          <input type="text" id="notify_whatsapp" placeholder="ex: 5511987654321">
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding-top:24px;">
+          <input type="checkbox" id="notify_enabled" style="width:20px;height:20px;margin:0;accent-color:var(--accent);cursor:pointer;">
+          <label style="margin:0;cursor:pointer;" onclick="document.getElementById('notify_enabled').click()">Notificações ativas</label>
+        </div>
+      </div>
+      <button class="btn-secondary" style="margin-left:0;" onclick="testNotification()">📤 Enviar notificação de teste</button>
+      <div id="status-notify" class="status"></div>
+    </div>
     <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
     <div id="status-config" class="status"></div>
   </div>
@@ -356,6 +372,8 @@ async function loadConfig() {
     document.getElementById('greeting').value = cfg.greeting || '';
     document.getElementById('position').value = cfg.position || 'right';
     var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
+    document.getElementById('notify_whatsapp').value = cfg.notify_whatsapp || '';
+    document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
   } catch (e) { console.error('loadConfig:', e); }
 }
 
@@ -373,7 +391,9 @@ async function saveConfig() {
         accent_color: document.getElementById('accent_color').value,
         tooltip_text: document.getElementById('tooltip_text').value,
         greeting: document.getElementById('greeting').value,
-        position: document.getElementById('position').value
+        position: document.getElementById('position').value,
+        notify_whatsapp: document.getElementById('notify_whatsapp').value,
+        notify_enabled: document.getElementById('notify_enabled').checked
       })
     });
     st.className = 'status success';
