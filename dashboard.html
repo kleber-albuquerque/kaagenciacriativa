@@ -158,7 +158,7 @@
           <label style="margin:0;cursor:pointer;" onclick="document.getElementById('notify_enabled').click()">Notificações ativas</label>
         </div>
       </div>
-      <button class="btn-secondary" style="margin-left:0;" onclick="testNotification()">📤 Enviar notificação de teste</button>
+      <button class="btn-secondary" id="btn-test-notify" style="margin-left:0;" onclick="testNotification()">📤 Enviar notificação de teste</button>
       <div id="status-notify" class="status"></div>
     </div>
     <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
@@ -613,5 +613,26 @@ function copyGeneratedPwd(){
   }).catch(()=>prompt('Copie a senha:', pwd));
 }
 </script>
+
+<script>
+async function testNotification(){
+  const cid = document.getElementById('config-client-id').value;
+  const st = document.getElementById('status-notify');
+  const btn = document.getElementById('btn-test-notify');
+  if(!cid){ if(st){ st.className='status error'; st.textContent='❌ Selecione um cliente primeiro.'; st.style.display='block'; } return; }
+  const orig = btn ? btn.textContent : '';
+  if(btn){ btn.textContent='⏳ Enviando...'; btn.disabled=true; }
+  if(st){ st.className='status'; st.style.display='none'; }
+  try{
+    const d = await apiCall('/admin/clients/'+cid+'/test-notification',{method:'POST'});
+    if(st){ st.className='status success'; st.textContent='✅ '+d.message; st.style.display='block'; }
+  }catch(e){
+    if(st){ st.className='status error'; st.textContent='❌ '+e.message; st.style.display='block'; }
+  }finally{
+    if(btn){ btn.textContent=orig; btn.disabled=false; }
+  }
+}
+</script>
+
 </body>
 </html>
