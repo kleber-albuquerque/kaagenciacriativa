@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KA. — Presença digital sem ruído</title>
-<meta name="description" content="Uma agência criativa especializada em identidade sensorial para marcas independentes. Comunicação + Design + Música + IA." />
+<title>KA. — Identidade Visual, Sonora e Conteúdo</title>
+<meta name="description" content="Assinatura criativa para marcas independentes. Design, branding sonoro, redação e edição de vídeo sob demanda. Conheça nosso portfólio e planos." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,12 +17,13 @@
   }
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h);-webkit-text-size-adjust:100%}
-  body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-weight:400;line-height:1.6;font-size:16px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;overflow-x:hidden}
+  html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
   ::selection{background:var(--accent);color:#000}
   a{color:inherit;text-decoration:none} img{max-width:100%;display:block}
   #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:2}
   section{position:relative;z-index:2;padding:clamp(84px,13vh,168px) 0}
   .center{text-align:center} .lead-block{max-width:680px;margin:0 auto}
@@ -32,8 +33,9 @@
   h4 {font-size:1rem;font-weight:600;color:var(--fg);}
   p{color:var(--muted)} .sub{margin-top:18px;color:var(--muted);font-size:.98rem}
   .divider{height:1px;background:var(--line-soft);border:0;margin:0}
-  header.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;transition:background .35s ease,backdrop-filter .35s ease,border-color .35s ease;border-bottom:1px solid transparent}
-  header.nav.scrolled{background:rgba(0,0,0,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
+
+  header.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;transition:background .35s ease,border-color .35s ease;border-bottom:1px solid transparent}
+  header.nav.scrolled{background:rgba(0,0,0,.55);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
   .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
   .logo{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.22em;font-size:.95rem;color:var(--fg)}
   .logo-img{height:clamp(30px,3.6vw,38px);width:auto;display:block;mix-blend-mode:screen}
@@ -42,7 +44,8 @@
   .nav-right{display:flex;align-items:center;gap:22px}
   .nav-cta{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--accent);padding:10px 18px;transition:.3s;color:var(--accent)} .nav-cta:hover{background:var(--accent);color:#000}
   .burger{display:none;background:none;border:0;cursor:pointer;flex-direction:column;gap:5px;padding:6px} .burger span{width:22px;height:1px;background:#fff;display:block;transition:.3s}
-  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-top:var(--nav-h)}
+
+  .hero{min-height:80vh;display:flex;align-items:center;padding-top:var(--nav-h)}
   .hero .lead-block{max-width:760px} .hero h1{margin-bottom:26px} .hero h1 .dim{color:var(--muted)}
   .hero .kicker{color:var(--fg);font-size:clamp(1.1rem,2.2vw,1.25rem);font-weight:400;letter-spacing:-.01em;margin-bottom:10px}
   .hero .kicker-2{color:var(--accent);font-size:.85rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:40px}
@@ -52,9 +55,7 @@
   .btn-ghost{background:transparent;color:var(--accent)} .btn-ghost:hover{background:var(--accent);color:#000}
   .btn .arr{transition:transform .3s} .btn:hover .arr{transform:translateX(4px)}
 
-  /* Serviços Detail */
   .service-detail{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:80px}
-  .service-detail.reverse .service-text{order:2}
   .service-text h3{margin-bottom:20px}
   .service-text p{margin-bottom:20px;line-height:1.8}
   .service-text strong{color:var(--fg)}
@@ -62,33 +63,35 @@
   .feature-list li{font-size:.9rem;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:12px}
   .feature-list li svg{width:16px;height:16px;color:var(--accent);flex-shrink:0}
 
-  .price-tag-box{margin-top:30px;padding:15px 20px;border:1px solid var(--accent);background:rgba(255,212,0,0.05);display:inline-block}
-  .price-tag-box strong{color:var(--accent);font-size:1.1rem;display:block}
-  .price-tag-box span{font-size:.75rem;color:var(--muted)}
-
-  .service-visual{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px}
-
-  .browser-mockup{background:#0a0a0a;border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,0.5);max-width:360px;width:100%}
-  .browser-bar{display:flex;align-items:center;gap:6px;padding:12px 15px;background:#111;border-bottom:1px solid var(--line)}
-  .browser-dot{width:10px;height:10px;border-radius:50%;background:#333}
-  .browser-content img{width:100%;height:auto;display:block}
-
-  .mic-card{background:var(--card);border:1px solid var(--line);padding:30px;text-align:center;border-radius:4px;position:relative;overflow:hidden;width:100%;max-width:360px}
-  .mic-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--accent)}
-  .mic-card p{font-size:.85rem;margin-bottom:20px}
-  .mic-card .small{font-size:.8rem;color:var(--muted-2);margin-top:20px;margin-bottom:0}
-
-  .mic-btn{width:60px;height:60px;background:var(--accent);color:#000;border:none;border-radius:50%;cursor:pointer;transition:.3s;display:flex;align-items:center;justify-content:center;margin:0 auto;box-shadow:0 0 0 0 rgba(255,212,0,0.7);animation:pulse 2s infinite}
-  .mic-btn:hover{transform:scale(1.05)}
-  .mic-btn svg{width:24px;height:24px}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,212,0,0.4)}70%{box-shadow:0 0 0 15px rgba(255,212,0,0)}100%{box-shadow:0 0 0 0 rgba(255,212,0,0)}}
-
-  .creative-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);width:100%;max-width:360px}
-  .creative-item{background:#000;padding:30px 20px;text-align:center;transition:.3s}
+  .creative-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);width:100%;max-width:450px}
+  .creative-item{background:#000;padding:35px 20px;text-align:center;transition:.3s}
   .creative-item:hover{background:rgba(255,212,0,0.03)}
-  .creative-item svg{width:28px;height:28px;color:var(--accent);margin-bottom:12px}
-  .creative-item h4{font-size:.85rem;margin-bottom:5px}
-  .creative-item p{font-size:.75rem;color:var(--muted-2);margin:0}
+  .creative-item svg{width:32px;height:32px;color:var(--accent);margin-bottom:15px}
+  .creative-item h4{font-size:.9rem;margin-bottom:5px}
+  .creative-item p{font-size:.8rem;color:var(--muted-2);margin:0}
+
+  .work{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);margin-top:60px;border:1px solid var(--line-soft);align-items:stretch}
+  .work-card{background:#000;display:flex;flex-direction:column;text-align:center} a.work-card{transition:background .35s ease} a.work-card:hover{background:rgba(255,255,255,.035)}
+  .work-media{position:relative;overflow:hidden;border-bottom:1px solid var(--line-soft);background:#0a0a0a;display:flex;align-items:center;justify-content:center}
+  .work-media.imgs{flex:0 0 auto;flex-direction:column;gap:1px;background:var(--line-soft)} .work-media.imgs img{width:100%;height:auto;display:block;background:#0a0a0a}
+  .work-foot{padding:24px 22px 28px;display:flex;flex-direction:column;align-items:center;gap:11px}
+  .work-foot .niche{font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted-2)}
+  .work-foot .name{font-size:1.04rem;font-weight:700;letter-spacing:-.01em;color:#fff}
+  .work-foot .go{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);display:inline-flex;gap:7px;align-items:center;margin-top:6px;transition:color .3s} a.work-card:hover .go{color:var(--accent)}
+  .work-foot .go .arr{transition:transform .3s} a.work-card:hover .go .arr{transform:translateX(4px)}
+  .reels{display:flex;align-items:center;gap:13px;margin-top:8px;flex-wrap:wrap;justify-content:center} .reels-label{font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted-2)} .reels a{font-size:.68rem;letter-spacing:.1em;color:var(--muted);border-bottom:1px solid transparent;transition:.25s;padding-bottom:1px} .reels a:hover{color:#fff;border-bottom-color:#fff}
+
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);margin-top:60px;border:1px solid var(--line-soft)}
+  .plan{background:#000;padding:clamp(34px,4vw,48px);text-align:center;display:flex;flex-direction:column}
+  .plan.featured{background:var(--accent);color:#000} .plan.featured p,.plan.featured .plan-price small,.plan.featured li{color:#000} .plan.featured li::before{color:#000} .plan.featured h3 {color:#000;}
+  .plan .tier{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:18px} .plan.featured .tier{color:#000}
+  .plan-price{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;margin-bottom:6px} .plan-price small{font-size:.7rem;font-weight:400;letter-spacing:.1em;color:var(--muted)}
+  .plan ul{list-style:none;margin:28px 0;display:flex;flex-direction:column;gap:12px;text-align:center} .plan li{font-size:.82rem;color:var(--muted)} .plan li::before{content:"✓  ";color:var(--muted-2)}
+  .plan .btn{margin-top:auto;justify-content:center} .plan.featured .btn{background:#000;color:var(--accent);border-color:#000} .plan.featured .btn:hover{background:transparent;color:#000} .plan .btn-ghost{border-color:var(--line)}
+
+  .special-project-box{margin-top:30px;border:1px dashed var(--line);padding:30px;text-align:center;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+  .special-project-box h4{color:var(--fg);margin-bottom:5px}
+  .special-project-box p{margin:0;font-size:.85rem}
 
   form{max-width:560px;margin:48px auto 0;display:flex;flex-direction:column;gap:26px} .field{text-align:left} .field label{display:block;font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
   .field input,.field select,.field textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:#fff;font:inherit;font-size:.95rem;padding:10px 0;outline:none;transition:border-color .3s}
@@ -105,13 +108,11 @@
   .mobile-menu{position:fixed;inset:0;z-index:49;background:rgba(0,0,0,.96);backdrop-filter:blur(8px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;opacity:0;pointer-events:none;transition:opacity .35s} .mobile-menu.open{opacity:1;pointer-events:auto} .mobile-menu a{font-size:.8rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)} .mobile-menu a:hover{color:#fff}
 
   @media(max-width:900px){
-    .nav-links,.nav-cta,.lang{display:none} .burger{display:flex}
+    .nav-links,.nav-cta{display:none} .burger{display:flex}
     .service-detail{grid-template-columns:1fr;gap:50px}
-    .service-detail.reverse .service-text{order:0}
-    .service-visual{max-width:450px;margin:0 auto}
+    .work{grid-template-columns:repeat(2,1fr)} .plans{grid-template-columns:1fr}
   }
-  @media(max-width:540px){.wrap{padding:0 20px} .foot-inner{flex-direction:column;text-align:center} .creative-grid{grid-template-columns:1fr}}
-  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none} html{scroll-behavior:auto}}
+  @media(max-width:540px){.wrap{padding:0 20px} .work{grid-template-columns:1fr} .foot-inner{flex-direction:column;text-align:center} .creative-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -127,9 +128,9 @@
       <span class="logo-fallback" aria-hidden="true">KA<span class="dot">.</span></span>
     </a>
     <nav class="nav-links">
-      <a href="#servicos">Serviços</a>
-      <a href="servicos-criativos.html#portfolio">Portfólio</a>
-      <a href="servicos-criativos.html#planos">Planos</a>
+      <a href="index.html#servicos">Serviços</a>
+      <a href="#portfolio">Portfólio</a>
+      <a href="#planos">Planos</a>
       <a href="#contato">Contato</a>
     </nav>
     <div class="nav-right">
@@ -140,9 +141,9 @@
 </header>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#servicos">Serviços</a>
-  <a href="servicos-criativos.html#portfolio">Portfólio</a>
-  <a href="servicos-criativos.html#planos">Planos</a>
+  <a href="index.html#servicos">Serviços</a>
+  <a href="#portfolio">Portfólio</a>
+  <a href="#planos">Planos</a>
   <a href="#contato">Contato</a>
 </div>
 
@@ -150,13 +151,13 @@
 <section class="hero" id="top">
   <div class="wrap center">
     <div class="lead-block reveal">
-      <span class="eyebrow">Sua marca com voz própria</span>
-      <h1>Presença digital.<br><span class="dim">Sem ruído.</span></h1>
-      <p class="kicker">Uma agência criativa especializada em identidade sensorial para marcas independentes.</p>
-      <p class="kicker-2">Comunicação + Design + Música + IA</p>
+      <span class="eyebrow">Assinatura Criativa</span>
+      <h1>Sua marca com<br><span class="dim">atenção total.</span></h1>
+      <p class="kicker">Design, branding sonoro, redação e vídeo. Tudo saindo da mesma mente criativa.</p>
+      <p class="kicker-2">Sem burocracia de agência. Entrega em 48h.</p>
       <div class="cta-row">
-        <a href="#servicos" class="btn btn-primary"><span>Conhecer Serviços</span> <span class="arr">→</span></a>
-        <a href="#contato" class="btn btn-ghost">Solicitar Diagnóstico</a>
+        <a href="#planos" class="btn btn-primary"><span>Ver Planos</span> <span class="arr">→</span></a>
+        <a href="#portfolio" class="btn btn-ghost">Ver Portfólio</a>
       </div>
     </div>
   </div>
@@ -164,63 +165,13 @@
 
 <hr class="divider" />
 
-<!-- NOSSOS SERVIÇOS -->
+<!-- SERVIÇO DETALHADO -->
 <section id="servicos">
   <div class="wrap">
-    <div class="lead-block center reveal" style="margin-bottom: 20px;">
-      <span class="eyebrow">Nossos Serviços</span>
-      <h2>Tudo para a sua marca falar com o mundo.</h2>
-      <p class="sub">A KA é uma agência criativa especializada em identidades visuais, sites conversores e branding sonoro para pequenas e médias empresas.</p>
-    </div>
-
-    <!-- SERVIÇO 1: SITES COM WIDGET DE VOZ -->
     <div class="service-detail reveal">
       <div class="service-text">
-        <h3>Sites com Widget de Voz (KA Vox)</h3>
-        <p>Ideal para negócios que recebem clientes pelo site mas não têm equipe para responder na hora: <strong>clínicas, estúdios, salões, restaurantes, imobiliárias, escritórios, produtores culturais</strong> — qualquer negócio onde um contato perdido é uma venda perdida.</p>
-        <p>O <strong>KA Vox</strong> é uma experiência de marca conversacional que fala no tom de voz da sua marca, capturando leads ou informando o seu cliente.</p>
-        <ul class="feature-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Design premium direcionado para o seu nicho</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Conteúdo em Português e Inglês</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> SEO técnico para Google</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Hospedagem e manutenção inclusas</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Widget de Voz IA treinado com seus dados</li>
-        </ul>
-
-        <div class="price-tag-box">
-          <strong>Oferta de Lançamento:</strong>
-          <span>Site + IA Inclusa: R$ 1.700</span><br>
-          <span>Só o Widget no seu site: R$ 990</span>
-        </div>
-
-        <a href="voz-ia.html" class="btn btn-ghost" style="margin-top: 25px;"><span>Saiba Mais</span> <span class="arr">→</span></a>
-      </div>
-      <div class="service-visual">
-        <div class="browser-mockup">
-          <div class="browser-bar">
-            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
-          </div>
-          <div class="browser-content">
-            <img src="imagens/estudio-parede-meia.jpg" alt="Demonstração do Site com Voz IA no Estúdio Parede-Meia" onerror="this.src='https://z-cdn-media.chatglm.cn/files/1e58947a-62f5-4ecd-a369-250c754410d1.jpeg?auth_key=1885720885-573900ad9e2b48f3ab10ce593b9102c3-0-70a38bdfd42e1a34f03da50ba7ee33ab'">
-          </div>
-        </div>
-        <div class="mic-card">
-          <p>Clique no botão de microfone e experimente o Assistente KA Vox.</p>
-          <button class="mic-btn" id="micBtn" aria-label="Falar com o Assistente KA Vox">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-          </button>
-          <p class="small">Pode tirar suas dúvidas com ele sobre as possibilidades de aplicação para o seu trabalho.</p>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider" style="margin: 100px 0;" />
-
-    <!-- SERVIÇO 2: IDENTIDADE VISUAL E SONORA -->
-    <div class="service-detail reverse reveal">
-      <div class="service-text">
-        <h3>Identidade Visual e Sonora</h3>
-        <p>Com atenção total e zero burocracia. Toda marca precisa de uma voz e de uma cara. Cuidamos de toda a sua comunicação visual e sonora com a agilidade de uma assinatura mensal.</p>
+        <h3>Tudo para a sua marca falar com o mundo.</h3>
+        <p>Toda marca precisa de uma voz e de uma cara. Cuidamos de toda a sua comunicação visual e sonora com a agilidade de uma assinatura mensal.</p>
         <p>Um pedido por vez na fila, entregue em 48h. Sem contratos longos, com a precisão de quem tem 30 anos de ofício.</p>
         <ul class="feature-list">
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Design de posts, logotipos e materiais gráficos</li>
@@ -229,10 +180,8 @@
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Edição de vídeo para Reels e TikTok</li>
           <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Direção criativa única em todos os pontos de contato</li>
         </ul>
-
-        <a href="servicos-criativos.html" class="btn btn-ghost" style="margin-top: 25px;"><span>Ver Portfólio e Planos</span> <span class="arr">→</span></a>
       </div>
-      <div class="service-visual">
+      <div class="service-visual" style="display:flex;justify-content:center">
         <div class="creative-grid">
           <div class="creative-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="10.5" r="2.5"></circle><circle cx="8.5" cy="7.5" r="2.5"></circle><circle cx="6.5" cy="12.5" r="2.5"></circle><path d="M12 22a10 10 0 1 1 0-20"></path></svg>
@@ -257,7 +206,132 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
 
+<hr class="divider" />
+
+<!-- PORTFÓLIO -->
+<section id="portfolio">
+  <div class="wrap center">
+    <div class="lead-block reveal">
+      <span class="eyebrow">Portfólio</span>
+      <h2>Trabalhos selecionados</h2>
+      <p class="sub">Conheça alguns projetos. Clique para visitar.</p>
+    </div>
+    <div class="work reveal">
+      <div class="work-card">
+        <div class="work-media imgs">
+          <img src="imagens/vivi-correia-1.jpg" alt="Post promocional Vivi Correa Joias — 10% OFF em todo o site" loading="lazy" onerror="this.style.opacity=0" />
+          <img src="imagens/vivi-correia-2.jpg" alt="Post Destaques da Semana — Vivi Correa Joias" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot">
+          <span class="niche">Joalheria · Conteúdo &amp; Vídeo</span>
+          <span class="name">Vivi Correa Joias</span>
+          <div class="reels">
+            <span class="reels-label">Reels</span>
+            <a href="https://youtube.com/shorts/frelJ6Qc_T8" target="_blank" rel="noopener">01</a>
+            <a href="https://youtube.com/shorts/lY3xx5e8Nus" target="_blank" rel="noopener">02</a>
+            <a href="https://youtube.com/shorts/H3WkbeqJlro" target="_blank" rel="noopener">03</a>
+            <a href="https://youtube.com/shorts/O53R2gNbEA0" target="_blank" rel="noopener">04</a>
+            <a href="https://youtube.com/shorts/v3cWC2pAgB0" target="_blank" rel="noopener">05</a>
+          </div>
+        </div>
+      </div>
+      <a class="work-card" href="https://www.kleberalbuquerque.com.br" target="_blank" rel="noopener">
+        <div class="work-media imgs">
+          <img src="imagens/flavvio_alves_1.jpg" alt="Mockup site Kléber Albuquerque - Notebook" loading="lazy" onerror="this.style.opacity=0" />
+          <img src="imagens/flavvio_alves_2.jpg" alt="Mockup site Kléber Albuquerque - Detalhe" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot"><span class="niche">Artista / Música</span><span class="name">Kléber Albuquerque</span><span class="go"><span>Ver projeto</span> <span class="arr">→</span></span></div>
+      </a>
+      <a class="work-card" href="https://clinicaesteticamockup.netlify.app/" target="_blank" rel="noopener">
+        <div class="work-media imgs">
+          <img src="imagens/clinica_estetica_nobili.jpg" alt="Mockup site Clínica Estética" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot"><span class="niche">Saúde / Estética</span><span class="name">Clínica Estética</span><span class="go"><span>Ver projeto</span> <span class="arr">→</span></span></div>
+      </a>
+      <a class="work-card" href="https://verticeadvogados.netlify.app/" target="_blank" rel="noopener">
+        <div class="work-media imgs">
+          <img src="imagens/vertice_advogados_1.jpg" alt="Mockup site Vértice Advogados" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot"><span class="niche">Jurídico</span><span class="name">Vértice Advogados</span><span class="go"><span>Ver projeto</span> <span class="arr">→</span></span></div>
+      </a>
+      <a class="work-card" href="https://k-kal-engenharia.netlify.app/" target="_blank" rel="noopener">
+        <div class="work-media imgs">
+          <img src="imagens/kkal_engenharia_mockup.jpg" alt="Mockup site K-Kal Engenharia" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot"><span class="niche">Engenharia</span><span class="name">K-Kal Engenharia</span><span class="go"><span>Ver projeto</span> <span class="arr">→</span></span></div>
+      </a>
+      <a class="work-card" href="https://jenipapobistro.netlify.app/" target="_blank" rel="noopener">
+        <div class="work-media imgs">
+          <img src="imagens/jenipapo_bistro_mockup.jpg" alt="Mockup site Jenipapo Bistrô" loading="lazy" onerror="this.style.opacity=0" />
+        </div>
+        <div class="work-foot"><span class="niche">Gastronomia</span><span class="name">Jenipapo Bistrô</span><span class="go"><span>Ver projeto</span> <span class="arr">→</span></span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PLANOS -->
+<section id="planos">
+  <div class="wrap center">
+    <div class="lead-block reveal">
+      <span class="eyebrow">Planos</span>
+      <h2>Assinatura Criativa</h2>
+      <p class="sub">Um valor fixo por mês, sem surpresas, sem fidelidade.</p>
+    </div>
+    <div class="plans reveal">
+      <div class="plan">
+        <div class="tier">Essencial</div>
+        <div class="plan-price"><span>R$ 597</span><small>/mês</small></div>
+        <ul>
+          <li>6 artes por mês</li>
+          <li>Design + copy das legendas</li>
+          <li>1 pedido por vez na fila</li>
+          <li>Entrega em 48h úteis</li>
+          <li>1 rodada de revisão</li>
+          <li>Sem fidelidade</li>
+        </ul>
+        <a href="#contato" class="btn btn-ghost">Começar</a>
+      </div>
+      <div class="plan featured">
+        <div class="tier">Profissional</div>
+        <div class="plan-price"><span>R$ 997</span><small>/mês</small></div>
+        <ul>
+          <li>14 peças por mês</li>
+          <li>Design + redação publicitária</li>
+          <li>Edição de 2 vídeos curtos</li>
+          <li>Logos e impressos</li>
+          <li>2 rodadas de revisão</li>
+          <li>Atenção prioritária</li>
+        </ul>
+        <a href="#contato" class="btn btn-primary">Mais escolhido</a>
+      </div>
+      <div class="plan">
+        <div class="tier">Premium</div>
+        <div class="plan-price"><span>R$ 1.897</span><small>/mês</small></div>
+        <ul>
+          <li>Pedidos na fila</li>
+          <li>Design, redação e vídeo</li>
+          <li>1 Jingle/Trilha exclusiva/mês</li>
+          <li>Revisões abertas</li>
+          <li>Conversa mensal de alinhamento</li>
+          <li>Criação direta comigo</li>
+        </ul>
+        <a href="#contato" class="btn btn-ghost">Começar</a>
+      </div>
+    </div>
+
+    <div class="special-project-box reveal">
+      <div>
+        <h4>Projetos Especiais de Identidade Sonora e Visual</h4>
+        <p>Para marcas que precisam de um projeto fechado de branding, sem assinatura mensal.</p>
+      </div>
+      <a href="#contato" class="btn btn-ghost">Preço sob consulta</a>
+    </div>
   </div>
 </section>
 
@@ -269,7 +343,7 @@
     <div class="lead-block reveal">
       <span class="eyebrow">Contato</span>
       <h2>Vamos dar voz à sua marca?</h2>
-      <p class="sub">Receba um diagnóstico gratuito ou uma demonstração do assistente de voz.</p>
+      <p class="sub">Receba um diagnóstico gratuito para a sua marca.</p>
     </div>
     <form id="contactForm" class="reveal" action="https://formspree.io/f/mkodrjbo" method="POST">
       <div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" required /></div>
@@ -278,10 +352,10 @@
       <div class="field">
         <label for="nec">Necessidade</label>
         <select id="nec" name="necessidade">
-          <option>Site com Voz IA</option>
-          <option>Assinatura criativa</option>
-          <option>Combo (site + assinatura)</option>
-          <option>Outro</option>
+          <option>Assinatura Essencial</option>
+          <option>Assinatura Profissional</option>
+          <option>Assinatura Premium</option>
+          <option>Projeto Especial (Sob Consulta)</option>
         </select>
       </div>
       <div class="field"><label for="msg">Mensagem</label><textarea id="msg" name="mensagem"></textarea></div>
@@ -313,7 +387,6 @@
 
 <script>
 (function(){
-  "use strict";
   var nav = document.getElementById('nav'); var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 24); }; window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
   var burger = document.getElementById('burger'); var mmenu = document.getElementById('mobileMenu'); burger.addEventListener('click', function(){ mmenu.classList.toggle('open'); }); mmenu.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', function(){ mmenu.classList.remove('open'); }); });
 
@@ -330,7 +403,6 @@
   document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
 
   /* Fundo interativo */
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var canvas = document.getElementById('bg'); var ctx = canvas.getContext('2d');
   var w=0, h=0, dpr=Math.min(window.devicePixelRatio||1, 2); var orbs=[], ripples=[], particles=[]; var pointer={x:-9999,y:-9999,active:false}; var glow={x:0,y:0}; var ORB_COUNT = window.innerWidth < 700 ? 4 : 6;
   function rand(a,b){ return a + Math.random()*(b-a); }
@@ -347,19 +419,10 @@
     for(var i=0;i<orbs.length;i++){ var o = orbs[i]; var tx = o.bx + Math.cos(t*o.sp + o.ph)*o.amp; var ty = o.by + Math.sin(t*o.sp*1.3 + o.ph)*o.amp; if(pointer.active){ var dx = tx - pointer.x, dy = ty - pointer.y; var d = Math.sqrt(dx*dx+dy*dy); if(d < 240 && d > 0.01){ var f = (1 - d/240)*70; tx += (dx/d)*f; ty += (dy/d)*f; } } o.x += (tx - o.x)*0.05; o.y += (ty - o.y)*0.05; var grad = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r); grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')'); grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)'); ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fill(); }
     for(var r=ripples.length-1;r>=0;r--){ var rp = ripples[r]; rp.r += (rp.max - rp.r)*0.06 + 1.2; rp.a *= 0.94; ctx.strokeStyle = 'rgba(255,255,255,'+rp.a.toFixed(3)+')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2); ctx.stroke(); if(rp.a < 0.01 || rp.r > rp.max) ripples.splice(r,1); }
     for(var p=particles.length-1;p>=0;p--){ var pa = particles[p]; pa.x += pa.vx; pa.y += pa.vy; pa.vx *= 0.96; pa.vy *= 0.96; pa.life -= 0.018; if(pa.life <= 0){ particles.splice(p,1); continue; } ctx.fillStyle = 'rgba(255,255,255,'+(pa.life*0.8).toFixed(3)+')'; ctx.beginPath(); ctx.arc(pa.x,pa.y,pa.size,0,Math.PI*2); ctx.fill(); }
-    if(!reduce) requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
-  if(reduce){ ctx.fillStyle = '#000'; ctx.fillRect(0,0,w,h); ctx.globalCompositeOperation = 'lighter'; for(var i=0;i<orbs.length;i++){ var o = orbs[i]; o.x=o.bx; o.y=o.by; var grad = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r); grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')'); grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)'); ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fill(); } } else { requestAnimationFrame(frame); }
+  requestAnimationFrame(frame);
 })();
 </script>
-</body>
-</html>
-})();
-</script>
-
-<script src="widget.js"></script>
-
-</body>
-</html>
 </body>
 </html>
