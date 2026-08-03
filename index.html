@@ -352,6 +352,25 @@
   if(reduce){ ctx.fillStyle = '#000'; ctx.fillRect(0,0,w,h); ctx.globalCompositeOperation = 'lighter'; for(var i=0;i<orbs.length;i++){ var o = orbs[i]; o.x=o.bx; o.y=o.by; var grad = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r); grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')'); grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)'); ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(o.x,o.y,o.r,0,Math.PI*2); ctx.fill(); } } else { requestAnimationFrame(frame); }
 })();
 </script>
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
+</script>
+
 </body>
 </html>
 })();
@@ -359,7 +378,45 @@
 
 <script src="widget.js"></script>
 
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
+</script>
+
 </body>
 </html>
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
+</script>
+
 </body>
 </html>

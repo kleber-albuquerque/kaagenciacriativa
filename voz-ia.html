@@ -319,6 +319,25 @@ function testarKAVox() {
 }
 </script>
 
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
+</script>
+
 </body>
 </html>
 
@@ -343,6 +362,25 @@ function testarKAVox() {
     alert("O assistente está carregando. Tente em instantes.");
   }
 }
+</script>
+
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
 </script>
 
 </body>
