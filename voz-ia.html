@@ -293,9 +293,57 @@ document.getElementById('contactForm').addEventListener('submit', function(e){
 })();
 </script>
 
-<script src="widget.js"></script>
+<script src="widget.js" data-client-id="ka-vox"></script>
+
+
+<script>
+function testarKAVox() {
+  // Abre o tooltip/chat se existir
+  var tooltip = document.getElementById('ka-tooltip');
+  var chat = document.getElementById('ka-chat');
+  if (tooltip && chat) {
+    tooltip.style.display = 'none';
+    chat.style.display = 'flex';
+    // Simula o envio de uma mensagem de demonstração após 600ms (tempo do widget carregar)
+    setTimeout(function() {
+      var input = document.getElementById('ka-text-input');
+      var btn = document.getElementById('ka-send-btn');
+      if (input && btn) {
+        input.value = "Quero ver uma demonstração de como o KA Vox funciona";
+        btn.click();
+      }
+    }, 600);
+  } else {
+    alert("O assistente está carregando. Tente em instantes.");
+  }
+}
+</script>
 
 </body>
 </html>
+
+<script>
+function testarKAVox() {
+  // Abre o tooltip/chat se existir
+  var tooltip = document.getElementById('ka-tooltip');
+  var chat = document.getElementById('ka-chat');
+  if (tooltip && chat) {
+    tooltip.style.display = 'none';
+    chat.style.display = 'flex';
+    // Simula o envio de uma mensagem de demonstração após 600ms (tempo do widget carregar)
+    setTimeout(function() {
+      var input = document.getElementById('ka-text-input');
+      var btn = document.getElementById('ka-send-btn');
+      if (input && btn) {
+        input.value = "Quero ver uma demonstração de como o KA Vox funciona";
+        btn.click();
+      }
+    }, 600);
+  } else {
+    alert("O assistente está carregando. Tente em instantes.");
+  }
+}
+</script>
+
 </body>
 </html>
