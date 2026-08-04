@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Agência Criativa de Bolso | KA Agência</title>
-<meta name="description" content="Sua agência publicitária completa no celular. Consultoria de marca, posts, vídeos e trilhas sonoras para pequenos negócios. Entrega em 48h." />
+<title>KA. — Modelagem de Voz e Direção Criativa</title>
+<meta name="description" content="Não entregamos peças soltas. Modelamos a voz da sua marca e direcionamos suas campanhas com 30 anos de experiência em música e publicidade." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#000000; --fg:#ffffff; --muted:#8c8c8c; --muted-2:#5e5e5e;
@@ -17,239 +17,325 @@
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
-  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
   ::selection{background:var(--accent);color:#000}
-  a{color:inherit;text-decoration:none}
+  a{color:inherit;text-decoration:none} img{max-width:100%;display:block}
+  #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:2}
-  section{position:relative;z-index:2;padding:clamp(70px,12vh,140px) 0}
-  .center{text-align:center}
+  section{position:relative;z-index:2;padding:clamp(84px,13vh,168px) 0}
+  .center{text-align:center} .lead-block{max-width:680px;margin:0 auto}
+  .eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:22px;display:inline-block}
+  h1,h2,h3{font-weight:700;letter-spacing:-.02em;line-height:1.08; color:var(--accent);}
+  h1{font-size:clamp(2rem,5.4vw,3.5rem)} h2{font-size:clamp(1.35rem,3.2vw,2.05rem)} h3{font-size:1.2rem;font-weight:700;letter-spacing:-.01em}
+  h4 {font-size:1rem;font-weight:600;color:var(--fg);}
+  p{color:var(--muted)} .sub{margin-top:18px;color:var(--muted);font-size:.98rem}
+  .divider{height:1px;background:var(--line-soft);border:0;margin:0}
 
   header.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
-  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between;gap:24px}
   .logo{font-weight:700;letter-spacing:.22em;font-size:.95rem;color:var(--fg);text-decoration:none}
   .logo span{color:var(--accent)}
+  .nav-links{display:flex;gap:30px}
+  .nav-links a{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .25s}
+  .nav-links a:hover{color:var(--fg)}
   .nav-cta{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--accent);padding:10px 18px;color:var(--accent);transition:.3s}
   .nav-cta:hover{background:var(--accent);color:#000}
 
-  h1,h2,h3{font-weight:800;letter-spacing:-.03em;line-height:1.1;color:var(--accent)}
-  h1{font-size:clamp(2.2rem,5.5vw,3.8rem)}
-  h2{font-size:clamp(1.6rem,3.5vw,2.4rem);margin-bottom:20px}
-  h3{font-size:1.2rem;color:var(--fg);margin-bottom:10px}
-  p{color:var(--muted);font-size:1.05rem}
-  .sub{margin-top:15px;color:var(--muted);font-size:1.1rem}
+  .hero{min-height:80vh;display:flex;align-items:center;padding-top:var(--nav-h)}
+  .hero h1{margin-bottom:26px} .hero h1 .dim{color:var(--muted)}
+  .hero .kicker{color:var(--fg);font-size:clamp(1.1rem,2.2vw,1.25rem);font-weight:400;letter-spacing:-.01em;margin-bottom:10px}
+  .hero .kicker-2{color:var(--accent);font-size:.85rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:40px}
+  .cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;padding:15px 28px;cursor:pointer;transition:.3s;border:1px solid var(--accent);font-family:var(--sans)}
+  .btn-primary{background:var(--accent);color:#000} .btn-primary:hover{background:transparent;color:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--accent)} .btn-ghost:hover{background:var(--accent);color:#000}
+  .btn .arr{transition:transform .3s} .btn:hover .arr{transform:translateX(4px)}
 
-  .btn{display:inline-flex;align-items:center;gap:9px;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;padding:16px 32px;cursor:pointer;transition:.3s;border:1px solid var(--accent);font-family:var(--sans);font-weight:700;text-decoration:none}
-  .btn-primary{background:var(--accent);color:#000}
-  .btn-primary:hover{background:transparent;color:var(--accent)}
-  .btn-ghost{background:transparent;color:var(--accent)}
-  .btn-ghost:hover{background:var(--accent);color:#000}
+  .service-detail{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;margin-top:80px}
+  .service-text h3{margin-bottom:20px}
+  .service-text p{margin-bottom:20px;line-height:1.8}
+  .service-text strong{color:var(--fg)}
+  .feature-list{list-style:none;margin-top:30px;border-top:1px solid var(--line-soft);padding-top:30px}
+  .feature-list li{font-size:.9rem;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:12px}
+  .feature-list li svg{width:16px;height:16px;color:var(--accent);flex-shrink:0}
 
-  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding-top:var(--nav-h)}
-  .hero h1{margin-bottom:24px}
-  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+  .creative-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);width:100%;max-width:450px}
+  .creative-item{background:#000;padding:35px 20px;text-align:center;transition:.3s}
+  .creative-item:hover{background:rgba(255,212,0,0.03)}
+  .creative-item svg{width:32px;height:32px;color:var(--accent);margin-bottom:15px}
+  .creative-item h4{font-size:.9rem;margin-bottom:5px}
+  .creative-item p{font-size:.8rem;color:var(--muted-2);margin:0}
 
-  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;margin-top:60px}
-  .feature{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:32px;transition:.3s}
-  .feature:hover{border-color:var(--accent);transform:translateY(-4px)}
-  .feature-icon{width:48px;height:48px;background:rgba(255,212,0,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:var(--accent);font-size:24px}
+  .portfolio-notice{margin-top:40px;padding:20px;border:1px dashed var(--line);text-align:center;border-radius:4px}
+  .portfolio-notice p{font-size:.9rem;color:var(--muted-2);margin:0}
 
-  .pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;margin-top:60px}
-  .price-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:40px 32px;position:relative;transition:.3s}
-  .price-card:hover{border-color:var(--accent);transform:translateY(-8px)}
-  .price-card.featured{border-color:var(--accent);background:linear-gradient(135deg,rgba(255,212,0,0.05),rgba(255,212,0,0.02))}
-  .price-card.featured::before{content:"MAIS ESCOLHIDO";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;padding:6px 16px;border-radius:20px;font-size:.7rem;font-weight:700;letter-spacing:.1em}
-  .price-title{font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:8px}
-  .price-value{font-size:2.5rem;font-weight:800;color:var(--accent);margin:16px 0}
-  .price-value span{font-size:1rem;color:var(--muted);font-weight:400}
-  .price-list{list-style:none;margin:24px 0}
-  .price-list li{padding:10px 0;border-bottom:1px solid var(--line-soft);color:var(--muted);font-size:.95rem;display:flex;align-items:start;gap:10px}
-  .price-list li::before{content:"✓";color:var(--accent);font-weight:700;flex-shrink:0}
+  .demo-container{border:1px solid var(--accent);background:rgba(255,212,0,0.03);padding:40px;border-radius:8px;margin-top:50px}
 
-  .consulting-box{background:linear-gradient(135deg,rgba(255,212,0,0.1),rgba(255,212,0,0.05));border:1px solid rgba(255,212,0,0.3);border-radius:16px;padding:48px;margin:60px 0;text-align:center}
-  .consulting-box h3{color:var(--accent);font-size:1.8rem;margin-bottom:16px}
+  .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);margin-top:60px;border:1px solid var(--line-soft)}
+  .plan{background:#000;padding:clamp(34px,4vw,48px);text-align:center;display:flex;flex-direction:column}
+  .plan.featured{background:var(--accent);color:#000} .plan.featured p,.plan.featured .plan-price small,.plan.featured li{color:#000} .plan.featured li::before{color:#000} .plan.featured h3 {color:#000;}
+  .plan .tier{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin-bottom:18px} .plan.featured .tier{color:#000}
+  .plan-price{font-size:1.7rem;font-weight:700;letter-spacing:-.02em;margin-bottom:6px} .plan-price small{font-size:.7rem;font-weight:400;letter-spacing:.1em;color:var(--muted)}
+  .plan ul{list-style:none;margin:28px 0;display:flex;flex-direction:column;gap:12px;text-align:center} .plan li{font-size:.82rem;color:var(--muted)} .plan li::before{content:"✓  ";color:var(--muted-2)}
+  .plan .btn{margin-top:auto;justify-content:center} .plan.featured .btn{background:#000;color:var(--accent);border-color:#000} .plan.featured .btn:hover{background:transparent;color:#000} .plan .btn-ghost{border-color:var(--line)}
 
-  footer{border-top:1px solid var(--line);padding:40px 0;text-align:center;color:var(--muted-2);font-size:.85rem}
+  .special-project-box{margin-top:30px;border:1px dashed var(--line);padding:30px;text-align:center;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+  .special-project-box h4{color:var(--fg);margin-bottom:5px}
+  .special-project-box p{margin:0;font-size:.85rem}
+
+  form{max-width:560px;margin:48px auto 0;display:flex;flex-direction:column;gap:26px} .field{text-align:left} .field label{display:block;font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .field input,.field select,.field textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:#fff;font:inherit;font-size:.95rem;padding:10px 0;outline:none;transition:border-color .3s}
+  .field select{appearance:none;cursor:pointer} .field select option{background:#000;color:#fff} .field textarea{resize:vertical;min-height:90px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--accent)} form .btn{align-self:center;margin-top:8px}
+
+  footer{border-top:1px solid var(--line-soft);padding:40px 0;text-align:center}
+  .foot-copy{font-size:.66rem;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase}
+
+  @media(max-width:900px){.nav-links{display:none} .service-detail{grid-template-columns:1fr;gap:50px} .plans{grid-template-columns:1fr}}
+  @media(max-width:540px){.wrap{padding:0 20px} .creative-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
+<canvas id="bg"></canvas>
+<div class="grain"></div>
+
 <header class="nav">
   <div class="nav-inner">
     <a href="index.html" class="logo">KA<span>.</span></a>
-    <a href="#planos" class="nav-cta">Ver Planos</a>
+    <nav class="nav-links">
+      <a href="index.html#servicos">Sistemas</a>
+      <a href="voz-ia.html">Voz IA</a>
+    </nav>
+    <a href="#contato" class="nav-cta">Proposta</a>
   </div>
 </header>
 
-<section class="hero">
-  <div class="wrap">
-    <h1>Agência Criativa de Bolso</h1>
-    <p class="sub">Sua agência publicitária completa no celular.<br>Consultoria de marca, posts, vídeos e trilhas sonoras para pequenos negócios.</p>
-    <div class="hero-btns">
-      <a href="#planos" class="btn btn-primary">Ver Planos →</a>
-      <a href="#contato" class="btn btn-ghost">Falar com Consultor</a>
-    </div>
-  </div>
-</section>
-
-<section id="como-funciona">
+<!-- HERO -->
+<section class="hero" id="top">
   <div class="wrap center">
-    <h2>Como funciona</h2>
-    <p class="sub">Uma agência completa que cabe no seu bolso. Sem burocracia, sem fidelidade.</p>
-    
-    <div class="feature-grid">
-      <div class="feature">
-        <div class="feature-icon">📱</div>
-        <h3>100% pelo celular</h3>
-        <p>Solicite, aprove e receba tudo pelo WhatsApp. Sem reuniões presenciais, sem e-mails infinitos.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🎯</div>
-        <h3>Consultoria de marca</h3>
-        <p>Ajudamos você a definir o tom de voz da sua marca. Posts, vídeos e trilhas que falam a língua do seu cliente.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">⚡</div>
-        <h3>Entrega em 48h</h3>
-        <p>Um pedido por vez na fila. Sem atrasos, sem desculpas. Qualidade com agilidade.</p>
-      </div>
-      <div class="feature">
-        <div class="feature-icon">🎨</div>
-        <h3>Tudo em um só lugar</h3>
-        <p>Design, redação, vídeo, áudio. Uma única mente criativa cuidando de toda a sua comunicação.</p>
+    <div class="lead-block">
+      <span class="eyebrow">Modelagem de Voz e Direção Criativa</span>
+      <h1>Sua marca com<br><span class="dim">atenção total.</span></h1>
+      <p class="kicker">Esqueça a agência tradicional que te entrega posts genéricos.</p>
+      <p class="kicker-2">Direção estratégica. Modelagem de identidade de marca. Entrega em 48h.</p>
+      <div class="cta-row">
+        <a href="#planos" class="btn btn-primary"><span>Ver Planos</span> <span class="arr">→</span></a>
+        <button onclick="testarKAVox()" class="btn btn-ghost">Falar com a IA</button>
       </div>
     </div>
   </div>
 </section>
 
+<hr class="divider" />
+
+<!-- SERVIÇO DETALHADO -->
+<section id="servicos">
+  <div class="wrap">
+    <div class="service-detail">
+      <div class="service-text">
+        <h3>Tudo para a sua marca falar com o mundo.</h3>
+        <p>Toda marca precisa de uma voz e de uma cara. Cuidamos de toda a sua comunicação visual e sonora com a agilidade de uma assinatura mensal.</p>
+        <p>Um pedido por vez na fila, entregue em 48h. Sem contratos longos, com a precisão de quem tem 30 anos de ofício.</p>
+        <ul class="feature-list">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Design de posts, logotipos e materiais gráficos</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Marca sonora: jingles, vinhetas e trilhas exclusivas</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Redação publicitária estratégica</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Edição de vídeo para Reels e TikTok</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Direção criativa única em todos os pontos de contato</li>
+        </ul>
+
+        <div class="portfolio-notice">
+          <p>Quer ver exemplos práticos? Podemos enviar o portfólio completo e uma demonstração do KA Vox direcionada para o nicho do seu negócio. É só pedir pelo formulário abaixo.</p>
+        </div>
+      </div>
+      <div class="service-visual" style="display:flex;justify-content:center">
+        <div class="creative-grid">
+          <div class="creative-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="10.5" r="2.5"></circle><circle cx="8.5" cy="7.5" r="2.5"></circle><circle cx="6.5" cy="12.5" r="2.5"></circle><path d="M12 22a10 10 0 1 1 0-20"></path></svg>
+            <h4>Design Visual</h4>
+            <p>Logo, Posts, Cores</p>
+          </div>
+          <div class="creative-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <h4>Branding Sonoro</h4>
+            <p>Jingles, Vinhetas</p>
+          </div>
+          <div class="creative-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            <h4>Redação</h4>
+            <p>Copy, Roteiros</p>
+          </div>
+          <div class="creative-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+            <h4>Vídeo</h4>
+            <p>Reels, Shorts</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- DEMONSTRAÇÃO DA IA (VENDENDO A ASSINATURA) -->
+<section id="demo-criativo">
+  <div class="wrap center">
+    <div class="lead-block">
+      <h2>Fale com o KA Vox sobre a Assinatura Criativa.</h2>
+      <p class="sub">Nosso assistente foi treinado para explicar os planos, tirar dúvidas sobre a modelagem de voz e mostrar como a direção criativa funciona. Converse com ele!</p>
+    </div>
+    <div class="demo-container">
+      <button onclick="testarKAVox()" class="btn btn-primary">Iniciar Conversa com a IA →</button>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PLANOS -->
 <section id="planos">
   <div class="wrap center">
-    <h2>Planos</h2>
-    <p class="sub">Escolha o pacote ideal para o momento do seu negócio. Sem fidelidade, cancele quando quiser.</p>
-    
-    <div class="pricing-grid">
-      <!-- ESSENCIAL -->
-      <div class="price-card">
-        <div class="price-title">Essencial</div>
-        <div class="price-value">R$ 497<span>/mês</span></div>
-        <p style="color:var(--muted);font-size:.9rem;">Para quem está começando e precisa de presença digital consistente.</p>
-        <ul class="price-list">
-          <li>8 posts por mês (feed + stories)</li>
-          <li>Legendas com tom de voz da marca</li>
-          <li>1 rodada de revisão por post</li>
+    <div class="lead-block">
+      <span class="eyebrow">Planos</span>
+      <h2>Assinatura Criativa</h2>
+      <p class="sub">Um valor fixo por mês, sem surpresas, sem fidelidade.</p>
+    </div>
+    <div class="plans">
+      <div class="plan">
+        <div class="tier">Direção Essencial</div>
+        <div class="plan-price"><span>R$ 597</span><small>/mês</small></div>
+        <ul>
+          <li>Diretriz de marca (tom e voz)</li>
+          <li>6 peças gráficas/mês</li>
+          <li>Copywriting estratégico</li>
+          <li>1 pedido por vez na fila</li>
           <li>Entrega em 48h úteis</li>
-          <li>Suporte por WhatsApp</li>
+          <li>Sem fidelidade</li>
         </ul>
-        <a href="#contato" class="btn btn-ghost" style="width:100%;justify-content:center;">Começar</a>
+        <a href="#contato" class="btn btn-ghost">Começar</a>
       </div>
-
-      <!-- PROFISSIONAL -->
-      <div class="price-card featured">
-        <div class="price-title">Profissional</div>
-        <div class="price-value">R$ 897<span>/mês</span></div>
-        <p style="color:var(--muted);font-size:.9rem;">Para quem quer crescer com comunicação profissional e estratégica.</p>
-        <ul class="price-list">
-          <li>16 posts por mês (feed + stories)</li>
-          <li>Legendas com copy estratégica</li>
-          <li>2 vídeos curtos (Reels/TikTok)</li>
-          <li>Consultoria básica de tom de voz</li>
+      <div class="plan featured">
+        <div class="tier">Direção Profissional</div>
+        <div class="plan-price"><span>R$ 997</span><small>/mês</small></div>
+        <ul>
+          <li>Tudo do Essencial</li>
+          <li>14 peças/mês (Design + Copy)</li>
+          <li>Edição de 2 vídeos curtos</li>
+          <li>Direção de campanhas pontuais</li>
           <li>2 rodadas de revisão</li>
-          <li>Prioridade na fila</li>
-          <li>Entrega em 48h úteis</li>
+          <li>Atenção prioritária</li>
         </ul>
-        <a href="#contato" class="btn btn-primary" style="width:100%;justify-content:center;">Começar</a>
+        <a href="#contato" class="btn btn-primary">Mais escolhido</a>
       </div>
-
-      <!-- VIP -->
-      <div class="price-card">
-        <div class="price-title">VIP</div>
-        <div class="price-value">R$ 1.497<span>/mês</span></div>
-        <p style="color:var(--muted);font-size:.9rem;">Para quem quer comunicação completa com consultoria exclusiva.</p>
-        <ul class="price-list">
-          <li>24 posts por mês (feed + stories)</li>
-          <li>4 vídeos curtos (Reels/TikTok)</li>
-          <li>1 jingle ou trilha sonora exclusiva</li>
-          <li>Consultoria completa de tom de voz</li>
-          <li>Revisões ilimitadas</li>
-          <li>Prioridade máxima na fila</li>
-          <li>Conversa mensal de alinhamento</li>
-          <li>Criação direta com o consultor</li>
+      <div class="plan">
+        <div class="tier">Direção Premium</div>
+        <div class="plan-price"><span>R$ 1.897</span><small>/mês</small></div>
+        <ul>
+          <li>Tudo do Profissional</li>
+          <li>Pedidos na fila</li>
+          <li>1 Jingle/Trilha exclusiva/mês</li>
+          <li>Direção criativa contínua</li>
+          <li>Reunião mensal de alinhamento</li>
+          <li>Criação direta comigo</li>
         </ul>
-        <a href="#contato" class="btn btn-ghost" style="width:100%;justify-content:center;">Começar</a>
+        <a href="#contato" class="btn btn-ghost">Começar</a>
       </div>
     </div>
 
-    <div class="consulting-box">
-      <h3>Consultoria de Tom de Voz</h3>
-      <p style="max-width:600px;margin:0 auto 24px;">Nossos planos incluem orientação para definir a personalidade da sua marca. Ajudamos você a falar a língua do seu cliente, criar conexão e se destacar da concorrência.</p>
-      <p style="color:var(--fg);font-weight:600;">Precisa de um projeto especial? Jingles, videoclipes, branding completo?</p>
-      <a href="#contato" class="btn btn-primary" style="margin-top:20px;">Solicitar Orçamento Sob Consulta →</a>
+    <div class="special-project-box">
+      <div>
+        <h4>Projetos Especiais de Identidade Sonora e Visual</h4>
+        <p>Para marcas que precisam de um projeto fechado de branding, sem assinatura mensal.</p>
+      </div>
+      <a href="#contato" class="btn btn-ghost">Preço sob consulta</a>
     </div>
   </div>
 </section>
 
+<hr class="divider" />
+
+<!-- CONTATO -->
 <section id="contato">
   <div class="wrap center">
-    <h2>Vamos dar voz à sua marca?</h2>
-    <p class="sub">Preencha o formulário ou fale direto pelo WhatsApp. Retorno em até 48h.</p>
-    
-    <form id="contactForm" style="max-width:500px;margin:40px auto 0;text-align:left;">
-      <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.9rem;">Nome</label>
-        <input type="text" name="name" required style="width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:1rem;">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.9rem;">Empresa</label>
-        <input type="text" name="company" style="width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:1rem;">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.9rem;">E-mail</label>
-        <input type="email" name="email" required style="width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:1rem;">
-      </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.9rem;">Plano de interesse</label>
-        <select name="plan" style="width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:1rem;">
-          <option value="">Selecione...</option>
-          <option value="essencial">Essencial (R$ 497/mês)</option>
-          <option value="profissional">Profissional (R$ 897/mês)</option>
-          <option value="vip">VIP (R$ 1.497/mês)</option>
-          <option value="especial">Projeto Especial (Sob Consulta)</option>
-          <option value="duvidas">Ainda tenho dúvidas</option>
+    <div class="lead-block">
+      <span class="eyebrow">Contato</span>
+      <h2>Vamos modelar a voz da sua marca?</h2>
+      <p class="sub">Receba um diagnóstico gratuito para a sua marca.</p>
+    </div>
+    <form id="contactForm" action="https://formspree.io/f/mkodrjbo" method="POST">
+      <div class="field"><label>Nome</label><input name="nome" type="text" required /></div>
+      <div class="field"><label>Empresa</label><input name="empresa" type="text" /></div>
+      <div class="field"><label>E-mail</label><input name="email" type="email" required /></div>
+      <div class="field">
+        <label>Necessidade</label>
+        <select name="necessidade">
+          <option>Direção Essencial</option>
+          <option>Direção Profissional</option>
+          <option>Direção Premium</option>
+          <option>Projeto Especial (Sob Consulta)</option>
         </select>
       </div>
-      <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:.9rem;">Mensagem</label>
-        <textarea name="message" rows="4" style="width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;color:var(--fg);font-family:var(--sans);font-size:1rem;resize:vertical;"></textarea>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Enviar solicitação →</button>
+      <div class="field"><label>Mensagem</label><textarea name="mensagem" placeholder="Se quiser, peça aqui o portfólio e a demonstração para o seu nicho."></textarea></div>
+      <button type="submit" class="btn btn-primary"><span>Enviar solicitação</span> <span class="arr">→</span></button>
     </form>
   </div>
 </section>
 
 <footer>
-  <div class="wrap">
-    <p>© 2026 KA Agência Criativa. Presença digital sem ruído.</p>
-  </div>
+  <div class="wrap"><p class="foot-copy">© 2026 KA Agência Criativa. Presença digital sem ruído.</p></div>
 </footer>
 
 <script>
-document.getElementById('contactForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  const data = Object.fromEntries(formData);
-  
-  fetch('https://ka-voice-backend.onrender.com/contact', {
+var canvas=document.getElementById('bg');var ctx=canvas.getContext('2d');var w,h,dpr=Math.min(window.devicePixelRatio||1,2);var orbs=[],ripples=[];var pointer={x:-9999,y:-9999,active:false};var glow={x:0,y:0};function rand(a,b){return a+Math.random()*(b-a)}function buildOrbs(){orbs=[];for(var i=0;i<6;i++){orbs.push({bx:rand(0,w),by:rand(0,h),x:0,y:0,r:rand(Math.min(w,h)*0.22,Math.min(w,h)*0.5),ph:rand(0,Math.PI*2),sp:rand(0.00012,0.0004),amp:rand(30,90),a:rand(0.05,0.11),g:Math.round(rand(150,255))})}glow.x=w/2;glow.y=h/2}function resize(){w=window.innerWidth;h=window.innerHeight;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildOrbs()}window.addEventListener('resize',resize);resize();window.addEventListener('pointermove',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true},{passive:true});window.addEventListener('pointerdown',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true;ripples.push({x:e.clientX,y:e.clientY,r:0,a:0.5,max:rand(180,260)})},{passive:true});window.addEventListener('pointerleave',function(){pointer.active=false});function frame(t){ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='lighter';if(pointer.active){glow.x+=(pointer.x-glow.x)*0.12;glow.y+=(pointer.y-glow.y)*0.12;var gg=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,260);gg.addColorStop(0,'rgba(255,255,255,0.10)');gg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(glow.x,glow.y,260,0,Math.PI*2);ctx.fill()}for(var i=0;i<orbs.length;i++){var o=orbs[i];var tx=o.bx+Math.cos(t*o.sp+o.ph)*o.amp;var ty=o.by+Math.sin(t*o.sp*1.3+o.ph)*o.amp;if(pointer.active){var dx=tx-pointer.x,dy=ty-pointer.y;var d=Math.sqrt(dx*dx+dy*dy);if(d<240&&d>0.01){var f=(1-d/240)*70;tx+=(dx/d)*f;ty+=(dy/d)*f}}o.x+=(tx-o.x)*0.05;o.y+=(ty-o.y)*0.05;var grad=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=(rp.max-rp.r)*0.06+1.2;rp.a*=0.94;ctx.strokeStyle='rgba(255,255,255,'+rp.a.toFixed(3)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.stroke();if(rp.a<0.01||rp.r>rp.max)ripples.splice(r,1)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+
+document.getElementById('contactForm').addEventListener('submit',function(e){e.preventDefault();var btn=this.querySelector('button[type=submit]');var label=btn.querySelector('span:first-child');var arr=btn.querySelector('.arr');label.textContent='Enviando…';arr.style.display='none';fetch(this.action,{method:'POST',body:new FormData(this),headers:{'Accept':'application/json'}}).then(function(res){if(res.ok){alert('Mensagem enviada! Entrarei em contato em breve.');window.location.href='index.html'}else{throw new Error('fail')}}).catch(function(){alert('Erro ao enviar. Tente novamente.');label.textContent='Enviar solicitação';arr.style.display=''})});
+</script>
+
+<script src="widget.js" data-client-id="ka-vox"></script>
+
+<script>
+function testarKAVox() {
+  // Abre o tooltip/chat se existir
+  var tooltip = document.getElementById('ka-tooltip');
+  var chat = document.getElementById('ka-chat');
+  if (tooltip && chat) {
+    tooltip.style.display = 'none';
+    chat.style.display = 'flex';
+    // Simula o envio de uma mensagem de demonstração após 600ms (tempo do widget carregar)
+    setTimeout(function() {
+      var input = document.getElementById('ka-text-input');
+      var btn = document.getElementById('ka-send-btn');
+      if (input && btn) {
+        input.value = "Quero ver uma demonstração de como o KA Vox funciona";
+        btn.click();
+      }
+    }, 600);
+  } else {
+    alert("O assistente está carregando. Tente em instantes.");
+  }
+}
+</script>
+
+<!-- KA Analytics Tracker -->
+<script>
+(function() {
+  let vid = localStorage.getItem('ka_vid');
+  if (!vid) { vid = 'v-' + Math.random().toString(36).substr(2, 9); localStorage.setItem('ka_vid', vid); }
+  fetch('https://ka-voice-backend.onrender.com/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...data, source: 'servicos-criativos' })
-  })
-  .then(r => r.json())
-  .then(() => {
-    alert('Mensagem enviada! Retornaremos em até 48h.');
-    this.reset();
-  })
-  .catch(() => alert('Algo deu errado. Tente novamente ou nos chame no WhatsApp.'));
-});
+    body: JSON.stringify({
+      domain: window.location.hostname,
+      url: window.location.pathname,
+      visitor_id: vid,
+      device: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+    })
+  }).catch(() => {}); // Silencioso, não atrapalha o site
+})();
 </script>
 
 </body>

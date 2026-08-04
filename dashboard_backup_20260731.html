@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>KA Voice SaaS - Painel Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0a0a0a; --card: #151515; --border: #252525; --accent: #FFD400; --text: #fff; --muted: #888; --error: #fca5a5; --success: #6ee7b7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  h1 span { font-size: 14px; background: var(--border); color: var(--muted); padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+  .subtitle { color: var(--muted); margin-bottom: 32px; font-size: 15px; }
+  .tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  .tab-btn { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; }
+  .tab-btn.active { background: var(--card); color: var(--accent); border-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin-bottom: 16px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; outline: none; transition: 0.2s; }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { min-height: 140px; resize: vertical; line-height: 1.5; }
+  .btn { border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; transition: 0.2s; }
+  .btn-primary { background: var(--accent); color: #000; width: 100%; }
+  .btn-primary:hover { filter: brightness(0.9); }
+  .btn-secondary { background: #333; color: var(--text); border: 1px solid var(--border); white-space: nowrap; margin-left: 8px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+  a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-size: 14px; font-weight: 500;}
+  .status.success { background: #064e3b; color: var(--success); display: block; }
+  .status.error { background: #7f1d1d; color: var(--error); display: block; }
+  .login-screen { text-align: center; padding: 80px 20px; }
+  .login-screen input { max-width: 300px; margin: 0 auto 16px; }
+  .voice-row { display: flex; align-items: flex-end; gap: 8px; }
+  .voice-row select { flex: 1; margin-bottom: 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .empty { text-align: center; color: #555; padding: 30px; font-size: 14px; }
+  .info-box { background: #1a1a1a; border: 1px dashed var(--border); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <h1 style="justify-content:center;">🔐 Painel Admin</h1>
+  <p class="subtitle">Acesso restrito ao sistema KA Voice</p>
+  <input type="password" id="admin-password" placeholder="Digite a senha mestra" onkeypress="if(event.key==='Enter') login()">
+  <br><br>
+  <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar no Painel</button>
+  <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
+</div>
+
+<div id="dashboard" class="container" style="display:none;">
+  <h1>KA Voice SaaS <span>Admin v1.0</span></h1>
+  <p class="subtitle">Gerencie assistentes, vozes, leads e configurações</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('config', this)">⚙️ Configuração</button>
+    <button class="tab-btn" onclick="switchTab('clients', this)">👥 Clientes</button>
+    <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
+    <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
+  </div>
+
+  <!-- ABA CONFIGURAÇÃO -->
+  <div id="tab-config" class="tab-content active">
+    <div class="card">
+      <h2>Selecione o Cliente</h2>
+      <select id="config-client-id" onchange="loadConfig()"></select>
+    </div>
+    <div class="card">
+      <h2>🎤 Voz do Assistente</h2>
+      <div class="voice-row">
+        <select id="voice">
+          <option value="pt-BR-FranciscaNeural">Francisca (Feminina - Natural)</option>
+          <option value="pt-BR-AntonioNeural">Antonio (Masculino - Profissional)</option>
+          <option value="pt-BR-BrendaNeural">Brenda (Feminina - Jovem)</option>
+          <option value="pt-BR-DonatoNeural">Donato (Masculino - Grave)</option>
+          <option value="pt-BR-LeilaNeural">Leila (Feminina - Suave)</option>
+          <option value="pt-BR-FabioNeural">Fabio (Masculino - Jovem)</option>
+        </select>
+        <button class="btn-secondary" onclick="previewVoice()" id="btn-preview">🔊 Ouvir Exemplo</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🎭 Tom de Voz</h2>
+            <select id="tone">
+        <option value="profissional">Profissional e Corporativo</option>
+        <option value="amigavel">Amigável e Descontraído</option>
+        <option value="formal">Formal e Objetivo</option>
+        <option value="jovem">Jovem e Descolado</option>
+        <option value="premium">Premium e Sofisticado</option>
+      </select>
+    </div>
+    <div class="card">
+      <h2>🏷️ Marca & Prompt</h2>
+      <label>Nome da Marca</label>
+      <input type="text" id="brand_name" placeholder="Ex: Agência KA">
+      <label>Sistema (Prompt)</label>
+      <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
+    </div>
+    <button class="btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button>
+    <div id="status-config" class="status"></div>
+  </div>
+
+  <!-- ABA CLIENTES -->
+  <div id="tab-clients" class="tab-content">
+    <div class="card">
+      <div class="info-box">💡 O "Slug" é o identificador único que será usado no código do widget do cliente (ex: joao-pizza). Não use espaços ou caracteres especiais.</div>
+      <h2>Adicionar Novo Cliente</h2>
+      <div class="grid-2">
+        <div><label>Slug (ID)</label><input type="text" id="new-slug" placeholder="ex: joao-pizza"></div>
+        <div><label>Nome da Marça</label><input type="text" id="new-brand" placeholder="Ex: Pizza do João"></div>
+      </div>
+      <button class="btn btn-primary" style="width:auto; margin-top:0;" onclick="addClient()">➕ Criar Novo Cliente</button>
+      <div id="status-client" class="status"></div>
+    </div>
+    <div class="card">
+      <h2>Base de Clientes</h2>
+      <table>
+        <thead><tr><th>Slug</th><th>Marca</th><th>Ação</th></tr></thead>
+        <tbody id="clients-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABA LEADS -->
+  <div id="tab-leads" class="tab-content">
+    <div class="card">
+      <h2>Filtrar Leads <button class="btn-secondary" onclick="exportCSV()" id="btn-csv" disabled>📥 Exportar CSV</button></h2>
+      <select id="lead-filter" onchange="loadLeads()"></select>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Telefone</th><th>Contexto</th><th>Data</th></tr></thead>
+        <tbody id="leads-body"><tr><td colspan="3" class="empty">Selecione um cliente acima</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABA HISTÓRICO (A NOVA) -->
+  <div id="tab-history" class="tab-content">
+    <div class="card">
+      <h2>Transcrições & Chat</h2>
+      <select id="history-filter" onchange="loadHistory()"></select>
+    </div>
+    <div class="card" style="max-height: 600px; overflow-y: auto;">
+      <table>
+        <thead><tr><th>Quem</th><th>Mensagem</th><th>Quando</th></tr></thead>
+        <tbody id="history-body"><tr><td colspan="3" class="empty">Selecione um cliente acima</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://ka-voice-backend.onrender.com';
+  const SECRET_KEY = 'ka_super_secret_2024';
+  const ADMIN_PWD = 'ka2026';
+  const headers = { 'x-secret-key': SECRET_KEY };
+
+  function login() {
+    if (document.getElementById('admin-password').value === ADMIN_PWD) {
+      sessionStorage.setItem('ka_auth', '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      init();
+    } else {
+      const e = document.getElementById('login-error');
+      e.innerText = '❌ Senha incorreta'; e.style.display = 'block';
+      setTimeout(() => e.style.display = 'none', 3000);
+    }
+  }
+  window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('ka_auth') === '1') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      init();
+    }
+  });
+
+  async function init() {
+    await loadClientsList();
+    if(document.getElementById('config-client-id').options.length > 0) {
+      document.getElementById('config-client-id').selectedIndex = 0;
+      loadConfig();
+    }
+  }
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  async function apiCall(url, options = {}) {
+    const res = await fetch(API + url, { ...options, headers: { ...headers, ...options.headers } });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ error: "Erro desconhecido", detail: "Erro desconhecido" }));
+      throw new Error(errData.error || errData.detail || `Erro ${res.status}`);
+    }
+    return res.json();
+  }
+
+  // --- GERADOR DE SCRIPT ---
+  function copyScript(slug) {
+    const scriptTag = `<script src="https://kaagenciacriativa.vercel.app/widget.js?client=${slug}"><\/script>`;
+    navigator.clipboard.writeText(scriptTag).then(() => {
+      const btn = event.target;
+      const originalText = btn.innerText;
+      btn.innerText = '✅ Copiado!';
+      btn.style.color = '#6ee7b7';
+      setTimeout(() => { btn.innerText = originalText; btn.style.color = '#10b981'; }, 2000);
+    }).catch(err => {
+      prompt("Copie o código abaixo e cole no HTML do site do cliente:", scriptTag);
+    });
+  }
+
+  // --- CLIENTES ---
+  async function loadClientsList() {
+    try {
+      const clients = await apiCall('/admin/clients');
+      const selectConfig = document.getElementById('config-client-id');
+      const selectLeads = document.getElementById('lead-filter');
+      const selectHistory = document.getElementById('history-filter'); // NOVO: Preenche o select do histórico
+      const tbody = document.getElementById('clients-body');
+      selectConfig.innerHTML = '';
+      selectLeads.innerHTML = '';
+      selectHistory.innerHTML = '';
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(clients) || clients.length === 0) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente cadastrado</td></tr>'; return; }
+
+      clients.forEach(c => {
+        const slug = c.slug || c.id, name = c.brand_name || slug;
+        selectConfig.innerHTML += `<option value="${slug}">${name} (${slug})</option>`;
+        selectLeads.innerHTML += `<option value="${slug}">${name}</option>`;
+        selectHistory.innerHTML += `<option value="${slug}">${name}</option>`; // NOVO: Popula o select de histórico
+
+        tbody.innerHTML += `<tr><td><code>${slug}</code></td><td>${name}</td><td><a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a> | <a href="#" onclick="copyScript('${slug}'); return false;" style="color:#10b981;">📋 Copiar Script</a></td></tr>`;
+      });
+    } catch (e) { console.error(e); }
+  }
+
+  function selectAndGoToConfig(slug) {
+    document.getElementById('config-client-id').value = slug;
+    switchTab('config', document.querySelectorAll('.tab-btn')[0]);
+    loadConfig();
+  }
+
+  async function addClient() {
+    const slug = document.getElementById('new-slug').value.trim();
+    if (!slug) return alert('Digite um slug');
+    const form = new FormData();
+    form.append('client_id', slug);
+    form.append('brand_name', document.getElementById('new-brand').value.trim());
+    form.append('voice', 'pt-BR-FrisciscaNeural');
+    form.append('tone', 'profissional');
+    form.append('system_prompt', 'Você é uma assistente virtual prestativa.');
+    const st = document.getElementById('status-client');
+    try {
+      const data = await apiCall('/admin/config', { method: 'POST', body: form });
+      document.getElementById('new-slug').value = ''; document.getElementById('new-brand').value = '';
+      loadClientsList();
+      st.className = 'status success'; st.innerText = '✅ ' + data.message; setTimeout(() => st.style.display = 'none', 3000);
+    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
+  }
+
+  // --- CONFIGURAÇÃO ---
+  async function loadConfig() {
+    const cid = document.getElementById('config-client-id').value;
+    if (!cid) return;
+    try {
+      const config = await apiCall(`/admin/config?client_id=${cid}`);
+      document.getElementById('voice').value = config.voice || 'pt-BR-FrisciscaNeural';
+      document.getElementById('tone').value = config.tone || 'profissional';
+      document.getElementById('brand_name').value = config.brand_name || '';
+      document.getElementById('system_prompt').value = config.system_prompt || '';
+    } catch (e) { console.error(e); }
+  }
+
+  async function previewVoice() {
+    const btn = document.getElementById('btn-preview');
+    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
+    try {
+      const form = new FormData(); form.append('voice', document.getElementById('voice').value);
+      const data = await apiCall('/admin/preview-voice', { method: 'POST', body: form });
+      const audio = new Audio("data:audio/mpeg;base64," + data.audio);
+      audio.play().catch(e => alert("Navegador bloqueou o áudio automático."));
+      audio.onended = () => { btn.innerText = '🔊 Ouvir Exemplo'; btn.disabled = false; };
+    } catch (e) { alert('Erro: ' + e.message); btn.innerText = '🔊 Oquvir Exemplo'; btn.disabled = false; }
+  }
+
+  async function saveConfig() {
+    const cid = document.getElementById('config-client-id').value;
+    const form = new FormData();
+    form.append('client_id', cid);
+    form.append('voice', document.getElementById('voice').value);
+    form.append('tone', document.getElementById('tone').value);
+    form.append('brand_name', document.getElementById('brand_name').value);
+    form.append('system_prompt', document.getElementById('system_prompt').value);
+    const st = document.getElementById('status-config');
+    try {
+      const data = await apiCall('/admin/config', { method: 'POST', body: form });
+      st.className = 'status success'; st.innerText = '✅ ' + data.message;
+      loadClientsList(); setTimeout(() => st.style.display = 'none', 4000);
+    } catch (e) { st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block'; }
+  }
+
+  // --- LEADS ---
+  async function loadLeads() {
+    const cid = document.getElementById('lead-filter').value;
+    document.getElementById('btn-csv').disabled = !cid;
+    if (!cid) return;
+    try {
+      const leads = await apiCall(`/admin/leads/${cid}`);
+      const tbody = document.getElementById('leads-body');
+      if (!Array.isArray(leads) || !leads.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado ainda</td></tr>'; return; }
+      tbody.innerHTML = leads.map(l => `<tr><td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone||'-'}</a></td><td>${String(l.summary||'-').substring(0,80)}</td><td>${new Date(l.date||Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
+    } catch (e) { console.error(e); }
+  }
+
+  // EXPORTAR CSV (Com segurança de chave)
+  function exportCSV() {
+    const cid = document.getElementById('lead-filter').value;
+    if (!cid) return;
+
+    const btn = document.getElementById('btn-csv');
+    btn.innerText = '⏳ Gerando...'; btn.disabled = true;
+
+    fetch(`${API}/admin/leads/${cid}/export`, { headers })
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao gerar arquivo');
+        return res.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${cid}_leads.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
+      })
+      .catch(e => {
+        alert('Erro: ' + e.message);
+        btn.innerText = '📥 Exportar CSV'; btn.disabled = false;
+      });
+  }
+
+  // --- HISTÓRICO ---
+  async function loadHistory() {
+    const cid = document.getElementById('history-filter').value;
+    if (!cid) return;
+    try {
+      const logs = await apiCall(`/admin/chat-logs/${cid}`);
+      const tbody = document.getElementById('history-body');
+      if (!Array.isArray(logs) || !logs.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma mensagem registrada</td></tr>'; return; }
+      tbody.innerHTML = logs.map(l => `<tr><td style="color:${l.role === 'user' ? 'var(--accent)' : 'var(--muted)'}; font-weight:${l.role === 'user' ? '600' : '400'};">${l.role === 'user' ? '👤 Cliente' : '🤖 IA'}</td><td>${String(l.content).substring(0, 200)}</td><td style="color:var(--muted); font-size:12px;">${new Date(l.date || Date.now()).toLocaleString('pt-BR')}</td></tr>`).join('');
+    } catch (e) { console.error(e); }
+  }
+</script>
+</body>
+</html>
