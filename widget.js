@@ -33,22 +33,46 @@ function initWidget() {
   var pos = isLeft ? 'left:24px;' : 'right:24px;';
   var align = isLeft ? 'flex-start' : 'flex-end';
 
-  var html = '<div id="ka-widget" style="position:fixed;bottom:24px;' + pos + 'z-index:99999;font-family:Inter,sans-serif;display:flex;flex-direction:column;align-items:' + align + ';gap:12px;">'
-  + '<div id="ka-tooltip" style="background:#fff;color:#000;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);cursor:pointer;border:1px solid #e5e5e5;">' + (BRAND.tooltip_text || '💬 Fale conosco') + '</div>'
-  + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:300px;max-height:360px;overflow-y:auto;">'
-  + '<div style="font-size:13px;font-weight:700;color:' + accent + ';margin-bottom:10px;text-align:center;border-bottom:1px solid #333;padding-bottom:8px;">' + (BRAND.brand_name || 'Assistente') + '</div>'
-  + '<div id="ka-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>'
+  var html = '<div id="ka-widget" style="position:fixed;bottom:24px;' + pos + 'z-index:99999;font-family:Inter,sans-serif;">'
+  + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:320px;max-height:450px;overflow:hidden;margin-bottom:12px;flex-direction:column;">'
+  + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:8px;">'
+  + '<span style="font-size:13px;font-weight:700;color:' + accent + ';">' + (BRAND.brand_name || 'Assistente') + '</span>'
+  + '<button id="ka-close-btn" style="background:none;border:none;color:#888;cursor:pointer;font-size:18px;padding:0;line-height:1;">\u2715</button>'
+  + '</div>'
+  + '<div id="ka-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;overflow-y:auto;flex:1;max-height:280px;"></div>'
   + '<div id="ka-status" style="display:none;font-size:12px;color:#aaa;margin-bottom:8px;text-align:center;"></div>'
-  + '<div style="display:flex;gap:8px;">'
-  + '<input type="text" id="ka-text-input" placeholder="Digite sua mensagem..." style="flex:1;background:#222;border:1px solid #444;color:#fff;padding:10px;border-radius:8px;font-size:13px;outline:none;">'
-  + '<button id="ka-send-btn" style="background:' + accent + ';color:' + accentText + ';border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">➤</button>'
-  + '</div></div>'
   + '<div style="display:flex;gap:8px;align-items:center;">'
-  + '<button id="ka-play-btn" style="display:none;background:#10b981;color:#fff;padding:10px 16px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-weight:600;">▶️ Ouvir</button>'
-  + '<button id="ka-mic-btn" style="width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;background:' + accent + ';color:' + accentText + ';display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.3);font-size:24px;">🎙️</button>'
-  + '</div></div><audio id="ka-audio" style="display:none;"></audio>';
+  + '<input type="text" id="ka-text-input" placeholder="Digite sua mensagem..." style="flex:1;background:#222;border:1px solid #444;color:#fff;padding:10px;border-radius:8px;font-size:13px;outline:none;">'
+  + '<button id="ka-mic-btn" style="width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;background:#333;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">\ud83c\udf99</button>'
+  + '<button id="ka-send-btn" style="background:' + accent + ';color:' + accentText + ';border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;">\u27a4</button>'
+  + '</div>'
+  + '<button id="ka-play-btn" style="display:none;background:#10b981;color:#fff;padding:8px 16px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:600;margin-top:8px;width:100%;">\u25b6 Ouvir resposta</button>'
+  + '</div>'
+  + '<button id="ka-toggle-btn" style="width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;background:' + accent + ';color:' + accentText + ';display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,0.3);font-size:28px;transition:transform 0.2s;">\ud83d\udcac</button>'
+  + '</div><audio id="ka-audio" style="display:none;"></audio>';
 
   document.body.insertAdjacentHTML('beforeend', html);
+  // === TOGGLE CHAT ===
+  var toggleBtn = document.getElementById('ka-toggle-btn');
+  var chatBox = document.getElementById('ka-chat');
+  var closeBtn = document.getElementById('ka-close-btn');
+  function kaOpenChat() {
+    chatBox.style.display = 'flex';
+    toggleBtn.textContent = '\u2715';
+    toggleBtn.style.transform = 'rotate(90deg)';
+    setTimeout(function(){ var inp = document.getElementById('ka-text-input'); if(inp) inp.focus(); }, 100);
+  }
+  function kaCloseChat() {
+    chatBox.style.display = 'none';
+    toggleBtn.textContent = '\ud83d\udcac';
+    toggleBtn.style.transform = 'rotate(0deg)';
+  }
+  toggleBtn.addEventListener('click', function() {
+    if (chatBox.style.display === 'flex') { kaCloseChat(); } else { kaOpenChat(); }
+  });
+  if (closeBtn) closeBtn.addEventListener('click', kaCloseChat);
+  toggleBtn.title = BRAND.tooltip_text || 'Fale conosco';
+
 
   var link = document.createElement('link');
   link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
