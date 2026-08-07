@@ -315,7 +315,8 @@ async function loadClientsList() {
       tbody.innerHTML += '<tr><td><code>' + slug + '</code></td><td>' + name + '</td><td>'
         + '<a href="#" onclick="selectAndGoToConfig(\'' + slug + '\'); return false;">Configurar →</a> | '
         + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a> | '
-        + '<a href="#" onclick="generateClientPassword(\'' + slug + '\'); return false;" style="color:#f59e0b;">🔑 Senha</a>'
+        + '<a href="#" onclick="generateClientPassword(\'' + slug + '\'); return false;" style="color:#f59e0b;">🔑 Senha</a> | '
+        + '<a href="#" onclick="deleteClient(\'' + slug + '\'); return false;" style="color:#ef4444;">🗑️ Excluir</a>'
         + '</td></tr>';
     });
   } catch (e) { console.error('loadClientsList:', e); }
@@ -630,6 +631,27 @@ async function testNotification(){
     if(btn){ btn.textContent=orig; btn.disabled=false; }
   }
 }
+
+
+async function deleteClient(clientId) {
+  if (clientId === 'ka_agencia') {
+    alert('❌ Não é possível excluir o cliente principal (Agência KA)');
+    return;
+  }
+  if (!confirm('⚠️ Tem certeza que deseja excluir "' + clientId + '"?\n\nTodos os leads e conversas serão removidos permanentemente.')) {
+    return;
+  }
+  try {
+    const res = await apiCall('/admin/clients/' + clientId, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Erro ao excluir');
+    alert('✅ ' + data.message);
+    loadClientsList();
+  } catch (e) {
+    alert('❌ Erro: ' + e.message);
+  }
+}
+
 </script>
 
 </body>
