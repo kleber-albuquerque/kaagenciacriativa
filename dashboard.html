@@ -61,6 +61,7 @@
     <h1>KA Voice SaaS <span>Admin v2.0</span></h1>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
       <button class="btn-secondary" style="margin-left:0;" onclick="openModal('modal-changepwd')">🔑 Trocar minha senha</button>
+      <button onclick="openChangePwdModal()" style="padding:10px 18px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;margin-right:12px;font-weight:600;font-size:14px;font-family:'Space Grotesk',sans-serif;transition:all .2s;">🔒 Trocar Senha</button>
       <button class="btn-logout" onclick="doLogout()">Sair ↪</button>
     </div>
   </div>
@@ -139,7 +140,49 @@
         prev.style.color = (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
       });
     })();
-    </script>
+    
+// ========== TROCA DE SENHA ==========
+function openChangePwdModal() {
+  document.getElementById('modal-changepwd').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
+}
+
+async function changePassword() {
+  const currentPwd = document.getElementById('current-pwd').value;
+  const newPwd = document.getElementById('new-pwd').value;
+  const confirmPwd = document.getElementById('confirm-pwd').value;
+
+  if (newPwd !== confirmPwd) {
+    alert('❌ As novas senhas não coincidem!');
+    return;
+  }
+  if (newPwd.length < 6) {
+    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  try {
+    await apiCall('/admin/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPwd, 
+        new_password: newPwd 
+      })
+    });
+    
+    alert('✅ Senha alterada com sucesso! Faça login novamente.');
+    localStorage.removeItem('ka_token');
+    location.reload();
+  } catch (e) {
+    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
+  }
+}
+
+</script>
     <div class="card">
       <h2>🏷 Marca & Prompt</h2>
       <label>Nome da Marca</label>
@@ -498,6 +541,48 @@ async function loadHistory() {
     ).join('');
   } catch (e) { console.error('loadHistory:', e); }
 }
+
+// ========== TROCA DE SENHA ==========
+function openChangePwdModal() {
+  document.getElementById('modal-changepwd').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
+}
+
+async function changePassword() {
+  const currentPwd = document.getElementById('current-pwd').value;
+  const newPwd = document.getElementById('new-pwd').value;
+  const confirmPwd = document.getElementById('confirm-pwd').value;
+
+  if (newPwd !== confirmPwd) {
+    alert('❌ As novas senhas não coincidem!');
+    return;
+  }
+  if (newPwd.length < 6) {
+    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  try {
+    await apiCall('/admin/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPwd, 
+        new_password: newPwd 
+      })
+    });
+    
+    alert('✅ Senha alterada com sucesso! Faça login novamente.');
+    localStorage.removeItem('ka_token');
+    location.reload();
+  } catch (e) {
+    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
+  }
+}
+
 </script>
 
 <!-- ===== GESTÃO DE SENHAS ===== -->
@@ -632,6 +717,48 @@ function copyGeneratedPwd(){
     setTimeout(()=>btn.textContent='📋 Copiar senha',2000);
   }).catch(()=>prompt('Copie a senha:', pwd));
 }
+
+// ========== TROCA DE SENHA ==========
+function openChangePwdModal() {
+  document.getElementById('modal-changepwd').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
+}
+
+async function changePassword() {
+  const currentPwd = document.getElementById('current-pwd').value;
+  const newPwd = document.getElementById('new-pwd').value;
+  const confirmPwd = document.getElementById('confirm-pwd').value;
+
+  if (newPwd !== confirmPwd) {
+    alert('❌ As novas senhas não coincidem!');
+    return;
+  }
+  if (newPwd.length < 6) {
+    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  try {
+    await apiCall('/admin/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPwd, 
+        new_password: newPwd 
+      })
+    });
+    
+    alert('✅ Senha alterada com sucesso! Faça login novamente.');
+    localStorage.removeItem('ka_token');
+    location.reload();
+  } catch (e) {
+    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
+  }
+}
+
 </script>
 
 <script>
@@ -777,6 +904,48 @@ function copySiteScript(slug) {
 document.querySelector('[onclick="switchTab(\'sites\', this)"]').addEventListener('click', function() {
   loadSites();
 });
+
+
+// ========== TROCA DE SENHA ==========
+function openChangePwdModal() {
+  document.getElementById('modal-changepwd').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = 'none';
+  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
+}
+
+async function changePassword() {
+  const currentPwd = document.getElementById('current-pwd').value;
+  const newPwd = document.getElementById('new-pwd').value;
+  const confirmPwd = document.getElementById('confirm-pwd').value;
+
+  if (newPwd !== confirmPwd) {
+    alert('❌ As novas senhas não coincidem!');
+    return;
+  }
+  if (newPwd.length < 6) {
+    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  try {
+    await apiCall('/admin/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        current_password: currentPwd, 
+        new_password: newPwd 
+      })
+    });
+    
+    alert('✅ Senha alterada com sucesso! Faça login novamente.');
+    localStorage.removeItem('ka_token');
+    location.reload();
+  } catch (e) {
+    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
+  }
+}
 
 </script>
 
