@@ -44,6 +44,15 @@
   .empty { text-align: center; color: #555; padding: 30px; font-size: 14px; }
   .info-box { background: #1a1a1a; border: 1px dashed var(--border); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
 </style>
+
+  <style>
+    /* ===== CSS DAS ABAS (CORRIGIDO) ===== */
+    .tab-content { display: none !important; }
+    .tab-content.active { display: block !important; }
+    .tab-btn { background:transparent; border:1px solid var(--border); color:var(--muted); padding:10px 18px; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; font-family:'Space Grotesk',sans-serif; transition:all .2s; margin-right:8px; }
+    .tab-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .tab-btn:hover { transform:translateY(-1px); }
+  </style>
 </head>
 <body>
 
@@ -133,6 +142,29 @@
     
   
   <!-- ABA FINANCEIRO -->
+  
+    </div>
+    <div class="card">
+      <h2>📋 Cobranças por Cliente</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Plano</th>
+            <th>Valor Mensal</th>
+            <th>Próx. Vencimento</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="finance-body">
+          <tr><td colspan="5" class="empty">Clique na aba para carregar</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <!-- ===== ABA FINANCEIRO ===== -->
   <div id="tab-financeiro" class="tab-content">
     <div class="card">
       <h2>💰 Resumo Financeiro</h2>
@@ -393,21 +425,23 @@ async function init() {
 }
 
 function switchTab(tab, btn) {
+  // Esconder todas as abas e desativar todos os botões
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   
-  const tabEl = document.getElementById('tab-' + tab);
+  // Mostrar a aba selecionada
+  var tabEl = document.getElementById('tab-' + tab);
   if (tabEl) {
     tabEl.classList.add('active');
   } else {
-    console.warn('⚠️ Aba não encontrada no HTML: tab-' + tab);
+    console.warn('Aba não encontrada: tab-' + tab);
   }
   if (btn) btn.classList.add('active');
 
-  // GATILHOS: Carregar dados dinâmicos ao trocar de aba
-  if (tab === 'financeiro' && typeof loadFinance === 'function') loadFinance();
-  if (tab === 'sites' && typeof loadSites === 'function') loadSites();
-  if (tab === 'analytics' && typeof loadAnalytics === 'function') loadAnalytics();
+  // Carregar dados dinâmicos
+  if (tab === 'financeiro') { loadFinance(); }
+  if (tab === 'sites') { if (typeof loadSites === 'function') loadSites(); }
+  if (tab === 'analytics') { if (typeof loadAnalytics === 'function') loadAnalytics(); }
 }
 
 function copyScript(slug) {
@@ -1038,14 +1072,20 @@ async function changePassword() {
 
 
 
-// ========== FINANCEIRO ==========
+
+
+
+// ===== FUNÇÃO FINANCEIRO =====
 async function loadFinance() {
   try {
     const data = await apiCall('/admin/finance');
-    document.getElementById('fin-active').textContent = data.summary.active_clients || 0;
-    document.getElementById('fin-mrr').textContent = 'R$ ' + (data.summary.mrr || 0).toFixed(2).replace('.', ',');
-    document.getElementById('fin-pending').textContent = data.summary.pending_count || 0;
-    document.getElementById('fin-overdue').textContent = data.summary.overdue_count || 0;
+    
+    if (data.summary) {
+      document.getElementById('fin-active').textContent = data.summary.active_clients || 0;
+      document.getElementById('fin-mrr').textContent = 'R$ ' + (data.summary.mrr || 0).toFixed(2).replace('.', ',');
+      document.getElementById('fin-pending').textContent = data.summary.pending_count || 0;
+      document.getElementById('fin-overdue').textContent = data.summary.overdue_count || 0;
+    }
     
     const tbody = document.getElementById('finance-body');
     if (!data.clients || data.clients.length === 0) {
@@ -1058,13 +1098,13 @@ async function loadFinance() {
       const statusText = c.payment_status === 'paid' ? '🟢 Pago' : (c.payment_status === 'overdue' ? '🔴 Atrasado' : '🟡 Pendente');
       const valor = c.monthly_fee ? 'R$ ' + parseFloat(c.monthly_fee).toFixed(2).replace('.', ',') : '-';
       const vencimento = c.next_billing ? new Date(c.next_billing).toLocaleDateString('pt-BR') : '-';
-      return `<tr>
-        <td><strong>${c.brand_name || c.client_id}</strong><br><small style="color:#888;">${c.client_id}</small></td>
-        <td>${c.plan === 'assinatura' ? 'Assinatura' : 'Site Único'}</td>
-        <td>${valor}</td>
-        <td>${vencimento}</td>
-        <td style="color:${statusColor}; font-weight:600;">${statusText}</td>
-      </tr>`;
+      return '<tr>' +
+        '<td><strong>' + (c.brand_name || c.client_id) + '</strong><br><small style="color:#888;">' + c.client_id + '</small></td>' +
+        '<td>' + (c.plan === 'assinatura' ? 'Assinatura' : 'Site Único') + '</td>' +
+        '<td>' + valor + '</td>' +
+        '<td>' + vencimento + '</td>' +
+        '<td style="color:' + statusColor + '; font-weight:600;">' + statusText + '</td>' +
+      '</tr>';
     }).join('');
   } catch (e) {
     console.error('loadFinance:', e);
