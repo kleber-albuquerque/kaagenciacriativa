@@ -52,7 +52,7 @@
   <p class="subtitle">Acesso restrito ao sistema KA Voice</p>
   <input type="password" id="admin-password" placeholder="Digite a senha mestra" onkeypress="if(event.key==='Enter') login()">
   <br><br>
-  <button class="btn btn-primary" style="max-width:300px;" >Entrar no Painel</button>
+  <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar no Painel</button>
   <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
 </div>
 
@@ -73,7 +73,6 @@
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
     <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
-    <button class="tab-btn" onclick="switchTab('financeiro', this)">💰 Financeiro</button>
   </div>
 
   <div id="tab-config" class="tab-content active">
@@ -140,15 +139,7 @@
         prev.style.color = (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
       });
     })();
-
-window.switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-};
-
-</script>
+    </script>
     <div class="card">
       <h2>🏷 Marca & Prompt</h2>
       <label>Nome da Marca</label>
@@ -262,6 +253,29 @@ async function apiCall(url, options = {}) {
   return res.json();
 }
 
+async function login() {
+  const pwd = document.getElementById('admin-password').value;
+  const errEl = document.getElementById('login-error');
+  try {
+    const res = await fetch(API + '/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Senha incorreta');
+    TOKEN = data.access_token;
+    sessionStorage.setItem('ka_token', TOKEN);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    init();
+  } catch (e) {
+    errEl.innerText = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    setTimeout(() => errEl.style.display = 'none', 3000);
+  }
+}
+
 function logout() {
   TOKEN = '';
   sessionStorage.removeItem('ka_token');
@@ -286,19 +300,14 @@ async function init() {
 function switchTab(tab, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tabEl = document.getElementById('tab-' + tab);
-  if (tabEl) {
-    tabEl.classList.add('active');
-  } else {
-    console.warn('⚠️ Aba não encontrada no HTML: tab-' + tab);
-  }
-  if (btn) btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
 }
 
-function copyScript(slug, btn) {
+function copyScript(slug) {
   const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
-    if (!btn) { prompt('Copie o código abaixo:', tag); return; }
+    const btn = event.target;
     const orig = btn.innerText;
     btn.innerText = '✅ Copiado!';
     btn.style.color = '#6ee7b7';
@@ -326,7 +335,7 @@ async function loadClientsList() {
       selHistory.innerHTML += '<option value="' + slug + '">' + name + '</option>';
       tbody.innerHTML += '<tr><td><code>' + slug + '</code></td><td>' + name + '</td><td>'
         + '<a href="#" onclick="selectAndGoToConfig(\'' + slug + '\'); return false;">Configurar →</a> | '
-        + '<a href="#" onclick="copyScript(\'' + slug + '\', this); return false;" style="color:#10b981;">📋 Script</a> | '
+        + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a> | '
         + '<a href="#" onclick="generateClientPassword(\'' + slug + '\'); return false;" style="color:#f59e0b;">🔑 Senha</a> | '
         + '<a href="#" onclick="deleteClient(\'' + slug + '\'); return false;" style="color:#ef4444;">🗑️ Excluir</a>'
         + '</td></tr>';
@@ -489,94 +498,7 @@ async function loadHistory() {
     ).join('');
   } catch (e) { console.error('loadHistory:', e); }
 }
-
-window.switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-};
-
 </script>
-
-  <!-- ABA ANALYTICS (Placeholder para evitar erro de clique) -->
-  <div id="tab-analytics" class="tab-content">
-    <div class="card">
-      <h2>📊 Analytics</h2>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Total de Leads</div>
-          <div id="ana-total-leads" style="font-size:28px; font-weight:700; color:var(--accent);">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Leads (7 dias)</div>
-          <div id="ana-leads-7d" style="font-size:28px; font-weight:700; color:#10b981;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Clientes com Leads</div>
-          <div id="ana-active-clients" style="font-size:28px; font-weight:700; color:#3b82f6;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Atividade Recente</div>
-          <div id="ana-conversion" style="font-size:28px; font-weight:700; color:#f59e0b;">-</div>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap:24px; margin-top:24px;">
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <h3 style="margin-bottom:16px; font-size:16px;">Leads por Cliente (Top 5)</h3>
-          <canvas id="chartClients"></canvas>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <h3 style="margin-bottom:16px; font-size:16px;">Leads por Dia (Últimos 14 dias)</h3>
-          <canvas id="chartDays"></canvas>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABA FINANCEIRO (Fase 2) -->
-  <div id="tab-financeiro" class="tab-content">
-    <div class="card">
-      <h2>💰 Resumo Financeiro</h2>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Clientes Ativos</div>
-          <div id="fin-active" style="font-size:28px; font-weight:700; color:var(--accent);">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Receita Mensal (MRR)</div>
-          <div id="fin-mrr" style="font-size:28px; font-weight:700; color:#10b981;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Pendentes</div>
-          <div id="fin-pending" style="font-size:28px; font-weight:700; color:#f59e0b;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Atrasados</div>
-          <div id="fin-overdue" style="font-size:28px; font-weight:700; color:#ef4444;">-</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>📋 Cobranças por Cliente</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Plano</th>
-            <th>Valor Mensal</th>
-            <th>Próx. Vencimento</th>
-            <th>Status</th>
-            <th>Ação</th>
-          </tr>
-        </thead>
-        <tbody id="finance-body">
-          <tr><td colspan="6" class="empty">Carregando dados financeiros...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
 <!-- ===== GESTÃO DE SENHAS ===== -->
 <style>
@@ -643,6 +565,15 @@ window.switchTab = function(tab, btn) {
 
 <script>
 function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+
+function doLogout(){
+  TOKEN='';
+  sessionStorage.removeItem('ka_token');
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('dashboard').style.display='none';
+  const p=document.getElementById('admin-password'); if(p) p.value='';
+}
 
 function pwdStrength(pwd){
   let s=0;
@@ -701,14 +632,6 @@ function copyGeneratedPwd(){
     setTimeout(()=>btn.textContent='📋 Copiar senha',2000);
   }).catch(()=>prompt('Copie a senha:', pwd));
 }
-
-window.switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-};
-
 </script>
 
 <script>
@@ -729,6 +652,7 @@ async function testNotification(){
     if(btn){ btn.textContent=orig; btn.disabled=false; }
   }
 }
+
 
 async function deleteClient(clientId) {
   if (clientId === 'ka_agencia') {
@@ -753,20 +677,66 @@ async function deleteClient(clientId) {
   }
 }
 
-// ========== MEUS SITES ==========
 
-async function updateDomain(slug, domain, el) {
+
+// ========== MEUS SITES ==========
+async function loadSites() {
   try {
-    const cfg = await apiCall('/admin/clients/' + slug + '/config');
+    const clients = await apiCall('/admin/clients');
+    const tbody = document.getElementById('sites-body');
+    if (!Array.isArray(clients) || !clients.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum cliente cadastrado</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = clients.map(c => {
+      const slug = c.id || c.slug;
+      const name = c.name || c.brand_name || slug;
+      const domain = c.domain || '';
+      const lastActivity = c.last_activity ? new Date(c.last_activity).toLocaleDateString('pt-BR') : '-';
+      
+      return `<tr>
+        <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
+        <td>
+          ${domain ? 
+            `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>` : 
+            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value)">`
+          }
+        </td>
+        <td id="status-${slug}">
+          ${domain ? '⏳ Verificando...' : '❓ Sem domínio'}
+        </td>
+        <td style="color:#888;">${lastActivity}</td>
+        <td>
+          <a href="#" onclick="copySiteScript('${slug}'); return false;" style="color:#10b981;">📋 Script</a> | 
+          <a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a>
+        </td>
+      </tr>`;
+    }).join('');
+    
+    // Verifica status do widget para cada site com domínio
+    clients.forEach(c => {
+      if (c.domain) {
+        checkWidgetStatus(c.id, c.domain);
+      }
+    });
+    
+  } catch (e) {
+    console.error('loadSites:', e);
+  }
+}
+
+async function updateDomain(slug, domain) {
+  try {
     const res = await apiCall('/admin/clients/' + slug + '/config', {
       method: 'PUT',
-      body: JSON.stringify(Object.assign({}, cfg, { domain: domain.trim() }))
+      body: JSON.stringify({ domain: domain.trim() })
     });
     
     // Atualiza a linha
-    const row = el.closest('tr');
+    const row = event.target.closest('tr');
     const domainCell = row.cells[1];
-    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a> <button onclick="editDomain('${slug}', '${domain}', this)" style="background:none;border:none;cursor:pointer;font-size:16px;margin-left:8px;" title="Editar domínio">✏️</button>`;
+    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>`;
     
     // Verifica status
     checkWidgetStatus(slug, domain);
@@ -794,224 +764,21 @@ async function checkWidgetStatus(slug, domain) {
   }
 }
 
+function copySiteScript(slug) {
+  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  navigator.clipboard.writeText(tag).then(() => {
+    alert('✅ Script copiado!\n\n' + tag);
+  }).catch(() => {
+    prompt('Copie o código abaixo:', tag);
+  });
+}
+
 // Carregar sites quando a aba for aberta
 document.querySelector('[onclick="switchTab(\'sites\', this)"]').addEventListener('click', function() {
   loadSites();
 });
 
-function openFinanceModal(clientId) {
-  alert('Funcionalidade de edição financeira para: ' + clientId + '\n(Em desenvolvimento na próxima iteração)');
-}
-
-// Hook para carregar financeiro ao clicar na aba
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  if (btn.textContent.includes('Financeiro') || btn.onclick?.toString().includes('financeiro')) {
-    // Se o botão já tiver onclick, adicionamos o listener de forma segura
-  }
-});
-
-// Intercepta cliques nas abas para carregar dados sob demanda
-const originalSwitchTab = switchTab;
-switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'financeiro') {
-    loadFinance();
-  } else if (tab === 'sites') {
-    loadSites();
-  }
-};
-
-window.switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-};
-
 </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js">
-
-window.switchTab = function(tab, btn) {
-  originalSwitchTab(tab, btn);
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-};
-
-
-// ========== ESTADO GLOBAL ==========
-let chartClientsInstance = null;
-let chartDaysInstance = null;
-
-// ========== AUTENTICAÇÃO ==========
-async function handleLogin() {
-  const pwd = document.getElementById('login-password').value;
-  const btn = document.querySelector('#login-form button');
-  const originalText = btn ? btn.innerText : 'Entrar';
-  if (btn) { btn.innerText = 'Verificando...'; btn.disabled = true; }
-  
-  try {
-    const res = await apiCall('/admin/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
-    if (res.token) {
-      localStorage.setItem('ka_token', res.token);
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('dashboard-content').style.display = 'block';
-      loadClientsList();
-    } else {
-      alert('❌ Senha incorreta');
-    }
-  } catch (e) {
-    console.error('Login error:', e);
-    alert('❌ Erro de conexão: ' + e.message);
-  } finally {
-    if (btn) { btn.innerText = originalText; btn.disabled = false; }
-  }
-}
-
-async function changePassword() {
-  const currentPwd = document.getElementById('current-pwd').value;
-  const newPwd = document.getElementById('new-pwd').value;
-  const confirmPwd = document.getElementById('confirm-pwd').value;
-  if (newPwd !== confirmPwd) { alert('❌ As novas senhas não coincidem!'); return; }
-  if (newPwd.length < 6) { alert('❌ A nova senha deve ter pelo menos 6 caracteres.'); return; }
-  try {
-    await apiCall('/admin/change-password', { method: 'POST', body: JSON.stringify({ current_password: currentPwd, new_password: newPwd }) });
-    alert('✅ Senha alterada com sucesso! Faça login novamente.');
-    localStorage.removeItem('ka_token');
-    location.reload();
-  } catch (e) {
-    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
-  }
-}
-
-function openChangePwdModal() { document.getElementById('modal-changepwd').style.display = 'flex'; }
-function closeModal(modalId) { 
-  document.getElementById(modalId).style.display = 'none'; 
-  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = ''); 
-}
-
-// ========== NAVEGAÇÃO DE ABAS ==========
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const tabEl = document.getElementById('tab-' + tab);
-  if (tabEl) tabEl.classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (tab === 'analytics') loadAnalytics();
-  else if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
-}
-
-// ========== MEUS SITES ==========
-async function loadSites() {
-  try {
-    const clients = await apiCall('/admin/clients');
-    const tbody = document.getElementById('sites-body');
-    if (!Array.isArray(clients) || !clients.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum cliente cadastrado</td></tr>';
-      return;
-    }
-    tbody.innerHTML = clients.map(c => {
-      const slug = c.id || c.slug;
-      const name = c.name || c.brand_name || slug;
-      const domain = c.domain || '';
-      const lastActivity = c.last_activity ? new Date(c.last_activity).toLocaleDateString('pt-BR') : '-';
-      const domainHtml = domain ? 
-        `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a> <button onclick="editDomain('${slug}', '${domain}', this)" style="background:none;border:none;cursor:pointer;font-size:16px;margin-left:8px;" title="Editar domínio">✏️</button>` : 
-        `<input type="text" placeholder="ex: site.com.br" style="width:160px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value, this)">`;
-      return `<tr>
-        <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
-        <td>${domainHtml}</td>
-        <td id="status-${slug}">${domain ? '⏳ Verificando...' : '❓ Sem domínio'}</td>
-        <td style="color:#888;">${lastActivity}</td>
-        <td>
-          <a href="#" onclick="copySiteScript('${slug}'); return false;" style="color:#10b981;">📋 Script</a> | 
-          <a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a>
-        </td>
-      </tr>`;
-    }).join('');
-  } catch (e) { console.error('loadSites:', e); }
-}
-
-function editDomain(slug, currentDomain, btn) {
-  const domainCell = btn.parentElement;
-  domainCell.innerHTML = `<input type="text" style="width:160px;padding:6px;margin:0;" value="${currentDomain}" onchange="updateDomain('${slug}', this.value, this)">`;
-  domainCell.querySelector('input').focus();
-}
-
-async function updateDomain(slug, domain, el) {
-  try {
-    const cfg = await apiCall('/admin/clients/' + slug + '/config');
-    await apiCall('/admin/clients/' + slug + '/config', { method: 'PUT', body: JSON.stringify(Object.assign({}, cfg, { domain: domain.trim() })) });
-    const row = el.closest('tr');
-    const domainCell = row.cells[1];
-    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a> <button onclick="editDomain('${slug}', '${domain}', this)" style="background:none;border:none;cursor:pointer;font-size:16px;margin-left:8px;" title="Editar domínio">✏️</button>`;
-  } catch (e) { alert('❌ Erro: ' + e.message); }
-}
-
-function copySiteScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
-  navigator.clipboard.writeText(tag).then(() => alert('✅ Script copiado!')).catch(() => prompt('Copie o código:', tag));
-}
-
-// ========== FINANCEIRO ==========
-async function loadFinance() {
-  try {
-    const data = await apiCall('/admin/finance');
-    document.getElementById('fin-active').textContent = data.summary.active_clients || 0;
-    document.getElementById('fin-mrr').textContent = 'R$ ' + (data.summary.mrr || 0).toFixed(2).replace('.', ',');
-    document.getElementById('fin-pending').textContent = data.summary.pending_count || 0;
-    document.getElementById('fin-overdue').textContent = data.summary.overdue_count || 0;
-    const tbody = document.getElementById('finance-body');
-    if (!data.clients || data.clients.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum dado financeiro</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.clients.map(c => {
-      const statusColor = c.payment_status === 'paid' ? '#10b981' : (c.payment_status === 'overdue' ? '#ef4444' : '#f59e0b');
-      const statusText = c.payment_status === 'paid' ? '🟢 Pago' : (c.payment_status === 'overdue' ? '🔴 Atrasado' : '🟡 Pendente');
-      const valor = c.monthly_fee ? 'R$ ' + parseFloat(c.monthly_fee).toFixed(2).replace('.', ',') : '-';
-      const vencimento = c.next_billing ? new Date(c.next_billing).toLocaleDateString('pt-BR') : '-';
-      return `<tr>
-        <td><strong>${c.brand_name || c.client_id}</strong><br><small style="color:#888;">${c.client_id}</small></td>
-        <td>${c.plan === 'assinatura' ? 'Assinatura' : 'Site Único'}</td>
-        <td>${valor}</td>
-        <td>${vencimento}</td>
-        <td style="color:${statusColor}; font-weight:600;">${statusText}</td>
-        <td><a href="#" onclick="openFinanceModal('${c.client_id}'); return false;" style="color:var(--accent);">⚙️ Gerenciar</a></td>
-      </tr>`;
-    }).join('');
-  } catch (e) { console.error('loadFinance:', e); }
-}
-function openFinanceModal(clientId) { alert('Edição financeira para: ' + clientId + '\n(Em desenvolvimento)'); }
-
-// ========== ANALYTICS ==========
-async function loadAnalytics() {
-  try {
-    const data = await apiCall('/admin/analytics');
-    document.getElementById('ana-total-leads').textContent = data.total_leads || 0;
-    document.getElementById('ana-leads-7d').textContent = data.leads_7d || 0;
-    document.getElementById('ana-active-clients').textContent = data.leads_per_client ? data.leads_per_client.length : 0;
-    document.getElementById('ana-conversion').textContent = (data.leads_7d > 0 ? data.leads_7d + ' esta semana' : 'Sem atividade recente');
-    if (!data.leads_per_client || !data.leads_per_day) return;
-
-    const ctxClients = document.getElementById('chartClients').getContext('2d');
-    if (chartClientsInstance) chartClientsInstance.destroy();
-    chartClientsInstance = new Chart(ctxClients, {
-      type: 'bar',
-      data: { labels: data.leads_per_client.map(c => c.client), datasets: [{ label: 'Leads', data: data.leads_per_client.map(c => c.total), backgroundColor: 'rgba(59, 130, 246, 0.7)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1, borderRadius: 4 }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#333' } }, x: { ticks: { color: '#888' }, grid: { display: false } } } }
-    });
-
-    const ctxDays = document.getElementById('chartDays').getContext('2d');
-    if (chartDaysInstance) chartDaysInstance.destroy();
-    chartDaysInstance = new Chart(ctxDays, {
-      type: 'line',
-      data: { labels: data.leads_per_day.map(d => new Date(d.day).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })), datasets: [{ label: 'Leads', data: data.leads_per_day.map(d => d.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: '#10b981' }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#333' } }, x: { ticks: { color: '#888' }, grid: { display: false } } } }
-    });
-  } catch (e) { console.error('loadAnalytics:', e); }
-}
-
-</script>
+</body>
+</html>
