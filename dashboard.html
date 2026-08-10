@@ -43,7 +43,8 @@
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .empty { text-align: center; color: #555; padding: 30px; font-size: 14px; }
   .info-box { background: #1a1a1a; border: 1px dashed var(--border); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
-</style></head>
+</style>
+</head>
 <body>
 
 <div id="login-screen" class="login-screen">
@@ -72,7 +73,6 @@
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
-    <button class="tab-btn" onclick="switchTab('financeiro', this)">💰 Financeiro</button>
     <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
   </div>
 
@@ -129,74 +129,7 @@
       <label>Mensagem de Boas-vindas (automática)</label>
       <textarea id="greeting" style="min-height:70px;" placeholder="Olá! ✨ Sou a assistente da [marca]. Como posso ajudar?"></textarea>
     </div>
-    
-  
-  <!-- ABA FINANCEIRO -->
-  
-    </div>
-    <div class="card">
-      <h2>📋 Cobranças por Cliente</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Plano</th>
-            <th>Valor Mensal</th>
-            <th>Próx. Vencimento</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="finance-body">
-          <tr><td colspan="5" class="empty">Clique na aba para carregar</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-
-  <!-- ===== ABA FINANCEIRO ===== -->
-  <div id="tab-financeiro" class="tab-content">
-    <div class="card">
-      <h2>💰 Resumo Financeiro</h2>
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Clientes Ativos</div>
-          <div id="fin-active" style="font-size:28px; font-weight:700; color:var(--accent);">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Receita Mensal (MRR)</div>
-          <div id="fin-mrr" style="font-size:28px; font-weight:700; color:#10b981;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Pendentes</div>
-          <div id="fin-pending" style="font-size:28px; font-weight:700; color:#f59e0b;">-</div>
-        </div>
-        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
-          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Atrasados</div>
-          <div id="fin-overdue" style="font-size:28px; font-weight:700; color:#ef4444;">-</div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>📋 Cobranças por Cliente</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Plano</th>
-            <th>Valor Mensal</th>
-            <th>Próx. Vencimento</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="finance-body">
-          <tr><td colspan="5" class="empty">Clique na aba para carregar</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-<script>
+    <script>
     (function(){
       var ac = document.getElementById('accent_color');
       if (ac) ac.addEventListener('input', function() {
@@ -248,13 +181,6 @@ async function changePassword() {
     alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
   }
 }
-
-
-
-// ========== FINANCEIRO ==========
-
-
-
 
 </script>
     <div class="card">
@@ -415,23 +341,10 @@ async function init() {
 }
 
 function switchTab(tab, btn) {
-  // Esconder todas as abas e desativar todos os botões
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  
-  // Mostrar a aba selecionada
-  var tabEl = document.getElementById('tab-' + tab);
-  if (tabEl) {
-    tabEl.classList.add('active');
-  } else {
-    console.warn('Aba não encontrada: tab-' + tab);
-  }
-  if (btn) btn.classList.add('active');
-
-  // Carregar dados dinâmicos
-  if (tab === 'financeiro') { loadFinance(); }
-  if (tab === 'sites') { if (typeof loadSites === 'function') loadSites(); }
-  if (tab === 'analytics') { if (typeof loadAnalytics === 'function') loadAnalytics(); }
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
 }
 
 function copyScript(slug) {
@@ -670,13 +583,6 @@ async function changePassword() {
   }
 }
 
-
-
-// ========== FINANCEIRO ==========
-
-
-
-
 </script>
 
 <!-- ===== GESTÃO DE SENHAS ===== -->
@@ -852,13 +758,6 @@ async function changePassword() {
     alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
   }
 }
-
-
-
-// ========== FINANCEIRO ==========
-
-
-
 
 </script>
 
@@ -1045,59 +944,6 @@ async function changePassword() {
     location.reload();
   } catch (e) {
     alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
-  }
-}
-
-
-
-// ========== FINANCEIRO ==========
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ===== FUNÇÃO FINANCEIRO =====
-async function loadFinance() {
-  try {
-    const data = await apiCall('/admin/finance');
-    
-    if (data.summary) {
-      document.getElementById('fin-active').textContent = data.summary.active_clients || 0;
-      document.getElementById('fin-mrr').textContent = 'R$ ' + (data.summary.mrr || 0).toFixed(2).replace('.', ',');
-      document.getElementById('fin-pending').textContent = data.summary.pending_count || 0;
-      document.getElementById('fin-overdue').textContent = data.summary.overdue_count || 0;
-    }
-    
-    const tbody = document.getElementById('finance-body');
-    if (!data.clients || data.clients.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum dado financeiro</td></tr>';
-      return;
-    }
-    
-    tbody.innerHTML = data.clients.map(c => {
-      const statusColor = c.payment_status === 'paid' ? '#10b981' : (c.payment_status === 'overdue' ? '#ef4444' : '#f59e0b');
-      const statusText = c.payment_status === 'paid' ? '🟢 Pago' : (c.payment_status === 'overdue' ? '🔴 Atrasado' : '🟡 Pendente');
-      const valor = c.monthly_fee ? 'R$ ' + parseFloat(c.monthly_fee).toFixed(2).replace('.', ',') : '-';
-      const vencimento = c.next_billing ? new Date(c.next_billing).toLocaleDateString('pt-BR') : '-';
-      return '<tr>' +
-        '<td><strong>' + (c.brand_name || c.client_id) + '</strong><br><small style="color:#888;">' + c.client_id + '</small></td>' +
-        '<td>' + (c.plan === 'assinatura' ? 'Assinatura' : 'Site Único') + '</td>' +
-        '<td>' + valor + '</td>' +
-        '<td>' + vencimento + '</td>' +
-        '<td style="color:' + statusColor + '; font-weight:600;">' + statusText + '</td>' +
-      '</tr>';
-    }).join('');
-  } catch (e) {
-    console.error('loadFinance:', e);
   }
 }
 
