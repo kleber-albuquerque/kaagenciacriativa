@@ -73,6 +73,7 @@
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
     <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
+    <button class="tab-btn" onclick="switchTab('financeiro', this)">💰 Financeiro</button>
   </div>
 
   <div id="tab-config" class="tab-content active">
@@ -795,7 +796,7 @@ async function updateDomain(slug, domain, el) {
     // Atualiza a linha
     const row = el.closest('tr');
     const domainCell = row.cells[1];
-    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>`;
+    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a> <button onclick="editDomain('${slug}', '${domain}', this)" style="background:none;border:none;cursor:pointer;font-size:16px;margin-left:8px;" title="Editar domínio">✏️</button>`;
     
     // Verifica status
     checkWidgetStatus(slug, domain);
@@ -837,6 +838,13 @@ document.querySelector('[onclick="switchTab(\'sites\', this)"]').addEventListene
   loadSites();
 });
 
+
+
+function editDomain(slug, currentDomain, btn) {
+  const domainCell = btn.parentElement;
+  domainCell.innerHTML = `<input type="text" style="width:160px;padding:6px;margin:0;" value="${currentDomain}" onchange="updateDomain('${slug}', this.value, this)">`;
+  domainCell.querySelector('input').focus();
+}
 
 async function loadFinance() {
   try {
