@@ -402,12 +402,12 @@ function switchTab(tab, btn) {
   } else {
     console.warn('⚠️ Aba não encontrada no HTML: tab-' + tab);
   }
-  
   if (btn) btn.classList.add('active');
-  
-  // Carregar dados sob demanda
-  if (tab === 'financeiro') loadFinance();
-  else if (tab === 'sites') loadSites();
+
+  // GATILHOS: Carregar dados dinâmicos ao trocar de aba
+  if (tab === 'financeiro' && typeof loadFinance === 'function') loadFinance();
+  if (tab === 'sites' && typeof loadSites === 'function') loadSites();
+  if (tab === 'analytics' && typeof loadAnalytics === 'function') loadAnalytics();
 }
 
 function copyScript(slug) {
