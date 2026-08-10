@@ -300,14 +300,19 @@ async function init() {
 function switchTab(tab, btn) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  btn.classList.add('active');
+  const tabEl = document.getElementById('tab-' + tab);
+  if (tabEl) {
+    tabEl.classList.add('active');
+  } else {
+    console.warn('⚠️ Aba não encontrada no HTML: tab-' + tab);
+  }
+  if (btn) btn.classList.add('active');
 }
 
-function copyScript(slug) {
+function copyScript(slug, btn) {
   const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
-    const btn = event.target;
+    if (!btn) { prompt('Copie o código abaixo:', tag); return; }
     const orig = btn.innerText;
     btn.innerText = '✅ Copiado!';
     btn.style.color = '#6ee7b7';
@@ -335,7 +340,7 @@ async function loadClientsList() {
       selHistory.innerHTML += '<option value="' + slug + '">' + name + '</option>';
       tbody.innerHTML += '<tr><td><code>' + slug + '</code></td><td>' + name + '</td><td>'
         + '<a href="#" onclick="selectAndGoToConfig(\'' + slug + '\'); return false;">Configurar →</a> | '
-        + '<a href="#" onclick="copyScript(\'' + slug + '\'); return false;" style="color:#10b981;">📋 Script</a> | '
+        + '<a href="#" onclick="copyScript(\'' + slug + '\', this); return false;" style="color:#10b981;">📋 Script</a> | '
         + '<a href="#" onclick="generateClientPassword(\'' + slug + '\'); return false;" style="color:#f59e0b;">🔑 Senha</a> | '
         + '<a href="#" onclick="deleteClient(\'' + slug + '\'); return false;" style="color:#ef4444;">🗑️ Excluir</a>'
         + '</td></tr>';
@@ -499,6 +504,59 @@ async function loadHistory() {
   } catch (e) { console.error('loadHistory:', e); }
 }
 </script>
+
+
+  <!-- ABA ANALYTICS (Placeholder para evitar erro de clique) -->
+  <div id="tab-analytics" class="tab-content">
+    <div class="card">
+      <h2>📊 Analytics</h2>
+      <p style="color:#888;">Em desenvolvimento. Gráficos de performance e métricas de conversão serão adicionados na Fase 3.</p>
+    </div>
+  </div>
+
+  <!-- ABA FINANCEIRO (Fase 2) -->
+  <div id="tab-financeiro" class="tab-content">
+    <div class="card">
+      <h2>💰 Resumo Financeiro</h2>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Clientes Ativos</div>
+          <div id="fin-active" style="font-size:28px; font-weight:700; color:var(--accent);">-</div>
+        </div>
+        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Receita Mensal (MRR)</div>
+          <div id="fin-mrr" style="font-size:28px; font-weight:700; color:#10b981;">-</div>
+        </div>
+        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Pendentes</div>
+          <div id="fin-pending" style="font-size:28px; font-weight:700; color:#f59e0b;">-</div>
+        </div>
+        <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border);">
+          <div style="font-size:12px; color:var(--muted); text-transform:uppercase;">Atrasados</div>
+          <div id="fin-overdue" style="font-size:28px; font-weight:700; color:#ef4444;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Cobranças por Cliente</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Plano</th>
+            <th>Valor Mensal</th>
+            <th>Próx. Vencimento</th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="finance-body">
+          <tr><td colspan="6" class="empty">Carregando dados financeiros...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 <!-- ===== GESTÃO DE SENHAS ===== -->
 <style>
@@ -700,7 +758,7 @@ async function loadSites() {
         <td>
           ${domain ? 
             `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>` : 
-            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value)">`
+            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value, this)">`
           }
         </td>
         <td id="status-${slug}">
@@ -726,15 +784,16 @@ async function loadSites() {
   }
 }
 
-async function updateDomain(slug, domain) {
+async function updateDomain(slug, domain, el) {
   try {
+    const cfg = await apiCall('/admin/clients/' + slug + '/config');
     const res = await apiCall('/admin/clients/' + slug + '/config', {
       method: 'PUT',
-      body: JSON.stringify({ domain: domain.trim() })
+      body: JSON.stringify(Object.assign({}, cfg, { domain: domain.trim() }))
     });
     
     // Atualiza a linha
-    const row = event.target.closest('tr');
+    const row = el.closest('tr');
     const domainCell = row.cells[1];
     domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>`;
     
@@ -777,6 +836,70 @@ function copySiteScript(slug) {
 document.querySelector('[onclick="switchTab(\'sites\', this)"]').addEventListener('click', function() {
   loadSites();
 });
+
+
+async function loadFinance() {
+  try {
+    const data = await apiCall('/admin/finance');
+    
+    // Atualizar cards de resumo
+    document.getElementById('fin-active').textContent = data.summary.active_clients || 0;
+    document.getElementById('fin-mrr').textContent = 'R$ ' + (data.summary.mrr || 0).toFixed(2).replace('.', ',');
+    document.getElementById('fin-pending').textContent = data.summary.pending_count || 0;
+    document.getElementById('fin-overdue').textContent = data.summary.overdue_count || 0;
+    
+    // Atualizar tabela
+    const tbody = document.getElementById('finance-body');
+    if (!data.clients || data.clients.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum dado financeiro registrado</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = data.clients.map(c => {
+      const statusColor = c.payment_status === 'paid' ? '#10b981' : (c.payment_status === 'overdue' ? '#ef4444' : '#f59e0b');
+      const statusText = c.payment_status === 'paid' ? '🟢 Pago' : (c.payment_status === 'overdue' ? '🔴 Atrasado' : '🟡 Pendente');
+      const valor = c.monthly_fee ? 'R$ ' + parseFloat(c.monthly_fee).toFixed(2).replace('.', ',') : '-';
+      const vencimento = c.next_billing ? new Date(c.next_billing).toLocaleDateString('pt-BR') : '-';
+      
+      return `<tr>
+        <td><strong>${c.brand_name || c.client_id}</strong><br><small style="color:#888;">${c.client_id}</small></td>
+        <td>${c.plan === 'assinatura' ? 'Assinatura' : 'Site Único'}</td>
+        <td>${valor}</td>
+        <td>${vencimento}</td>
+        <td style="color:${statusColor}; font-weight:600;">${statusText}</td>
+        <td>
+          <a href="#" onclick="openFinanceModal('${c.client_id}'); return false;" style="color:var(--accent);">⚙️ Gerenciar</a>
+        </td>
+      </tr>`;
+    }).join('');
+    
+  } catch (e) {
+    console.error('loadFinance:', e);
+    document.getElementById('finance-body').innerHTML = '<tr><td colspan="6" class="empty" style="color:#ef4444;">Erro ao carregar: ' + e.message + '</td></tr>';
+  }
+}
+
+function openFinanceModal(clientId) {
+  alert('Funcionalidade de edição financeira para: ' + clientId + '\n(Em desenvolvimento na próxima iteração)');
+}
+
+// Hook para carregar financeiro ao clicar na aba
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  if (btn.textContent.includes('Financeiro') || btn.onclick?.toString().includes('financeiro')) {
+    // Se o botão já tiver onclick, adicionamos o listener de forma segura
+  }
+});
+
+// Intercepta cliques nas abas para carregar dados sob demanda
+const originalSwitchTab = switchTab;
+switchTab = function(tab, btn) {
+  originalSwitchTab(tab, btn);
+  if (tab === 'financeiro') {
+    loadFinance();
+  } else if (tab === 'sites') {
+    loadSites();
+  }
+};
 
 </script>
 
