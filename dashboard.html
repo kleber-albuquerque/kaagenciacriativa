@@ -758,8 +758,8 @@ async function loadSites() {
         <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
         <td>
           ${domain ? 
-            `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>` : 
-            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value, this)">`
+            `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a> <button onclick="editDomain('${slug}', '${domain}', this)" style="background:none;border:none;cursor:pointer;font-size:16px;margin-left:8px;" title="Editar domínio">✏️</button>` : 
+            `<input type="text" placeholder="ex: site.com.br" style="width:160px;padding:6px;margin:0;" value="${domain}" onchange="updateDomain('${slug}', this.value, this)">`
           }
         </td>
         <td id="status-${slug}">
