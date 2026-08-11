@@ -659,10 +659,7 @@ async function loadSites() {
       return `<tr>
         <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
         <td>
-          ${domain ?
-            `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>` :
-            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value)">`
-          }
+          <input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;background:#0a0a0a;border:1px solid #252525;color:#fff;border-radius:4px;" value="${domain}" onchange="updateDomain('${slug}', this.value)">
         </td>
         <td id="status-${slug}">
           ${domain ? '⏳ Verificando...' : '❓ Sem domínio'}
@@ -688,16 +685,20 @@ async function loadSites() {
 
 async function updateDomain(slug, domain) {
   try {
-    const res = await apiCall('/admin/clients/' + slug + '/config', {
+    await apiCall('/admin/clients/' + slug + '/config', {
       method: 'PUT',
       body: JSON.stringify({ domain: domain.trim() })
     });
-    const row = event.target.closest('tr');
-    const domainCell = row.cells[1];
-    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>`;
-    checkWidgetStatus(slug, domain);
+
+    // Se o domínio foi preenchido, verifica o status. Se não, limpa.
+    if (domain.trim()) {
+      checkWidgetStatus(slug, domain.trim());
+    } else {
+      const statusEl = document.getElementById('status-' + slug);
+      if(statusEl) statusEl.innerHTML = '❓ Sem domínio';
+    }
   } catch (e) {
-    alert('❌ Erro: ' + e.message);
+    alert('❌ Erro ao salvar domínio: ' + e.message);
   }
 }
 
