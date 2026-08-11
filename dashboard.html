@@ -807,8 +807,27 @@ async function markAsPaid(clientId) {
 function openEditFinanceModal(clientId, clientName, plan, amount, status, dueDate) {
   document.getElementById('edit-fin-client-id').value = clientId;
   document.getElementById('edit-fin-client-name').innerText = clientName;
-  document.getElementById('edit-fin-plan').value = plan === '-' ? '' : plan;
-  document.getElementById('edit-fin-amount').value = amount;
+  
+  // Seleciona o plano de instalação
+  const planSelect = document.getElementById('edit-fin-plan');
+  let planFound = false;
+  for(let i=0; i<planSelect.options.length; i++) {
+    if(plan && planSelect.options[i].value === plan) {
+      planSelect.selectedIndex = i; planFound = true; break;
+    }
+  }
+  if(!planFound) planSelect.selectedIndex = 0;
+
+  // Seleciona a mensalidade
+  const monthlySelect = document.getElementById('edit-fin-monthly-plan');
+  let monthlyFound = false;
+  for(let i=0; i<monthlySelect.options.length; i++) {
+    if(parseFloat(monthlySelect.options[i].value) === parseFloat(amount)) {
+      monthlySelect.selectedIndex = i; monthlyFound = true; break;
+    }
+  }
+  if(!monthlyFound) monthlySelect.selectedIndex = 0;
+
   document.getElementById('edit-fin-status').value = status;
   document.getElementById('edit-fin-due-date').value = dueDate;
   openModal('modal-edit-finance');
@@ -821,7 +840,7 @@ async function saveFinanceData() {
   
   const payload = {
     plan: document.getElementById('edit-fin-plan').value,
-    monthly_fee: parseFloat(document.getElementById('edit-fin-amount').value),
+    monthly_fee: parseFloat(document.getElementById('edit-fin-monthly-plan').value),
     status: document.getElementById('edit-fin-status').value,
     due_date: document.getElementById('edit-fin-due-date').value || null
   };
@@ -1022,11 +1041,18 @@ window.addEventListener('DOMContentLoaded', () => {
     <input type="hidden" id="edit-fin-client-id">
     <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
     
-    <label>Plano (Ex: Assinatura, Site Único)</label>
-    <input type="text" id="edit-fin-plan" placeholder="Assinatura">
+    <label>Plano de Instalação (Setup)</label>
+    <select id="edit-fin-plan">
+      <option value="Assistente (Widget)">A) Assistente (Widget) - R$990</option>
+      <option value="Widget + Site">B) Widget + Site - R$1.700</option>
+      <option value="Apenas Site">C) Apenas Site - R$990</option>
+    </select>
     
-    <label>Valor Mensal (R$)</label>
-    <input type="number" step="0.01" id="edit-fin-amount" placeholder="150.00">
+    <label>Tipo de Mensalidade</label>
+    <select id="edit-fin-monthly-plan">
+      <option value="297.00">Manutenção + Widget (R$ 297)</option>
+      <option value="90.00">Hospedagem + Manutenção (R$ 90)</option>
+    </select>
     
     <label>Status do Pagamento</label>
     <select id="edit-fin-status">
@@ -1043,7 +1069,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div id="edit-fin-status" class="status"></div>
   </div>
 </div>
-</body>
+</body></body>
 </html>
 
 <!-- Modal Recuperar Senha -->
