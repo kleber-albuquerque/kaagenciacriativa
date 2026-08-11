@@ -64,6 +64,8 @@
   <br><br>
   <button class="btn btn-primary" style="max-width:300px;" onclick="login()">Entrar no Painel</button>
   <div id="login-error" class="status error" style="max-width:300px;margin:16px auto 0;"></div>
+  <br>
+  <a href="#" onclick="showRecoverModal(); return false;" style="color: var(--muted); font-size: 13px;">Esqueci minha senha</a>
 </div>
 
 <div id="dashboard" class="container" style="display:none;">
@@ -898,8 +900,76 @@ function copyGeneratedPwd(){
     btn.textContent='✅ Copiado!';
     setTimeout(()=>btn.textContent='📋 Copiar senha',2000);
   }).catch(()=>prompt('Copie a senha:', pwd));
+
+// ==========================================================
+// COLE O CÓDIGO NOVO AQUI EMBAIXO
+// ==========================================================
+function showRecoverModal() {
+  openModal('modal-recover');
 }
+
+async function sendRecoverLink() {
+  const email = document.getElementById('recover-email').value;
+  const st = document.getElementById('recover-status');
+  if(!email) return;
+
+  st.className = 'status'; st.style.display = 'none';
+  try {
+    const res = await fetch(API + '/admin/recover-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail);
+
+    st.className = 'status success';
+    st.textContent = '✅ ' + data.message;
+    st.style.display = 'block';
+    document.getElementById('recover-email').value = '';
+  } catch(e) {
+    st.className = 'status error';
+    st.textContent = '❌ ' + e.message;
+    st.style.display = 'block';
+  }
+}
+
+// Verifica se tem token de reset na URL ao carregar a página
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get('reset_token');
+  if (resetToken) {
+    const newPwd = prompt('Digite sua nova senha mestra:');
+    if (newPwd && newPwd.length >= 6) {
+      fetch(API + '/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, new_password: newPwd })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || 'Erro ao redefinir senha.');
+        window.location.href = 'dashboard.html'; // Limpa a URL
+      })
+      .catch(err => alert('Erro: ' + err.message));
+    }
+  }
+});
 </script>
 
+<!-- Modal Recuperar Senha -->
+<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">🔑 Recuperar Acesso</h3>
+      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
+    </div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
+    <label>E-mail</label>
+    <input type="email" id="recover-email" placeholder="seu-email@email.com">
+    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
+    <div id="recover-status" class="status"></div>
+  </div>
+</div>
 </body>
 </html>
