@@ -773,7 +773,7 @@ async function loadFinanceData() {
     document.getElementById('finance-mrr').innerText = `R$ ${data.mrr.toFixed(2).replace('.', ',')}`;
     document.getElementById('finance-pending').innerText = `R$ ${data.pending.toFixed(2).replace('.', ',')}`;
     document.getElementById('finance-late').innerText = `R$ ${data.late.toFixed(2).replace('.', ',')}`;
-
+    
     const tbody = document.getElementById('finance-table-body');
     if (data.transactions && data.transactions.length > 0) {
       tbody.innerHTML = data.transactions.map(t => `
@@ -781,9 +781,12 @@ async function loadFinanceData() {
           <td>${t.client_name}</td>
           <td>${t.plan_type}</td>
           <td>R$ ${t.amount.toFixed(2).replace('.', ',')}</td>
-          <td>${t.due_date || '-'}</td>
+          <td>${t.due_date ? new Date(t.due_date+'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
           <td><span class="badge badge-${t.status}">${t.status==='paid'?'Pago':(t.status==='pending'?'Pendente':'Atrasado')}</span></td>
-          <td>${t.status!=='paid'?`<button class="btn btn-secondary" style="padding:5px 10px;margin:0;" onclick="markAsPaid(${t.id})">Pagar</button>`:'-'}</td>
+          <td style="display:flex;gap:5px;flex-wrap:wrap;">
+            ${t.status!=='paid'?`<button class="btn btn-secondary" style="padding:5px 10px;margin:0;font-size:12px;" onclick="markAsPaid('${t.client_id}')">Pagar</button>`:''}
+            <button class="btn btn-secondary" style="padding:5px 10px;margin:0;font-size:12px;" onclick="openEditFinanceModal('${t.client_id}', '${t.client_name}', '${t.plan_type}', ${t.amount}, '${t.status}', '${t.due_date}')">✏️ Editar</button>
+          </td>
         </tr>
       `).join('');
     } else {
@@ -792,13 +795,48 @@ async function loadFinanceData() {
   } catch (e) { console.error('Finance Error:', e); }
 }
 
-async function markAsPaid(paymentId) {
+async function markAsPaid(clientId) {
   if(!confirm('Confirmar registro de pagamento?')) return;
   try {
-    await apiCall(`/admin/payments/${paymentId}/pay`, { method: 'POST' });
+    await apiCall(`/admin/payments/${clientId}/pay`, { method: 'POST' });
     alert('✅ Pagamento registrado com sucesso!');
     loadFinanceData();
   } catch (e) { alert('❌ Erro: ' + e.message); }
+}
+
+function openEditFinanceModal(clientId, clientName, plan, amount, status, dueDate) {
+  document.getElementById('edit-fin-client-id').value = clientId;
+  document.getElementById('edit-fin-client-name').innerText = clientName;
+  document.getElementById('edit-fin-plan').value = plan === '-' ? '' : plan;
+  document.getElementById('edit-fin-amount').value = amount;
+  document.getElementById('edit-fin-status').value = status;
+  document.getElementById('edit-fin-due-date').value = dueDate;
+  openModal('modal-edit-finance');
+}
+
+async function saveFinanceData() {
+  const clientId = document.getElementById('edit-fin-client-id').value;
+  const st = document.getElementById('edit-fin-status');
+  st.className = 'status'; st.style.display = 'none';
+  
+  const payload = {
+    plan: document.getElementById('edit-fin-plan').value,
+    monthly_fee: parseFloat(document.getElementById('edit-fin-amount').value),
+    status: document.getElementById('edit-fin-status').value,
+    due_date: document.getElementById('edit-fin-due-date').value || null
+  };
+  
+  try {
+    await apiCall(`/admin/clients/${clientId}/finance`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    closeModal('modal-edit-finance');
+    alert('✅ Dados financeiros atualizados!');
+    loadFinanceData();
+  } catch(e) {
+    st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
+  }
 }
 
 // ========== ANALYTICS ==========
@@ -973,6 +1011,38 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
+
+<!-- Modal Editar Financeiro -->
+<div id="modal-edit-finance" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-edit-finance')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">💰 Editar Cobrança</h3>
+      <button class="modal-close" onclick="closeModal('modal-edit-finance')">✕</button>
+    </div>
+    <input type="hidden" id="edit-fin-client-id">
+    <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
+    
+    <label>Plano (Ex: Assinatura, Site Único)</label>
+    <input type="text" id="edit-fin-plan" placeholder="Assinatura">
+    
+    <label>Valor Mensal (R$)</label>
+    <input type="number" step="0.01" id="edit-fin-amount" placeholder="150.00">
+    
+    <label>Status do Pagamento</label>
+    <select id="edit-fin-status">
+      <option value="pending">Pendente</option>
+      <option value="paid">Pago</option>
+      <option value="overdue">Atrasado</option>
+      <option value="active">Ativo</option>
+    </select>
+    
+    <label>Próximo Vencimento</label>
+    <input type="date" id="edit-fin-due-date">
+    
+    <button class="btn-primary" onclick="saveFinanceData()">Salvar Alterações</button>
+    <div id="edit-fin-status" class="status"></div>
+  </div>
+</div>
 </body>
 </html>
 
@@ -988,6 +1058,38 @@ window.addEventListener('DOMContentLoaded', () => {
     <input type="email" id="recover-email" placeholder="seu-email@email.com">
     <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
     <div id="recover-status" class="status"></div>
+  </div>
+</div>
+
+<!-- Modal Editar Financeiro -->
+<div id="modal-edit-finance" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-edit-finance')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">💰 Editar Cobrança</h3>
+      <button class="modal-close" onclick="closeModal('modal-edit-finance')">✕</button>
+    </div>
+    <input type="hidden" id="edit-fin-client-id">
+    <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
+    
+    <label>Plano (Ex: Assinatura, Site Único)</label>
+    <input type="text" id="edit-fin-plan" placeholder="Assinatura">
+    
+    <label>Valor Mensal (R$)</label>
+    <input type="number" step="0.01" id="edit-fin-amount" placeholder="150.00">
+    
+    <label>Status do Pagamento</label>
+    <select id="edit-fin-status">
+      <option value="pending">Pendente</option>
+      <option value="paid">Pago</option>
+      <option value="overdue">Atrasado</option>
+      <option value="active">Ativo</option>
+    </select>
+    
+    <label>Próximo Vencimento</label>
+    <input type="date" id="edit-fin-due-date">
+    
+    <button class="btn-primary" onclick="saveFinanceData()">Salvar Alterações</button>
+    <div id="edit-fin-status" class="status"></div>
   </div>
 </div>
 </body>
