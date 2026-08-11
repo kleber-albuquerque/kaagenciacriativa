@@ -900,9 +900,10 @@ function copyGeneratedPwd(){
     btn.textContent='✅ Copiado!';
     setTimeout(()=>btn.textContent='📋 Copiar senha',2000);
   }).catch(()=>prompt('Copie a senha:', pwd));
+}
 
 // ==========================================================
-// COLE O CÓDIGO NOVO AQUI EMBAIXO
+// RECUPERAÇÃO DE SENHA
 // ==========================================================
 function showRecoverModal() {
   openModal('modal-recover');
@@ -956,6 +957,24 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
+<!-- Modal Recuperar Senha -->
+<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">🔑 Recuperar Acesso</h3>
+      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
+    </div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
+    <label>E-mail</label>
+    <input type="email" id="recover-email" placeholder="seu-email@email.com">
+    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
+    <div id="recover-status" class="status"></div>
+  </div>
+</div>
+
+</body>
+</html>
 
 <!-- Modal Recuperar Senha -->
 <div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
