@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KA Vox Lab - Ambiente de Testes</title>
+<meta name="description" content="Ambiente exclusivo para calibrar o tom de voz e as respostas do KA Vox antes da publicação oficial." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#000000; --fg:#ffffff; --muted:#8c8c8c; --muted-2:#5e5e5e;
+    --line:rgba(255,255,255,0.10); --line-soft:rgba(255,255,255,0.06);
+    --card:rgba(255,255,255,0.02); --accent:#FFD400;
+    --sans:'Inter', sans-serif; --maxw:1120px; --nav-h:74px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent);color:#000}
+  a{color:inherit;text-decoration:none} img{max-width:100%;display:block}
+  #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* Banner de Homologação */
+  .staging-banner{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--accent);color:#000;text-align:center;padding:8px;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:2}
+  section{position:relative;z-index:2;padding:clamp(80px,12vh,140px) 0}
+  .center{text-align:center} .lead-block{max-width:760px;margin:0 auto}
+  .eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:22px;display:inline-block}
+  h1,h2,h3{font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--accent)}
+  h1{font-size:clamp(2rem,5.4vw,3.5rem)} h2{font-size:clamp(1.35rem,3.2vw,2.2rem);margin-bottom:20px}
+  h3{font-size:1.2rem;color:var(--fg);margin-bottom:10px}
+  p{color:var(--muted);font-size:1.05rem}
+  .sub{margin-top:15px;color:var(--muted);font-size:1.05rem}
+  .divider{height:1px;background:var(--line-soft);border:0;margin:0}
+
+  header.nav{position:fixed;top:35px;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-weight:800;letter-spacing:.22em;font-size:.95rem;color:var(--fg);text-decoration:none}
+  .logo span{color:var(--accent)}
+
+  .hero{min-height:100vh;display:flex;align-items:center;padding-top:calc(var(--nav-h) + 35px)}
+  .hero h1 .dim{color:var(--muted)}
+  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+
+  .btn{display:inline-flex;align-items:center;gap:9px;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;padding:15px 28px;cursor:pointer;transition:.3s;border:1px solid var(--accent);font-family:var(--sans);font-weight:700;text-decoration:none}
+  .btn-primary{background:var(--accent);color:#000}
+  .btn-primary:hover{background:transparent;color:var(--accent)}
+
+  .problem-box{border:1px solid var(--line);padding:40px;border-radius:4px;background:var(--card);margin-top:50px}
+  .problem-box h3{color:var(--accent);font-size:1.5rem;margin-bottom:15px}
+  .steps{text-align:left;list-style:none;margin-top:20px;counter-reset:steps}
+  .steps li{padding-left:45px;position:relative;margin-bottom:20px;color:var(--muted)}
+  .steps li::before{counter-increment:steps;content:counter(steps);position:absolute;left:0;top:-2px;width:30px;height:30px;border:1px solid var(--accent);color:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem}
+
+  footer{border-top:1px solid var(--line-soft);padding:40px 0;text-align:center}
+  .foot-copy{font-size:.66rem;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<!-- Banner de Aviso -->
+<div class="staging-banner">🚧 Ambiente de Homologação KA Vox - Em Teste 🚧</div>
+
+<canvas id="bg"></canvas>
+<div class="grain"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a href="https://kaagenciacriativa.vercel.app/" class="logo">KA<span>.</span></a>
+    <div style="font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)">KA Vox Lab</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap center">
+    <div class="lead-block">
+      <span class="eyebrow">Laboratório de Voz IA</span>
+      <h1>Calibre o tom de voz da <span id="client-name" class="dim">Sua Marca</span></h1>
+      <p class="sub">Bem-vindo ao ambiente exclusivo de testes. Aqui ajustamos o tom, a personalidade e as respostas do seu KA Vox antes de publicá-lo no seu site oficial.</p>
+      <div class="hero-btns">
+        <button onclick="document.getElementById('ka-chat') ? document.getElementById('ka-chat').style.display='flex' : alert('Carregando...')" class="btn btn-primary">Iniciar Conversa →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTRUÇÕES -->
+<section style="padding-top:0">
+  <div class="wrap center">
+    <div class="problem-box">
+      <h3>Como afinar o tom de voz</h3>
+      <p>Para garantir que a IA represente sua marca perfeitamente, siga este ciclo de testes junto à KA Agência Criativa:</p>
+      <ol class="steps">
+        <li><strong style="color:#fff">Teste a IA:</strong> Clique no botão de chat no canto inferior direito e faça perguntas como se fosse um cliente real (preços, horários, serviços).</li>
+        <li><strong style="color:#fff">Analise o Tom:</strong> Veja se as palavras escolhidas pela IA condizem com o nível de formalidade e o estilo do seu negócio.</li>
+        <li><strong style="color:#fff">Dê o Feedback:</strong> Anote o que não soou natural e me mande no WhatsApp. Eu ajustarei as instruções no painel em tempo real.</li>
+        <li><strong style="color:#fff">Aprovação:</strong> Assim que o tom estiver perfeito, publicamos o KA Vox no seu site.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><p class="foot-copy">© 2026 KA Agência Criativa. Presença digital sem ruído.</p></div>
+</footer>
+
+<!-- Script do Efeito de Fundo Original -->
+<script>
+var canvas=document.getElementById('bg');var ctx=canvas.getContext('2d');var w,h,dpr=Math.min(window.devicePixelRatio||1,2);var orbs=[],ripples=[];var pointer={x:-9999,y:-9999,active:false};var glow={x:0,y:0};function rand(a,b){return a+Math.random()*(b-a)}function buildOrbs(){orbs=[];for(var i=0;i<6;i++){orbs.push({bx:rand(0,w),by:rand(0,h),x:0,y:0,r:rand(Math.min(w,h)*0.22,Math.min(w,h)*0.5),ph:rand(0,Math.PI*2),sp:rand(0.00012,0.0004),amp:rand(30,90),a:rand(0.05,0.11),g:Math.round(rand(150,255))})}glow.x=w/2;glow.y=h/2}function resize(){w=window.innerWidth;h=window.innerHeight;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildOrbs()}window.addEventListener('resize',resize);resize();window.addEventListener('pointermove',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true},{passive:true});window.addEventListener('pointerdown',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true;ripples.push({x:e.clientX,y:e.clientY,r:0,a:0.5,max:rand(180,260)})},{passive:true});window.addEventListener('pointerleave',function(){pointer.active=false});function frame(t){ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='lighter';if(pointer.active){glow.x+=(pointer.x-glow.x)*0.12;glow.y+=(pointer.y-glow.y)*0.12;var gg=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,260);gg.addColorStop(0,'rgba(255,255,255,0.10)');gg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(glow.x,glow.y,260,0,Math.PI*2);ctx.fill()}for(var i=0;i<orbs.length;i++){var o=orbs[i];var tx=o.bx+Math.cos(t*o.sp+o.ph)*o.amp;var ty=o.by+Math.sin(t*o.sp*1.3+o.ph)*o.amp;if(pointer.active){var dx=tx-pointer.x,dy=ty-pointer.y;var d=Math.sqrt(dx*dx+dy*dy);if(d<240&&d>0.01){var f=(1-d/240)*70;tx+=(dx/d)*f;ty+=(dy/d)*f}}o.x+=(tx-o.x)*0.05;o.y+=(ty-o.y)*0.05;var grad=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=(rp.max-rp.r)*0.06+1.2;rp.a*=0.94;ctx.strokeStyle='rgba(255,255,255,'+rp.a.toFixed(3)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.stroke();if(rp.a<0.01||rp.r>rp.max)ripples.splice(r,1)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+</script>
+
+<!-- Script Dinâmico do Widget KA Vox -->
+<script>
+  // 1. Captura o slug do cliente na URL (ex: ?client=vivi-correa)
+  const urlParams = new URLSearchParams(window.location.search);
+  const clientId = urlParams.get('client');
+
+  if (clientId) {
+    // Formata o nome para ficar bonito (ex: vivi-correa -> Vivi Correa)
+    const displayName = clientId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    document.getElementById('client-name').textContent = displayName;
+
+    // 2. Injeta dinamicamente o script do Widget
+    const script = document.createElement('script');
+    script.src = 'https://kaagenciacriativa.vercel.app/widget.js';
+    script.setAttribute('data-client-id', clientId);
+    script.defer = true;
+    document.body.appendChild(script);
+  } else {
+    // Se não tiver cliente na URL, avisa o usuário
+    document.getElementById('client-name').textContent = "Nenhum Cliente";
+    alert('Atenção: Adicione ?client=slug-do-cliente na URL para testar o KA Vox.');
+  }
+</script>
+
+</body>
+</html>
