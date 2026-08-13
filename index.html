@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>KA. — Assistente de Voz IA para seu Site | Agência Criativa</title>
-<meta name="description" content="Não perca mais clientes por falta de atendimento. O KA Vox é um assistente de inteligência artificial com voz que atende e captura leads no seu site 24 horas por dia." />
+<title>KA Agência Criativa | Presença Digital Sem Ruído</title>
+<meta name="description" content="A KA Agência Criativa modela tons de marca e dá vida a eles no digital. Criamos sites premium e assistentes de IA (KA Vox) que atendem, agendam e vendem 24/7." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -32,7 +32,6 @@
   h3{font-size:1.2rem;color:var(--fg);margin-bottom:10px}
   p{color:var(--muted);font-size:1.05rem}
   .sub{margin-top:15px;color:var(--muted);font-size:1.05rem}
-  .divider{height:1px;background:var(--line-soft);border:0;margin:0}
 
   header.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
   .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between}
@@ -54,43 +53,23 @@
   .btn-ghost{background:transparent;color:var(--accent)}
   .btn-ghost:hover{background:var(--accent);color:#000}
 
-  .problem-box{border:1px solid var(--line);padding:40px;border-radius:4px;background:var(--card);margin-top:50px}
-  .problem-box h3{color:var(--accent);font-size:1.5rem;margin-bottom:15px}
-
-  /* Seção de Demonstração */
-  .demo-section{background:linear-gradient(180deg, transparent, rgba(255,212,0,0.02), transparent)}
-  .demo-container{border:1px solid var(--accent);background:rgba(255,212,0,0.03);padding:60px 40px;border-radius:8px;margin-top:40px;text-align:center}
-
   .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px}
-  .feature-card{background:#0a0a0a;border:1px solid var(--line);padding:32px;border-radius:4px;transition:.3s}
+  .feature-card{background:#0a0a0a;border:1px solid var(--line);padding:32px;border-radius:4px;transition:.3s; text-align:left;}
   .feature-card:hover{border-color:var(--accent)}
   .feature-icon{width:48px;height:48px;background:rgba(255,212,0,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:var(--accent)}
   .feature-icon svg{width:24px;height:24px}
 
-  .dual-offer{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:50px;align-items:stretch}
-  .offer-card{background:#0a0a0a;border:1px solid var(--line);padding:40px;border-radius:4px;display:flex;flex-direction:column}
-  .offer-card.main{border-color:var(--accent);box-shadow:0 0 40px rgba(255,212,0,0.1)}
-  .offer-tier{font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:15px}
-  .offer-val{font-size:2.2rem;font-weight:800;color:var(--fg);margin-bottom:5px}
-  .offer-desc{font-size:.95rem;color:var(--muted);margin-bottom:25px;padding-bottom:25px;border-bottom:1px solid var(--line)}
-  .offer-list{list-style:none;margin-bottom:30px;flex-grow:1}
-  .offer-list li{margin-bottom:12px;color:var(--muted);display:flex;gap:10px;align-items:start;font-size:.95rem}
-  .offer-list li svg{width:18px;height:18px;color:var(--accent);flex-shrink:0;margin-top:2px}
+  .highlight-box{border:1px solid var(--accent);background:rgba(255,212,0,0.03);padding:60px 40px;border-radius:8px;margin-top:50px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
 
-  .use-cases{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:40px}
-  .use-case{background:#000;padding:25px;text-align:center;font-size:.9rem;font-weight:600;letter-spacing:.05em;color:var(--muted)}
-
+  /* Estilos do Formulário */
   form{max-width:560px;margin:48px auto 0;display:flex;flex-direction:column;gap:26px}
   .field{text-align:left}
   .field label{display:block;font-size:.64rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
   .field input,.field select,.field textarea{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line);color:#fff;font:inherit;font-size:.95rem;padding:10px 0;outline:none;transition:border-color .3s}
   .field select{appearance:none;cursor:pointer} .field select option{background:#000;color:#fff} .field textarea{resize:vertical;min-height:90px}
-  .field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--accent)} form .btn{align-self:center;margin-top:8px}
+  .field input:focus,.field select:focus,.field textarea:focus{border-bottom-color:var(--accent)} form .btn{align-self:center;margin-top:8px;justify-content:center}
 
-  footer{border-top:1px solid var(--line-soft);padding:40px 0;text-align:center}
-  .foot-copy{font-size:.66rem;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase}
-
-  @media(max-width:900px){.features-grid, .dual-offer{grid-template-columns:1fr} .use-cases{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:900px){.features-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -100,13 +79,13 @@
 
 <header class="nav">
   <div class="nav-inner">
-    <a href="index.html" class="logo">KA<span>.</span></a>
+    <a href="/" class="logo">KA<span>.</span></a>
     <nav class="nav-links">
-      <a href="#demo">Demo</a>
-      <a href="#planos">Planos</a>
+      <a href="#servicos">Serviços</a>
+      <a href="/kavox">KA Vox</a>
       <a href="#contato">Contato</a>
     </nav>
-    <a href="#contato" class="nav-cta">Quero o KA Vox</a>
+    <a href="#contato" class="nav-cta">Entre em contato</a>
   </div>
 </header>
 
@@ -114,191 +93,133 @@
 <section class="hero" id="top">
   <div class="wrap center">
     <div class="lead-block">
-      <span class="eyebrow">Assistente de Voz com IA</span>
-      <h1>Seu site agora <span class="dim">atende e vende</span> 24 horas por dia.</h1>
-      <p class="sub">Não perca mais clientes porque ninguém respondeu a tempo. O <strong style="color:#fff">KA Vox</strong> é um assistente de inteligência artificial com voz própria, treinado no tom da sua marca, que atende, tira dúvidas e captura contatos direto no seu WhatsApp.</p>
+      <span class="eyebrow">KA Agência Criativa</span>
+      <h1>Presença digital.<br><span class="dim">Sem ruído.</span></h1>
+      <p class="sub">Modelamos a identidade e o tom de voz da sua marca, traduzindo-os em experiências digitais. Da arquitetura de um site premium ao atendimento automatizado por inteligência artificial, garantimos que sua marca comunique valor e capture oportunidades 24 horas por dia.</p>
       <div class="hero-btns">
-        <button onclick="testarKAVox()" class="btn btn-primary">Testar o KA Vox Agora</button>
-        <a href="#planos" class="btn btn-ghost">Ver Planos</a>
+        <a href="#servicos" class="btn btn-primary">Nossos Serviços</a>
+        <a href="/kavox" class="btn btn-ghost">Conhecer o KA Vox</a>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PROBLEMA -->
-<section style="padding-top:0">
-  <div class="wrap center">
-    <div class="problem-box">
-      <h3>O problema do site mudo</h3>
-      <p>O cliente acessa seu site fora do horário comercial, tem uma dúvida sobre preço ou serviço, não encontra resposta e vai embora. O silêncio no digital custa caro. Ele leva embora quem quase decidiu fechar negócio com você. </p>
-    </div>
-  </div>
-</section>
-
-<!-- DEMONSTRAÇÃO AO VIVO -->
-<section id="demo" class="demo-section">
-  <div class="wrap center">
-    <div class="lead-block">
-      <span class="eyebrow">Demonstração Interativa</span>
-      <h2>Converse com o KA Vox. Ele mesmo vai te vender o serviço.</h2>
-      <p class="sub">Este assistente foi treinado com todas as informações da KA Agência. Faça uma pergunta sobre preços, como funciona ou peça uma demonstração para o seu nicho.</p>
-    </div>
-
-    <div class="demo-container">
-      <button onclick="testarKAVox()" class="btn btn-primary">Iniciar Conversa com a IA →</button>
-    </div>
-  </div>
-</section>
-
-<!-- O PRODUTO (KA Vox) -->
-<section>
+<!-- SERVIÇOS -->
+<section id="servicos">
   <div class="wrap">
     <div class="lead-block center">
-      <h2>A solução: Um anfitrião digital.</h2>
-      <p class="sub">O KA Vox não é um robô frio. É uma voz treinada com o ofício de quem entende de comunicação.</p>
+      <span class="eyebrow">O que fazemos</span>
+      <h2>Soluções digitais sob medida para a sua marca.</h2>
+      <p class="sub">Unimos design estratégico, arquitetura de informação e tecnologia de inteligência artificial para construir presenças digitais que conversam, encantam e vendem. Cada projeto é desenhado para refletir a essência da sua marca e otimizar o seu funil de vendas.</p>
     </div>
     <div class="features-grid">
+      <!-- Serviço 1: Sites e Arquitetura -->
       <div class="feature-card">
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
-        <h3>Resposta Imediata</h3>
-        <p>A IA responde na hora, a qualquer hora. Não há fila de espera, não há horário fechado. O cliente tem a informação exatamente quando a vontade de comprar bate.</p>
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        </div>
+        <h3>Sites & Arquitetura Digital</h3>
+        <p>Websites premium, rápidos e otimizados para conversão. Criamos a estrutura digital da sua marca (Landing Pages e E-commerce) com hospedagem e manutenção contínua.</p>
       </div>
+      <!-- Serviço 2: Branding e Tom de Voz -->
       <div class="feature-card">
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
-        <h3>Captura de Leads</h3>
-        <p>O assistente conversa, qualifica o visitante e envia o contato direto para o seu WhatsApp. Você acorda de manhã com o cliente pronto para fechar negócio.</p>
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
+        <h3>Branding & Tom de Voz</h3>
+        <p>Definimos a personalidade da sua marca. Da paleta de cores à escolha de palavras, garantimos que sua empresa comunique valor, atraia o público certo e construa autoridade.</p>
       </div>
+      <!-- Serviço 3: KA Vox -->
       <div class="feature-card">
-        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></div>
-        <h3>Voz da Marca</h3>
-        <p>Formal, descontraído, técnico. A IA fala como a sua marca fala. Treinada com seus preços, serviços e diferenciais. Não é um chatbot genérico.</p>
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </div>
+        <h3>Tecnologia KA Vox (IA)</h3>
+        <p>Implementamos nosso assistente de voz por IA para atuar como secretária digital ou vendedora. Ela atende por voz, tira dúvidas, agenda consultas e recupera carrinhos abandonados no e-commerce.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- QUEM USA -->
+<!-- HIGHLIGHT KA VOX -->
 <section style="padding-top:0">
   <div class="wrap center">
-    <h2>Ideal para negócios onde um contato perdido é uma venda perdida.</h2>
-    <div class="use-cases">
-      <div class="use-case">Clínicas e Estúdios</div>
-      <div class="use-case">Advogados e Contadores</div>
-      <div class="use-case">Restaurantes e Bistrôs</div>
-      <div class="use-case">Imobiliárias e Engenharia</div>
-      <div class="use-case">Salões e Estética</div>
-      <div class="use-case">Produtores Culturais</div>
-      <div class="use-case">Prestadores de Serviço</div>
-      <div class="use-case">E-commerce Local</div>
+    <div class="highlight-box">
+      <span class="eyebrow">Nosso Produto Bandeira</span>
+      <h2>Conheça o KA Vox</h2>
+      <p class="sub" style="max-width:600px;margin:0 auto;">Não perca mais clientes por falta de atendimento. O KA Vox é a inteligência artificial treinada no tom da sua marca, pronta para ser a recepcionista, secretária ou vendedora do seu site.</p>
+      <a href="/kavox" class="btn btn-primary" style="margin-top:20px;">Descobrir o KA Vox →</a>
     </div>
   </div>
 </section>
 
-<hr class="divider" />
-
-<!-- PLANOS (Dual Offer) -->
-<section id="planos">
-  <div class="wrap">
-    <div class="lead-block center">
-      <span class="eyebrow">Planos de Implementação</span>
-      <h2>Escolha a melhor forma de ter o KA Vox.</h2>
-      <p class="sub">Se você já tem site, instalamos a IA. Se não tem, criamos do zero.</p>
-    </div>
-    <div class="dual-offer">
-
-      <!-- Oferta 1: Só o Widget -->
-      <div class="offer-card main">
-        <div class="offer-tier">Opção 1: Widget no seu site</div>
-        <div class="offer-val">R$ 990</div>
-        <div class="offer-desc">Você já tem um site (Wix, WordPress, Nuvemshop). Eu instalo o KA Vox e treino a voz da sua marca.</div>
-        <ul class="offer-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Instalação no seu site atual</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Treinamento de tom de voz</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Configuração de captação de leads</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Entrega rápida</li>
-        </ul>
-        <a href="#contato" class="btn btn-primary">Quero essa opção</a>
-      </div>
-
-      <!-- Oferta 2: Site Novo + Widget -->
-      <div class="offer-card">
-        <div class="offer-tier">Opção 2: Site Novo + Widget IA</div>
-        <div class="offer-val">R$ 1.700</div>
-        <div class="offer-desc">Não tem site ou quer um novo? Crio uma Landing Page premium do zero com o KA Vox integrado.</div>
-        <ul class="offer-list">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Design premium sob medida</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Site institucional / Landing Page</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Assistente de Voz IA Incluso</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> SEO e Responsividade</li>
-        </ul>
-        <a href="#contato" class="btn btn-ghost">Quero essa opção</a>
-      </div>
-    </div>
-
-    <p style="text-align:center; margin-top:30px; color:var(--muted-2); font-size:.9rem">* Ambas as opções exigem mensalidade de <strong style="color:var(--accent)">R$ 297/mês</strong> para manutenção da IA, hospedagem do backend e ajustes de voz.</p>
-  </div>
-</section>
-
-<hr class="divider" />
-
-<!-- CONTATO -->
+<!-- CONTATO RÁPIDO -->
 <section id="contato" style="background:linear-gradient(180deg, transparent, rgba(255,212,0,0.03), transparent)">
   <div class="wrap center">
     <div class="lead-block">
-      <h2>Vamos dar voz à sua marca?</h2>
-      <p class="sub">Preencha o formulário. Vou entrar em contato em até 48h para um diagnóstico gratuito e mostrar o KA Vox funcionando para o seu negócio.</p>
-    </div>
+      <span class="eyebrow">Vamos Conversar</span>
+      <h2>Faça sua marca ser ouvida.</h2>
+      <p class="sub">Preencha o formulário abaixo. Vamos entender suas necessidades e propor a melhor solução em design, hospedagem e tecnologia de IA para o seu negócio.</p>
 
-    <form id="contactForm" action="https://formspree.io/f/mkodrjbo" method="POST">
-      <div class="field"><label>Seu Nome</label><input type="text" name="nome" required></div>
-      <div class="field"><label>Empresa / Negócio</label><input type="text" name="empresa"></div>
-      <div class="field"><label>E-mail</label><input type="email" name="email" required></div>
-      <div class="field">
-        <label>Plano de Interesse</label>
-        <select name="plano">
-          <option>Opção 1: Instalar no meu site atual (R$ 990)</option>
-          <option>Opção 2: Site Novo + IA (R$ 1.700)</option>
-          <option>Ainda não sei, quero tirar dúvidas</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary" style="justify-content:center;margin-top:10px">Enviar e receber diagnóstico →</button>
-    </form>
+      <!-- TROQUE O LINK DO FORMSPREE ABAIXO PELO SEU -->
+      <form id="contactForm" action="https://formspree.io/f/seu-id-aqui" method="POST">
+        <div class="field"><label>Seu Nome</label><input type="text" name="nome" required></div>
+        <div class="field"><label>Empresa / Negócio</label><input type="text" name="empresa"></div>
+        <div class="field"><label>E-mail</label><input type="email" name="email" required></div>
+        <div class="field">
+          <label>Serviço de Interesse</label>
+          <select name="servico">
+            <option>Criação de Site / Landing Page</option>
+            <option>Instalação do KA Vox (IA)</option>
+            <option>Site Novo + KA Vox</option>
+            <option>Branding e Identidade Visual</option>
+            <option>Ainda não sei, quero um diagnóstico</option>
+          </select>
+        </div>
+        <div class="field"><label>Mensagem (Opcional)</label><textarea name="mensagem" placeholder="Conte um pouco sobre o seu projeto..."></textarea></div>
+        <button type="submit" class="btn btn-primary">Enviar Mensagem →</button>
+      </form>
+    </div>
   </div>
 </section>
 
 <footer>
-  <div class="wrap"><p class="foot-copy">© 2026 KA Agência Criativa. Presença digital sem ruído.</p></div>
+  <div class="wrap" style="padding:40px 28px; text-align:center; border-top:1px solid var(--line-soft);">
+    <p style="font-size:.66rem;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase;">© 2026 KA Agência Criativa. Presença digital sem ruído.</p>
+  </div>
 </footer>
 
+<!-- Script do Efeito de Fundo Original -->
 <script>
 var canvas=document.getElementById('bg');var ctx=canvas.getContext('2d');var w,h,dpr=Math.min(window.devicePixelRatio||1,2);var orbs=[],ripples=[];var pointer={x:-9999,y:-9999,active:false};var glow={x:0,y:0};function rand(a,b){return a+Math.random()*(b-a)}function buildOrbs(){orbs=[];for(var i=0;i<6;i++){orbs.push({bx:rand(0,w),by:rand(0,h),x:0,y:0,r:rand(Math.min(w,h)*0.22,Math.min(w,h)*0.5),ph:rand(0,Math.PI*2),sp:rand(0.00012,0.0004),amp:rand(30,90),a:rand(0.05,0.11),g:Math.round(rand(150,255))})}glow.x=w/2;glow.y=h/2}function resize(){w=window.innerWidth;h=window.innerHeight;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildOrbs()}window.addEventListener('resize',resize);resize();window.addEventListener('pointermove',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true},{passive:true});window.addEventListener('pointerdown',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true;ripples.push({x:e.clientX,y:e.clientY,r:0,a:0.5,max:rand(180,260)})},{passive:true});window.addEventListener('pointerleave',function(){pointer.active=false});function frame(t){ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='lighter';if(pointer.active){glow.x+=(pointer.x-glow.x)*0.12;glow.y+=(pointer.y-glow.y)*0.12;var gg=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,260);gg.addColorStop(0,'rgba(255,255,255,0.10)');gg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(glow.x,glow.y,260,0,Math.PI*2);ctx.fill()}for(var i=0;i<orbs.length;i++){var o=orbs[i];var tx=o.bx+Math.cos(t*o.sp+o.ph)*o.amp;var ty=o.by+Math.sin(t*o.sp*1.3+o.ph)*o.amp;if(pointer.active){var dx=tx-pointer.x,dy=ty-pointer.y;var d=Math.sqrt(dx*dx+dy*dy);if(d<240&&d>0.01){var f=(1-d/240)*70;tx+=(dx/d)*f;ty+=(dy/d)*f}}o.x+=(tx-o.x)*0.05;o.y+=(ty-o.y)*0.05;var grad=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=(rp.max-rp.r)*0.06+1.2;rp.a*=0.94;ctx.strokeStyle='rgba(255,255,255,'+rp.a.toFixed(3)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.stroke();if(rp.a<0.01||rp.r>rp.max)ripples.splice(r,1)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
-
-document.getElementById('contactForm').addEventListener('submit',function(e){e.preventDefault();var btn=this.querySelector('button[type=submit]');btn.textContent='Enviando...';btn.disabled=true;fetch(this.action,{method:'POST',body:new FormData(this),headers:{'Accept':'application/json'}}).then(function(res){if(res.ok){alert('Mensagem enviada! Entrarei em contato em breve.');window.location.href='index.html'}else{throw new Error('fail')}}).catch(function(){alert('Erro ao enviar. Tente novamente.');btn.textContent='Enviar e receber diagnóstico →';btn.disabled=false})});
 </script>
 
-<!-- WIDGET KA VOX (Vendendo a si próprio) -->
-<script src="https://ka-voice-backend.onrender.com/widget.js" data-client-id="ka-vox"></script>
-
+<!-- Script do Formulário -->
 <script>
-function testarKAVox() {
-  var tooltip = document.getElementById('ka-tooltip');
-  var chat = document.getElementById('ka-chat');
-  if (tooltip && chat) {
-    tooltip.style.display = 'none';
-    chat.style.display = 'flex';
-    setTimeout(function() {
-      var input = document.getElementById('ka-text-input');
-      var btn = document.getElementById('ka-send-btn');
-      if (input && btn) {
-        input.value = "Quero ver uma demonstração de como o KA Vox funciona";
-        btn.click();
-      }
-    }, 600);
-  } else {
-    alert("O assistente está carregando. Tente em instantes.");
-  }
-}
+document.getElementById('contactForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var btn = this.querySelector('button[type=submit]');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  fetch(this.action, {
+    method: 'POST',
+    body: new FormData(this),
+    headers: { 'Accept': 'application/json' }
+  }).then(function(res) {
+    if(res.ok) {
+      alert('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+      window.location.href = '/';
+    } else {
+      throw new Error('fail');
+    }
+  }).catch(function() {
+    alert('Erro ao enviar. Tente novamente.');
+    btn.textContent = 'Enviar Mensagem →';
+    btn.disabled = false;
+  });
+});
 </script>
-<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="ka-vox" defer></script>
+
 </body>
 </html>

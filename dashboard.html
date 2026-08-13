@@ -448,7 +448,7 @@ function closeModal(id){ document.getElementById(id).style.display='none'; }
 
 // ========== CONFIGURAÇÕES ==========
 function copyScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
     const btn = event.target;
     const orig = btn.innerText;
@@ -718,7 +718,7 @@ async function checkWidgetStatus(slug, domain) {
 }
 
 function copySiteScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
     alert('✅ Script copiado!\n\n' + tag);
   }).catch(() => {
