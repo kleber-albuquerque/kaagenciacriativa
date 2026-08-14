@@ -9,6 +9,41 @@ var CONFIG = {
 };
 console.log('🎯 Cliente identificado:', CONFIG.clientId);
 
+// ==========================================================
+// RASTREAMENTO DE TRÁFEGO (ANALYTICS)
+// ==========================================================
+const TRACK_URL = 'https://ka-voice-backend.onrender.com/widget/track';
+
+// 1. Registra que a página foi carregada (Pageview)
+fetch(TRACK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        client_id: CONFIG.clientId,
+        event_type: 'pageview',
+        url: window.location.href
+    })
+}).catch(() => {});
+
+// 2. Registra quando o usuário abre o chat do widget
+document.addEventListener('click', function(e) {
+    if (e.target.closest('#ka-vox-button') || e.target.closest('#ka-vox-chat')) {
+        if (!sessionStorage.getItem('ka_vox_opened')) {
+            fetch(TRACK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id: CONFIG.clientId,
+                    event_type: 'widget_open',
+                    url: window.location.href
+                })
+            }).catch(() => {});
+            sessionStorage.setItem('ka_vox_opened', 'true');
+        }
+    }
+});
+// ==========================================================
+
 var BRAND = {
   brand_name: 'Assistente Virtual',
   accent_color: '#FFD400',
@@ -23,7 +58,6 @@ function textColorFor(hex) {
   var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
   return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
 }
-
 var kaIsListening = false, kaIsPlaying = false, kaRecognizer = null, kaAudioUrl = null;
 
 function initWidget() {
