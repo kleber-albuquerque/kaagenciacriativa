@@ -138,29 +138,6 @@
         <div>Status: <span id="ov-status" class="badge badge-pending">-</span></div>
       </div>
 
-          <!-- GERENCIADOR DE CONHECIMENTO (RAG) -->
-    <div class="card">
-      <h2>📚 Base de Conhecimento (IA)</h2>
-      <div class="info-box">💡 Cole aqui informações sobre produtos, preços, políticas da loja, horários, etc. A IA usará isso para responder aos clientes sem alucinar. Quanto mais detalhado, melhor.</div>
-      <textarea id="kb-content" style="min-height: 120px; margin-bottom: 12px;" placeholder="Ex: Anel Aurora: Feito de ouro 18k. Preço: R$ 1.700. Tamanhos: 15 ao 20..."></textarea>
-      <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
-      <div id="kb-status" class="status"></div>
-
-            <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 15px;">
-        <h2 style="font-size: 14px;">Importar Catálogo (JSON)</h2>
-        <div class="info-box">💡 Selecione um arquivo .json extraído da loja para treinar a IA com todos os produtos de uma vez. O sistema vai limpar as imagens e salvar apenas o que importa.</div>
-        <input type="file" id="kb-json-file" accept=".json" style="display: none;" onchange="handleJsonUpload()">
-        <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="document.getElementById('kb-json-file').click()">📁 Selecionar arquivo JSON</button>
-        <div id="kb-import-status" class="status"></div>
-      </div>
-
-      <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
-            <button class="btn btn-secondary" style="margin-left: 0; margin-bottom: 10px; width: auto; padding: 6px 12px; font-size: 12px; background: #7f1d1d; color: #fca5a5; border-color: #7f1d1d;" onclick="clearAllKnowledge()">🗑️ Limpar Tudo</button>
-      <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
-        <p style="color: #555; font-size: 13px;">Carregando...</p>
-      </div>
-    </div>
-
       <!-- CAMPO GOOGLE ANALYTICS -->
       <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
         <label style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Link do Google Analytics</label>
@@ -169,6 +146,29 @@
           <button class="btn btn-secondary" style="padding: 8px 15px; margin: 0; font-size: 12px;" onclick="saveGaUrl()">Salvar Link</button>
           <a id="ov-ga-link" href="#" target="_blank" class="btn btn-primary" style="padding: 8px 15px; margin: 0; font-size: 12px; text-decoration: none; display: none;">Abrir Analytics ↗</a>
         </div>
+      </div>
+    </div>
+
+    <!-- GERENCIADOR DE CONHECIMENTO (RAG) -->
+    <div class="card">
+      <h2>📚 Base de Conhecimento (IA)</h2>
+      <div class="info-box">💡 Cole aqui informações sobre produtos, preços, políticas da loja, horários, etc. A IA usará isso para responder aos clientes sem alucinar. Quanto mais detalhado, melhor.</div>
+      <textarea id="kb-content" style="min-height: 120px; margin-bottom: 12px;" placeholder="Ex: Anel Aurora: Feito de ouro 18k. Preço: R$ 1.700. Tamanhos: 15 ao 20..."></textarea>
+      <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
+      <div id="kb-status" class="status"></div>
+
+      <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <h2 style="font-size: 14px;">Importar Catálogo (JSON)</h2>
+        <div class="info-box">💡 Selecione um arquivo .json extraído da loja para treinar a IA com todos os produtos de uma vez. O sistema vai limpar as imagens e salvar apenas o que importa.</div>
+        <input type="file" id="kb-json-file" accept=".json" style="display: none;" onchange="handleJsonUpload()">
+        <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="document.getElementById('kb-json-file').click()">📁 Selecionar arquivo JSON</button>
+        <div id="kb-import-status" class="status"></div>
+      </div>
+
+      <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
+      <button class="btn btn-secondary" style="margin-left: 0; margin-bottom: 10px; width: auto; padding: 6px 12px; font-size: 12px; background: #7f1d1d; color: #fca5a5; border-color: #7f1d1d;" onclick="clearAllKnowledge()">🗑️ Limpar Tudo</button>
+      <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
+        <p style="color: #555; font-size: 13px;">Carregando...</p>
       </div>
     </div>
 
@@ -574,7 +574,6 @@ async function loadConfig() {
   if (!cid) return;
   loadClientOverview(cid);
   loadKnowledge(cid);
-
   try {
     const cfg = await apiCall('/admin/clients/' + cid + '/config');
     document.getElementById('voice').value = cfg.voice || 'pt-BR-FranciscaNeural';
@@ -613,7 +612,8 @@ async function saveConfig() {
     st.className = 'status success';
     st.innerText = '✅ ' + data.message;
     st.style.display = 'block';
-    loadClientsList();
+    await loadClientsList();
+    document.getElementById('config-client-id').value = cid; // VOLTA PARA O CLIENTE SELECIONADO
     setTimeout(() => st.style.display = 'none', 4000);
   } catch (e) {
     st.className = 'status error';
@@ -1024,6 +1024,7 @@ async function clearAllKnowledge() {
     alert('✅ Base de conhecimento limpa!');
   } catch(e) { alert('❌ Erro: ' + e.message); }
 }
+
 async function saveKnowledge() {
   const cid = document.getElementById('config-client-id').value;
   const content = document.getElementById('kb-content').value;
@@ -1033,7 +1034,6 @@ async function saveKnowledge() {
   }
   const st = document.getElementById('kb-status');
   st.className = 'status'; st.style.display = 'none';
-
   try {
     await apiCall('/admin/clients/' + cid + '/knowledge', {
       method: 'POST',
@@ -1051,6 +1051,7 @@ async function saveKnowledge() {
     st.style.display = 'block';
   }
 }
+
 async function handleJsonUpload() {
   const fileInput = document.getElementById('kb-json-file');
   const file = fileInput.files[0];
@@ -1075,8 +1076,8 @@ async function handleJsonUpload() {
       st.textContent = '✅ ' + res.message;
       st.style.display = 'block';
 
-      loadKnowledge(cid); // Recarrega a lista de conhecimentos
-      fileInput.value = ''; // Limpa o input
+      loadKnowledge(cid);
+      fileInput.value = '';
     } catch (err) {
       st.className = 'status error';
       st.textContent = '❌ Erro: ' + err.message;
