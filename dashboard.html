@@ -146,6 +146,14 @@
       <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
       <div id="kb-status" class="status"></div>
 
+            <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <h2 style="font-size: 14px;">Importar Catálogo (JSON)</h2>
+        <div class="info-box">💡 Selecione um arquivo .json extraído da loja para treinar a IA com todos os produtos de uma vez. O sistema vai limpar as imagens e salvar apenas o que importa.</div>
+        <input type="file" id="kb-json-file" accept=".json" style="display: none;" onchange="handleJsonUpload()">
+        <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="document.getElementById('kb-json-file').click()">📁 Selecionar arquivo JSON</button>
+        <div id="kb-import-status" class="status"></div>
+      </div>
+
       <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
       <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
         <p style="color: #555; font-size: 13px;">Carregando...</p>
@@ -1024,7 +1032,40 @@ async function saveKnowledge() {
     st.style.display = 'block';
   }
 }
+async function handleJsonUpload() {
+  const fileInput = document.getElementById('kb-json-file');
+  const file = fileInput.files[0];
+  const cid = document.getElementById('config-client-id').value;
+  if (!file || !cid) return;
 
+  const st = document.getElementById('kb-import-status');
+  st.className = 'status'; st.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const jsonData = JSON.parse(e.target.result);
+      st.className = 'status'; st.textContent = '⏳ Treinando IA com os produtos...'; st.style.display = 'block';
+
+      const res = await apiCall('/admin/clients/' + cid + '/knowledge/import-json', {
+        method: 'POST',
+        body: JSON.stringify(jsonData)
+      });
+
+      st.className = 'status success';
+      st.textContent = '✅ ' + res.message;
+      st.style.display = 'block';
+
+      loadKnowledge(cid); // Recarrega a lista de conhecimentos
+      fileInput.value = ''; // Limpa o input
+    } catch (err) {
+      st.className = 'status error';
+      st.textContent = '❌ Erro: ' + err.message;
+      st.style.display = 'block';
+    }
+  };
+  reader.readAsText(file);
+}
 </script>
 </body>
 </html>
