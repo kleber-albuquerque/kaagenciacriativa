@@ -5,7 +5,6 @@
 <title>KA Voice SaaS - Painel Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Adicionado Chart.js para os gráficos do Analytics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root { --bg: #0a0a0a; --card: #151515; --border: #252525; --accent: #FFD400; --text: #fff; --muted: #888; --error: #fca5a5; --success: #6ee7b7; }
@@ -46,13 +45,34 @@
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
   .empty { text-align: center; color: #555; padding: 30px; font-size: 14px; }
   .info-box { background: #1a1a1a; border: 1px dashed var(--border); padding: 12px; border-radius: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px; }
-
-  /* Estilos para gráficos e cards numéricos */
   .stat-value { font-size: 26px; font-weight: bold; margin-top: 8px; }
   .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-  .badge-paid { background: #064e3b; color: var(--success); }
+  .badge-paid, .badge-active { background: #064e3b; color: var(--success); }
   .badge-pending { background: #78350f; color: #fbbf24; }
-  .badge-late { background: #7f1d1d; color: var(--error); }
+  .badge-overdue, .badge-late { background: #7f1d1d; color: var(--error); }
+
+  /* Modais */
+  .display { font-family:'Space Grotesk',sans-serif; }
+  .btn-logout { background:transparent; color:var(--muted); border:1px solid var(--border); padding:10px 18px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:all .2s; }
+  .btn-logout:hover { color:#fca5a5; border-color:#ef4444; background:rgba(239,68,68,.08); transform:translateY(-1px); }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-card { background:#161616; border:1px solid #333; border-radius:16px; padding:28px; width:100%; max-width:440px; animation:modalIn .25s ease; box-shadow:0 24px 64px rgba(0,0,0,.5); }
+  @keyframes modalIn { from{opacity:0; transform:translateY(16px) scale(.97);} to{opacity:1; transform:none;} }
+  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .modal-head h3 { font-size:18px; color:var(--accent); }
+  .modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; transition:color .2s; }
+  .modal-close:hover { color:var(--text); }
+  .pwd-field { position:relative; }
+  .pwd-field input { padding-right:48px; }
+  .pwd-eye { position:absolute; right:10px; top:11px; background:none; border:none; cursor:pointer; font-size:16px; }
+  .strength-track { height:5px; background:#2a2a2a; border-radius:3px; overflow:hidden; margin:2px 0 6px; }
+  .strength-bar { height:100%; width:0%; border-radius:3px; transition:width .3s, background .3s; }
+  .strength-label { font-size:12px; font-weight:600; margin-bottom:14px; min-height:16px; }
+  .genpwd-client { font-size:14px; color:var(--muted); margin-bottom:14px; }
+  .genpwd-client strong { color:var(--text); }
+  .genpwd-box { background:#0d0d0d; border:1.5px dashed var(--accent); border-radius:12px; padding:18px; text-align:center; margin-bottom:14px; }
+  .genpwd-box span { font-size:26px; font-weight:700; letter-spacing:2px; color:var(--accent); user-select:all; }
+  .genpwd-warning { background:#2a2008; border:1px solid #4a3a10; color:#fbbf24; font-size:13px; padding:12px 14px; border-radius:10px; margin-bottom:18px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -94,7 +114,8 @@
       <h2>Selecione o Cliente</h2>
       <select id="config-client-id" onchange="loadConfig()"></select>
     </div>
-        <!-- VISÃO 360 DO CLIENTE -->
+
+    <!-- VISÃO 360 DO CLIENTE -->
     <div id="client-overview" class="card" style="border-color: var(--accent); display: none;">
       <h2>📊 Visão Geral do Cliente</h2>
       <div class="grid-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
@@ -111,12 +132,23 @@
           <p id="ov-leads" style="font-size: 22px; font-weight: bold; color: var(--success); margin: 5px 0 0;">0</p>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 15px;">
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 15px; flex-wrap: wrap; gap: 10px;">
         <div>💳 <strong>Plano:</strong> <span id="ov-plan">-</span> (R$ <span id="ov-fee">0</span>)</div>
         <div>📅 Venc: <span id="ov-due">-</span></div>
         <div>Status: <span id="ov-status" class="badge badge-pending">-</span></div>
       </div>
+
+      <!-- CAMPO GOOGLE ANALYTICS -->
+      <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <label style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Link do Google Analytics</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="text" id="ov-ga-input" placeholder="https://analytics.google.com/..." style="margin: 0; padding: 8px; flex: 1; font-size: 13px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px;">
+          <button class="btn btn-secondary" style="padding: 8px 15px; margin: 0; font-size: 12px;" onclick="saveGaUrl()">Salvar Link</button>
+          <a id="ov-ga-link" href="#" target="_blank" class="btn btn-primary" style="padding: 8px 15px; margin: 0; font-size: 12px; text-decoration: none; display: none;">Abrir Analytics ↗</a>
+        </div>
+      </div>
     </div>
+
     <div class="card">
       <h2>🎤 Voz do Assistente</h2>
       <div class="voice-row">
@@ -256,36 +288,19 @@
       <p style="color:#888;margin-bottom:16px;">Gerencie os domínios e verifique o status do widget em cada site.</p>
       <table>
         <thead>
-          <tr>
-            <th>Marca</th>
-            <th>Domínio</th>
-            <th>Widget</th>
-            <th>Última Atividade</th>
-            <th>Ações</th>
-          </tr>
+          <tr><th>Marca</th><th>Domínio</th><th>Widget</th><th>Última Atividade</th><th>Ações</th></tr>
         </thead>
-        <tbody id="sites-body">
-          <tr><td colspan="5" class="empty">Carregando...</td></tr>
-        </tbody>
+        <tbody id="sites-body"><tr><td colspan="5" class="empty">Carregando...</td></tr></tbody>
       </table>
     </div>
   </div>
 
-  <!-- NOVA ABA FINANCEIRO -->
+  <!-- ABA FINANCEIRO -->
   <div id="tab-finance" class="tab-content">
     <div class="grid-3" style="margin-bottom: 20px;">
-      <div class="card">
-        <h2>MRR (Receita)</h2>
-        <p id="finance-mrr" class="stat-value" style="color: var(--success);">R$ 0,00</p>
-      </div>
-      <div class="card">
-        <h2>Pendentes</h2>
-        <p id="finance-pending" class="stat-value" style="color: #fbbf24;">R$ 0,00</p>
-      </div>
-      <div class="card">
-        <h2>Atrasados</h2>
-        <p id="finance-late" class="stat-value" style="color: var(--error);">R$ 0,00</p>
-      </div>
+      <div class="card"><h2>MRR (Receita)</h2><p id="finance-mrr" class="stat-value" style="color: var(--success);">R$ 0,00</p></div>
+      <div class="card"><h2>Pendentes</h2><p id="finance-pending" class="stat-value" style="color: #fbbf24;">R$ 0,00</p></div>
+      <div class="card"><h2>Atrasados</h2><p id="finance-late" class="stat-value" style="color: var(--error);">R$ 0,00</p></div>
     </div>
     <div class="card">
       <h2>Histórico de Cobranças</h2>
@@ -295,70 +310,27 @@
       </table>
     </div>
   </div>
-  <!-- NOVA ABA ANALYTICS -->
+
+  <!-- ABA ANALYTICS -->
   <div id="tab-analytics" class="tab-content">
     <div class="grid-2" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
-      <div class="card">
-        <h2>Total de Leads</h2>
-        <p id="analytics-total-leads" class="stat-value">0</p>
-      </div>
-      <div class="card">
-        <h2>Visitas (Tráfego)</h2>
-        <p id="analytics-total-views" class="stat-value" style="color: #3498db;">0</p>
-      </div>
-      <div class="card">
-        <h2>Abriu o Widget</h2>
-        <p id="analytics-total-opens" class="stat-value" style="color: #9b59b6;">0</p>
-      </div>
-      <div class="card">
-        <h2>Taxa de Conversão</h2>
-        <p id="analytics-conversion-rate" class="stat-value" style="color: var(--accent);">0%</p>
-      </div>
+      <div class="card"><h2>Total de Leads</h2><p id="analytics-total-leads" class="stat-value">0</p></div>
+      <div class="card"><h2>Visitas (Tráfego)</h2><p id="analytics-total-views" class="stat-value" style="color: #3498db;">0</p></div>
+      <div class="card"><h2>Abriu o Widget</h2><p id="analytics-total-opens" class="stat-value" style="color: #9b59b6;">0</p></div>
+      <div class="card"><h2>Taxa de Conversão</h2><p id="analytics-conversion-rate" class="stat-value" style="color: var(--accent);">0%</p></div>
     </div>
     <div class="grid-2">
-      <div class="card">
-        <h2>Leads por Dia (Últimos 7d)</h2>
-        <canvas id="chart-leads-day" height="120"></canvas>
-      </div>
-      <div class="card">
-        <h2>Leads por Cliente (Top 5)</h2>
-        <canvas id="chart-leads-client" height="120"></canvas>
-      </div>
+      <div class="card"><h2>Leads por Dia (Últimos 7d)</h2><canvas id="chart-leads-day" height="120"></canvas></div>
+      <div class="card"><h2>Leads por Cliente (Top 5)</h2><canvas id="chart-leads-client" height="120"></canvas></div>
     </div>
   </div>
-<!-- ===== MODAIS ===== -->
-<style>
-  .display { font-family:'Space Grotesk',sans-serif; }
-  .btn-logout { background:transparent; color:var(--muted); border:1px solid var(--border); padding:10px 18px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:all .2s; }
-  .btn-logout:hover { color:#fca5a5; border-color:#ef4444; background:rgba(239,68,68,.08); transform:translateY(-1px); }
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(4px); z-index:1000; align-items:center; justify-content:center; padding:20px; }
-  .modal-card { background:#161616; border:1px solid #333; border-radius:16px; padding:28px; width:100%; max-width:440px; animation:modalIn .25s ease; box-shadow:0 24px 64px rgba(0,0,0,.5); }
-  @keyframes modalIn { from{opacity:0; transform:translateY(16px) scale(.97);} to{opacity:1; transform:none;} }
-  .modal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
-  .modal-head h3 { font-size:18px; color:var(--accent); }
-  .modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; transition:color .2s; }
-  .modal-close:hover { color:var(--text); }
-  .pwd-field { position:relative; }
-  .pwd-field input { padding-right:48px; }
-  .pwd-eye { position:absolute; right:10px; top:11px; background:none; border:none; cursor:pointer; font-size:16px; }
-  .strength-track { height:5px; background:#2a2a2a; border-radius:3px; overflow:hidden; margin:2px 0 6px; }
-  .strength-bar { height:100%; width:0%; border-radius:3px; transition:width .3s, background .3s; }
-  .strength-label { font-size:12px; font-weight:600; margin-bottom:14px; min-height:16px; }
-  .genpwd-client { font-size:14px; color:var(--muted); margin-bottom:14px; }
-  .genpwd-client strong { color:var(--text); }
-  .genpwd-box { background:#0d0d0d; border:1.5px dashed var(--accent); border-radius:12px; padding:18px; text-align:center; margin-bottom:14px; }
-  .genpwd-box span { font-size:26px; font-weight:700; letter-spacing:2px; color:var(--accent); user-select:all; }
-  .genpwd-warning { background:#2a2008; border:1px solid #4a3a10; color:#fbbf24; font-size:13px; padding:12px 14px; border-radius:10px; margin-bottom:18px; line-height:1.5; }
-</style>
+</div>
 
+<!-- ===== MODAIS ===== -->
 <div id="modal-changepwd" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-changepwd')">
   <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">🔑 Trocar minha senha</h3>
-      <button class="modal-close" onclick="closeModal('modal-changepwd')">✕</button>
-    </div>
-    <label>Senha atual</label>
-    <input type="password" id="cur-pwd" placeholder="••••••••">
+    <div class="modal-head"><h3 class="display">🔑 Trocar minha senha</h3><button class="modal-close" onclick="closeModal('modal-changepwd')">✕</button></div>
+    <label>Senha atual</label><input type="password" id="cur-pwd" placeholder="••••••••">
     <label>Nova senha</label>
     <div class="pwd-field">
       <input type="password" id="new-pwd" placeholder="mínimo 8 caracteres" oninput="updateStrengthMeter()">
@@ -366,8 +338,7 @@
     </div>
     <div class="strength-track"><div id="strength-bar" class="strength-bar"></div></div>
     <div id="strength-label" class="strength-label"></div>
-    <label>Confirmar nova senha</label>
-    <input type="password" id="cf-pwd" placeholder="repita a nova senha">
+    <label>Confirmar nova senha</label><input type="password" id="cf-pwd" placeholder="repita a nova senha">
     <button class="btn-primary" onclick="changeAdminPassword()">Atualizar senha</button>
     <div id="pwd-modal-status" class="status"></div>
   </div>
@@ -375,10 +346,7 @@
 
 <div id="modal-genpwd" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-genpwd')">
   <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">🔑 Nova senha gerada</h3>
-      <button class="modal-close" onclick="closeModal('modal-genpwd')">✕</button>
-    </div>
+    <div class="modal-head"><h3 class="display">🔑 Nova senha gerada</h3><button class="modal-close" onclick="closeModal('modal-genpwd')">✕</button></div>
     <p class="genpwd-client">Cliente: <strong id="gen-pwd-client"></strong></p>
     <div class="genpwd-box"><span id="gen-pwd-value" class="display"></span></div>
     <div class="genpwd-warning">⚠️ Esta senha é exibida <strong>uma única vez</strong>. Copie agora e entregue ao cliente. Ela já está ativa e a anterior foi revogada.</div>
@@ -389,20 +357,54 @@
   </div>
 </div>
 
+<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
+  <div class="modal-card">
+    <div class="modal-head"><h3 class="display">🔑 Recuperar Acesso</h3><button class="modal-close" onclick="closeModal('modal-recover')">✕</button></div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
+    <label>E-mail</label><input type="email" id="recover-email" placeholder="seu-email@email.com">
+    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
+    <div id="recover-status" class="status"></div>
+  </div>
+</div>
+
+<div id="modal-edit-finance" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-edit-finance')">
+  <div class="modal-card">
+    <div class="modal-head"><h3 class="display">💰 Editar Cobrança</h3><button class="modal-close" onclick="closeModal('modal-edit-finance')">✕</button></div>
+    <input type="hidden" id="edit-fin-client-id">
+    <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
+    <label>Plano de Instalação (Setup)</label>
+    <select id="edit-fin-plan">
+      <option value="Assistente (Widget)">A) Assistente (Widget) - R$990</option>
+      <option value="Widget + Site">B) Widget + Site - R$1.700</option>
+      <option value="Apenas Site">C) Apenas Site - R$990</option>
+    </select>
+    <label>Tipo de Mensalidade</label>
+    <select id="edit-fin-monthly-plan">
+      <option value="297.00">Manutenção + Widget (R$ 297)</option>
+      <option value="90.00">Hospedagem + Manutenção (R$ 90)</option>
+    </select>
+    <label>Status do Pagamento</label>
+    <select id="edit-fin-status">
+      <option value="pending">Pendente</option>
+      <option value="paid">Pago</option>
+      <option value="overdue">Atrasado</option>
+      <option value="active">Ativo</option>
+    </select>
+    <label>Próximo Vencimento</label>
+    <input type="date" id="edit-fin-due-date">
+    <button class="btn-primary" onclick="saveFinanceData()">Salvar Alterações</button>
+    <div id="edit-fin-status" class="status"></div>
+  </div>
+</div>
+
 <script>
 const API = 'https://ka-voice-backend.onrender.com';
 let TOKEN = sessionStorage.getItem('ka_token') || '';
-let chartDay, chartClient; // Variáveis globais para os gráficos
+let chartDay, chartClient;
 
-function authHeaders() {
-  return { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
-}
-
+function authHeaders() { return { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }; }
 async function apiCall(url, options = {}) {
-  const res = await fetch(API + url, {
-    ...options,
-    headers: { ...authHeaders(), ...(options.headers || {}) }
-  });
+  const res = await fetch(API + url, { ...options, headers: { ...authHeaders(), ...(options.headers || {}) } });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Erro ' + res.status }));
     const msg = err.detail || err.error || ('Erro ' + res.status);
@@ -416,11 +418,7 @@ async function login() {
   const pwd = document.getElementById('admin-password').value;
   const errEl = document.getElementById('login-error');
   try {
-    const res = await fetch(API + '/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pwd })
-    });
+    const res = await fetch(API + '/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: pwd }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Senha incorreta');
     TOKEN = data.access_token;
@@ -436,7 +434,6 @@ async function login() {
 }
 
 function logout() { doLogout(); }
-
 function doLogout(){
   TOKEN='';
   sessionStorage.removeItem('ka_token');
@@ -451,6 +448,16 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dashboard').style.display = 'block';
     init();
   }
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get('reset_token');
+  if (resetToken) {
+    const newPwd = prompt('Digite sua nova senha mestra:');
+    if (newPwd && newPwd.length >= 6) {
+      fetch(API + '/admin/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: resetToken, new_password: newPwd }) })
+      .then(res => res.json()).then(data => { alert(data.message || 'Erro ao redefinir senha.'); window.location.href = 'dashboard.html'; })
+      .catch(err => alert('Erro: ' + err.message));
+    }
+  }
 });
 
 async function init() {
@@ -464,8 +471,6 @@ function switchTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   btn.classList.add('active');
-
-  // Gatilhos de carregamento dinâmico
   if (tab === 'sites') loadSites();
   if (tab === 'finance') loadFinanceData();
   if (tab === 'analytics') loadAnalytics();
@@ -474,7 +479,6 @@ function switchTab(tab, btn) {
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; }
 
-// ========== CONFIGURAÇÕES ==========
 function copyScript(slug) {
   const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
@@ -483,9 +487,7 @@ function copyScript(slug) {
     btn.innerText = '✅ Copiado!';
     btn.style.color = '#6ee7b7';
     setTimeout(() => { btn.innerText = orig; btn.style.color = '#10b981'; }, 2000);
-  }).catch(() => {
-    prompt('Copie o código abaixo e cole no HTML do site do cliente:', tag);
-  });
+  }).catch(() => { prompt('Copie o código abaixo e cole no HTML do site do cliente:', tag); });
 }
 
 async function loadClientsList() {
@@ -528,12 +530,7 @@ async function addClient() {
   try {
     const data = await apiCall('/admin/clients', {
       method: 'POST',
-      body: JSON.stringify({
-        client_id: slug,
-        brand_name: brand || slug,
-        domain: '',
-        system_prompt: 'Você é uma assistente virtual prestativa.'
-      })
+      body: JSON.stringify({ client_id: slug, brand_name: brand || slug, domain: '', system_prompt: 'Você é uma assistente virtual prestativa.' })
     });
     document.getElementById('new-slug').value = '';
     document.getElementById('new-brand').value = '';
@@ -552,9 +549,7 @@ async function addClient() {
 async function loadConfig() {
   const cid = document.getElementById('config-client-id').value;
   if (!cid) return;
-
-      loadClientOverview(cid);
-
+  loadClientOverview(cid);
   try {
     const cfg = await apiCall('/admin/clients/' + cid + '/config');
     document.getElementById('voice').value = cfg.voice || 'pt-BR-FranciscaNeural';
@@ -606,10 +601,7 @@ async function previewVoice() {
   const btn = document.getElementById('btn-preview');
   btn.innerText = '⏳'; btn.disabled = true;
   try {
-    const data = await apiCall('/admin/preview-voice', {
-      method: 'POST',
-      body: JSON.stringify({ voice: document.getElementById('voice').value })
-    });
+    const data = await apiCall('/admin/preview-voice', { method: 'POST', body: JSON.stringify({ voice: document.getElementById('voice').value }) });
     const audio = new Audio('data:audio/mpeg;base64,' + data.audio);
     audio.play().catch(() => alert('Navegador bloqueou áudio automático.'));
     audio.onended = () => { btn.innerText = '🔊 Ouvir'; btn.disabled = false; };
@@ -679,104 +671,55 @@ async function loadSites() {
     const clients = await apiCall('/admin/clients');
     const tbody = document.getElementById('sites-body');
     if (!Array.isArray(clients) || !clients.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum cliente cadastrado</td></tr>';
-      return;
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">Nenhum cliente cadastrado</td></tr>'; return;
     }
-
     tbody.innerHTML = clients.map(c => {
-      const slug = c.id || c.slug;
-      const name = c.name || c.brand_name || slug;
-      const domain = c.domain || '';
+      const slug = c.id || c.slug, name = c.name || c.brand_name || slug, domain = c.domain || '';
       const lastActivity = c.last_activity ? new Date(c.last_activity).toLocaleDateString('pt-BR') : '-';
-
       return `<tr>
         <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
-        <td>
-          <input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;background:#0a0a0a;border:1px solid #252525;color:#fff;border-radius:4px;" value="${domain}" onchange="updateDomain('${slug}', this.value)">
-        </td>
-        <td id="status-${slug}">
-          ${domain ? '⏳ Verificando...' : '❓ Sem domínio'}
-        </td>
+        <td><input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;background:#0a0a0a;border:1px solid #252525;color:#fff;border-radius:4px;" value="${domain}" onchange="updateDomain('${slug}', this.value)"></td>
+        <td id="status-${slug}">${domain ? '⏳ Verificando...' : '❓ Sem domínio'}</td>
         <td style="color:#888;">${lastActivity}</td>
-        <td>
-          <a href="#" onclick="copySiteScript('${slug}'); return false;" style="color:#10b981;">📋 Script</a> |
-          <a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a>
-        </td>
+        <td><a href="#" onclick="copySiteScript('${slug}'); return false;" style="color:#10b981;">📋 Script</a> | <a href="#" onclick="selectAndGoToConfig('${slug}'); return false;">Configurar →</a></td>
       </tr>`;
     }).join('');
-
-    clients.forEach(c => {
-      if (c.domain) {
-        checkWidgetStatus(c.id, c.domain);
-      }
-    });
-
-  } catch (e) {
-    console.error('loadSites:', e);
-  }
+    clients.forEach(c => { if (c.domain) checkWidgetStatus(c.id, c.domain); });
+  } catch (e) { console.error('loadSites:', e); }
 }
 
 async function updateDomain(slug, domain) {
   try {
-    await apiCall('/admin/clients/' + slug + '/config', {
-      method: 'PUT',
-      body: JSON.stringify({ domain: domain.trim() })
-    });
-
-    // Se o domínio foi preenchido, verifica o status. Se não, limpa.
-    if (domain.trim()) {
-      checkWidgetStatus(slug, domain.trim());
-    } else {
-      const statusEl = document.getElementById('status-' + slug);
-      if(statusEl) statusEl.innerHTML = '❓ Sem domínio';
-    }
-  } catch (e) {
-    alert('❌ Erro ao salvar domínio: ' + e.message);
-  }
+    await apiCall('/admin/clients/' + slug + '/config', { method: 'PUT', body: JSON.stringify({ domain: domain.trim() }) });
+    if (domain.trim()) { checkWidgetStatus(slug, domain.trim()); } else { const statusEl = document.getElementById('status-' + slug); if(statusEl) statusEl.innerHTML = '❓ Sem domínio'; }
+  } catch (e) { alert('❌ Erro ao salvar domínio: ' + e.message); }
 }
 
 async function checkWidgetStatus(slug, domain) {
   const statusEl = document.getElementById('status-' + slug);
   if (!statusEl) return;
   try {
-    const res = await fetch('https://' + domain, { mode: 'no-cors' });
-    statusEl.innerHTML = '🟢 Ativo';
-    statusEl.style.color = '#10b981';
+    await fetch('https://' + domain, { mode: 'no-cors' });
+    statusEl.innerHTML = '🟢 Ativo'; statusEl.style.color = '#10b981';
   } catch (e) {
-    statusEl.innerHTML = '🔴 Inativo';
-    statusEl.style.color = '#ef4444';
+    statusEl.innerHTML = '🔴 Inativo'; statusEl.style.color = '#ef4444';
   }
 }
 
 function copySiteScript(slug) {
   const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
-  navigator.clipboard.writeText(tag).then(() => {
-    alert('✅ Script copiado!\n\n' + tag);
-  }).catch(() => {
-    prompt('Copie o código abaixo:', tag);
-  });
+  navigator.clipboard.writeText(tag).then(() => { alert('✅ Script copiado!\n\n' + tag); }).catch(() => { prompt('Copie o código abaixo:', tag); });
 }
 
 async function deleteClient(clientId) {
-  if (clientId === 'ka_agencia') {
-    alert('❌ Não é possível excluir o cliente principal (Agência KA)');
-    return;
-  }
-  if (!confirm('⚠️ Tem certeza que deseja excluir "' + clientId + '"?\n\nTodos os leads e conversas serão removidos permanentemente.')) {
-    return;
-  }
+  if (clientId === 'ka_agencia') return alert('❌ Não é possível excluir o cliente principal');
+  if (!confirm('⚠️ Tem certeza que deseja excluir "' + clientId + '"?\n\nTodos os leads e conversas serão removidos.')) return;
   try {
-    const res = await fetch(API + '/admin/clients/' + clientId, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + TOKEN }
-    });
+    const res = await fetch(API + '/admin/clients/' + clientId, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + TOKEN } });
     const data = await res.json().catch(() => ({ detail: 'Erro ' + res.status }));
     if (!res.ok) throw new Error(data.detail || 'Erro ao excluir');
-    alert('✅ ' + data.message);
-    loadClientsList();
-  } catch (e) {
-    alert('❌ Erro: ' + e.message);
-  }
+    alert('✅ ' + data.message); loadClientsList();
+  } catch (e) { alert('❌ Erro: ' + e.message); }
 }
 
 async function testNotification(){
@@ -797,6 +740,45 @@ async function testNotification(){
   }
 }
 
+// ========== VISÃO 360 ==========
+async function loadClientOverview(clientId) {
+  if(!clientId) return;
+  try {
+    const data = await apiCall('/admin/clients/' + clientId + '/overview');
+    document.getElementById('client-overview').style.display = 'block';
+    document.getElementById('ov-views').innerText = data.views;
+    document.getElementById('ov-opens').innerText = data.opens;
+    document.getElementById('ov-leads').innerText = data.leads;
+    document.getElementById('ov-plan').innerText = data.plan;
+    document.getElementById('ov-fee').innerText = data.monthly_fee.toFixed(2).replace('.', ',');
+    document.getElementById('ov-due').innerText = data.next_billing;
+    const stEl = document.getElementById('ov-status');
+    stEl.className = 'badge badge-' + data.payment_status;
+    stEl.innerText = data.payment_status === 'paid' ? 'Pago' : (data.payment_status === 'pending' ? 'Pendente' : 'Atrasado');
+
+    const gaInput = document.getElementById('ov-ga-input');
+    const gaLink = document.getElementById('ov-ga-link');
+    if(data.ga_url) {
+      gaInput.value = data.ga_url;
+      gaLink.href = data.ga_url;
+      gaLink.style.display = 'inline-flex';
+    } else {
+      gaInput.value = '';
+      gaLink.style.display = 'none';
+    }
+  } catch(e) { console.error('Overview error:', e); }
+}
+
+async function saveGaUrl() {
+  const cid = document.getElementById('config-client-id').value;
+  const url = document.getElementById('ov-ga-input').value;
+  try {
+    await apiCall('/admin/clients/' + cid + '/config', { method: 'PUT', body: JSON.stringify({ ga_url: url }) });
+    alert('✅ Link do Analytics salvo!');
+    loadClientOverview(cid);
+  } catch(e) { alert('❌ Erro: ' + e.message); }
+}
+
 // ========== FINANCEIRO ==========
 async function loadFinanceData() {
   try {
@@ -804,7 +786,6 @@ async function loadFinanceData() {
     document.getElementById('finance-mrr').innerText = `R$ ${data.mrr.toFixed(2).replace('.', ',')}`;
     document.getElementById('finance-pending').innerText = `R$ ${data.pending.toFixed(2).replace('.', ',')}`;
     document.getElementById('finance-late').innerText = `R$ ${data.late.toFixed(2).replace('.', ',')}`;
-    
     const tbody = document.getElementById('finance-table-body');
     if (data.transactions && data.transactions.length > 0) {
       tbody.innerHTML = data.transactions.map(t => `
@@ -838,27 +819,18 @@ async function markAsPaid(clientId) {
 function openEditFinanceModal(clientId, clientName, plan, amount, status, dueDate) {
   document.getElementById('edit-fin-client-id').value = clientId;
   document.getElementById('edit-fin-client-name').innerText = clientName;
-  
-  // Seleciona o plano de instalação
   const planSelect = document.getElementById('edit-fin-plan');
   let planFound = false;
   for(let i=0; i<planSelect.options.length; i++) {
-    if(plan && planSelect.options[i].value === plan) {
-      planSelect.selectedIndex = i; planFound = true; break;
-    }
+    if(plan && planSelect.options[i].value === plan) { planSelect.selectedIndex = i; planFound = true; break; }
   }
   if(!planFound) planSelect.selectedIndex = 0;
-
-  // Seleciona a mensalidade
   const monthlySelect = document.getElementById('edit-fin-monthly-plan');
   let monthlyFound = false;
   for(let i=0; i<monthlySelect.options.length; i++) {
-    if(parseFloat(monthlySelect.options[i].value) === parseFloat(amount)) {
-      monthlySelect.selectedIndex = i; monthlyFound = true; break;
-    }
+    if(parseFloat(monthlySelect.options[i].value) === parseFloat(amount)) { monthlySelect.selectedIndex = i; monthlyFound = true; break; }
   }
   if(!monthlyFound) monthlySelect.selectedIndex = 0;
-
   document.getElementById('edit-fin-status').value = status;
   document.getElementById('edit-fin-due-date').value = dueDate;
   openModal('modal-edit-finance');
@@ -868,19 +840,14 @@ async function saveFinanceData() {
   const clientId = document.getElementById('edit-fin-client-id').value;
   const st = document.getElementById('edit-fin-status');
   st.className = 'status'; st.style.display = 'none';
-  
   const payload = {
     plan: document.getElementById('edit-fin-plan').value,
     monthly_fee: parseFloat(document.getElementById('edit-fin-monthly-plan').value),
     status: document.getElementById('edit-fin-status').value,
     due_date: document.getElementById('edit-fin-due-date').value || null
   };
-  
   try {
-    await apiCall(`/admin/clients/${clientId}/finance`, {
-      method: 'PUT',
-      body: JSON.stringify(payload)
-    });
+    await apiCall(`/admin/clients/${clientId}/finance`, { method: 'PUT', body: JSON.stringify(payload) });
     closeModal('modal-edit-finance');
     alert('✅ Dados financeiros atualizados!');
     loadFinanceData();
@@ -894,30 +861,18 @@ async function loadAnalytics() {
   try {
     const data = await apiCall('/admin/analytics');
     document.getElementById('analytics-total-leads').innerText = data.total_leads || 0;
-            // Atualiza os novos cards de tráfego
-        const viewsEl = document.getElementById('analytics-total-views');
-        const opensEl = document.getElementById('analytics-total-opens');
-        const convEl = document.getElementById('analytics-conversion-rate');
-        if(viewsEl) viewsEl.innerText = data.total_views || 0;
-        if(opensEl) opensEl.innerText = data.total_opens || 0;
-        if(convEl) convEl.innerText = `${data.conversion_rate || 0}%`;
-    document.getElementById('analytics-daily-avg').innerText = data.daily_avg || 0;
+    const viewsEl = document.getElementById('analytics-total-views');
+    const opensEl = document.getElementById('analytics-total-opens');
+    const convEl = document.getElementById('analytics-conversion-rate');
+    if(viewsEl) viewsEl.innerText = data.total_views || 0;
+    if(opensEl) opensEl.innerText = data.total_opens || 0;
+    if(convEl) convEl.innerText = `${data.conversion_rate || 0}%`;
 
     const ctxDay = document.getElementById('chart-leads-day').getContext('2d');
     if (chartDay) chartDay.destroy();
     chartDay = new Chart(ctxDay, {
       type: 'line',
-      data: {
-        labels: data.lead_dates.map(d => d.date),
-        datasets: [{
-          label: 'Leads',
-          data: data.lead_dates.map(d => d.count),
-          borderColor: '#FFD400',
-          backgroundColor: 'rgba(255, 212, 0, 0.1)',
-          fill: true,
-          tension: 0.3
-        }]
-      },
+      data: { labels: data.lead_dates.map(d => d.date), datasets: [{ label: 'Leads', data: data.lead_dates.map(d => d.count), borderColor: '#FFD400', backgroundColor: 'rgba(255, 212, 0, 0.1)', fill: true, tension: 0.3 }] },
       options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#888' }, grid: { color: '#252525' } }, x: { ticks: { color: '#888' }, grid: { color: '#252525' } } } }
     });
 
@@ -925,14 +880,7 @@ async function loadAnalytics() {
     if (chartClient) chartClient.destroy();
     chartClient = new Chart(ctxClient, {
       type: 'bar',
-      data: {
-        labels: data.leads_by_client.map(c => c.name),
-        datasets: [{
-          label: 'Leads',
-          data: data.leads_by_client.map(c => c.count),
-          backgroundColor: '#FFD400'
-        }]
-      },
+      data: { labels: data.leads_by_client.map(c => c.name), datasets: [{ label: 'Leads', data: data.leads_by_client.map(c => c.count), backgroundColor: '#FFD400' }] },
       options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#888' }, grid: { color: '#252525' } }, x: { ticks: { color: '#888' }, grid: { color: '#252525' } } } }
     });
   } catch (e) { console.error('Analytics Error:', e); }
@@ -962,8 +910,7 @@ function updateStrengthMeter(){
 }
 function togglePwdVisibility(inputId, btn){
   const inp=document.getElementById(inputId);
-  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
-  else { inp.type='password'; btn.textContent='👁️'; }
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; } else { inp.type='password'; btn.textContent='👁️'; }
 }
 async function changeAdminPassword(){
   const cur=document.getElementById('cur-pwd').value;
@@ -997,199 +944,23 @@ function copyGeneratedPwd(){
   }).catch(()=>prompt('Copie a senha:', pwd));
 }
 
-// ==========================================================
-// RECUPERAÇÃO DE SENHA
-// ==========================================================
-function showRecoverModal() {
-  openModal('modal-recover');
-}
-
+// ========== RECUPERAÇÃO DE SENHA ==========
+function showRecoverModal() { openModal('modal-recover'); }
 async function sendRecoverLink() {
   const email = document.getElementById('recover-email').value;
   const st = document.getElementById('recover-status');
   if(!email) return;
-
   st.className = 'status'; st.style.display = 'none';
   try {
-    const res = await fetch(API + '/admin/recover-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
+    const res = await fetch(API + '/admin/recover-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
     const data = await res.json();
     if(!res.ok) throw new Error(data.detail);
-
-    st.className = 'status success';
-    st.textContent = '✅ ' + data.message;
-    st.style.display = 'block';
+    st.className = 'status success'; st.textContent = '✅ ' + data.message; st.style.display = 'block';
     document.getElementById('recover-email').value = '';
   } catch(e) {
-    st.className = 'status error';
-    st.textContent = '❌ ' + e.message;
-    st.style.display = 'block';
+    st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
   }
 }
-
-// Verifica se tem token de reset na URL ao carregar a página
-window.addEventListener('DOMContentLoaded', () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const resetToken = urlParams.get('reset_token');
-  if (resetToken) {
-    const newPwd = prompt('Digite sua nova senha mestra:');
-    if (newPwd && newPwd.length >= 6) {
-      fetch(API + '/admin/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: resetToken, new_password: newPwd })
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message || 'Erro ao redefinir senha.');
-        window.location.href = 'dashboard.html'; // Limpa a URL
-      })
-      .catch(err => alert('Erro: ' + err.message));
-    }
-  }
-});
-async function loadClientOverview(clientId) {
-  if(!clientId) return;
-  try {
-    const data = await apiCall('/admin/clients/' + clientId + '/overview');
-    document.getElementById('client-overview').style.display = 'block';
-    document.getElementById('ov-views').innerText = data.views;
-    document.getElementById('ov-opens').innerText = data.opens;
-    document.getElementById('ov-leads').innerText = data.leads;
-    document.getElementById('ov-plan').innerText = data.plan;
-    document.getElementById('ov-fee').innerText = data.monthly_fee.toFixed(2).replace('.', ',');
-    document.getElementById('ov-due').innerText = data.next_billing;
-
-    const stEl = document.getElementById('ov-status');
-    stEl.className = 'badge badge-' + data.payment_status;
-    stEl.innerText = data.payment_status === 'paid' ? 'Pago' : (data.payment_status === 'pending' ? 'Pendente' : 'Atrasado');
-  } catch(e) { console.error('Overview error:', e); }
-}
-
 </script>
-
-<!-- Modal Recuperar Senha -->
-<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">🔑 Recuperar Acesso</h3>
-      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
-    </div>
-    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
-    <label>E-mail</label>
-    <input type="email" id="recover-email" placeholder="seu-email@email.com">
-    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
-    <div id="recover-status" class="status"></div>
-  </div>
-</div>
-
-</script>
-
-<!-- Modal Recuperar Senha -->
-<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">🔑 Recuperar Acesso</h3>
-      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
-    </div>
-    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
-    <label>E-mail</label>
-    <input type="email" id="recover-email" placeholder="seu-email@email.com">
-    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
-    <div id="recover-status" class="status"></div>
-  </div>
-</div>
-
-
-<!-- Modal Editar Financeiro -->
-<div id="modal-edit-finance" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-edit-finance')">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">💰 Editar Cobrança</h3>
-      <button class="modal-close" onclick="closeModal('modal-edit-finance')">✕</button>
-    </div>
-    <input type="hidden" id="edit-fin-client-id">
-    <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
-    
-    <label>Plano de Instalação (Setup)</label>
-    <select id="edit-fin-plan">
-      <option value="Assistente (Widget)">A) Assistente (Widget) - R$990</option>
-      <option value="Widget + Site">B) Widget + Site - R$1.700</option>
-      <option value="Apenas Site">C) Apenas Site - R$990</option>
-    </select>
-    
-    <label>Tipo de Mensalidade</label>
-    <select id="edit-fin-monthly-plan">
-      <option value="297.00">Manutenção + Widget (R$ 297)</option>
-      <option value="90.00">Hospedagem + Manutenção (R$ 90)</option>
-    </select>
-    
-    <label>Status do Pagamento</label>
-    <select id="edit-fin-status">
-      <option value="pending">Pendente</option>
-      <option value="paid">Pago</option>
-      <option value="overdue">Atrasado</option>
-      <option value="active">Ativo</option>
-    </select>
-    
-    <label>Próximo Vencimento</label>
-    <input type="date" id="edit-fin-due-date">
-    
-    <button class="btn-primary" onclick="saveFinanceData()">Salvar Alterações</button>
-    <div id="edit-fin-status" class="status"></div>
-  </div>
-</div>
-</body></body>
-</html>
-
-<!-- Modal Recuperar Senha -->
-<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">🔑 Recuperar Acesso</h3>
-      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
-    </div>
-    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
-    <label>E-mail</label>
-    <input type="email" id="recover-email" placeholder="seu-email@email.com">
-    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
-    <div id="recover-status" class="status"></div>
-  </div>
-</div>
-
-<!-- Modal Editar Financeiro -->
-<div id="modal-edit-finance" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-edit-finance')">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 class="display">💰 Editar Cobrança</h3>
-      <button class="modal-close" onclick="closeModal('modal-edit-finance')">✕</button>
-    </div>
-    <input type="hidden" id="edit-fin-client-id">
-    <p class="genpwd-client">Cliente: <strong id="edit-fin-client-name"></strong></p>
-    
-    <label>Plano (Ex: Assinatura, Site Único)</label>
-    <input type="text" id="edit-fin-plan" placeholder="Assinatura">
-    
-    <label>Valor Mensal (R$)</label>
-    <input type="number" step="0.01" id="edit-fin-amount" placeholder="150.00">
-    
-    <label>Status do Pagamento</label>
-    <select id="edit-fin-status">
-      <option value="pending">Pendente</option>
-      <option value="paid">Pago</option>
-      <option value="overdue">Atrasado</option>
-      <option value="active">Ativo</option>
-    </select>
-    
-    <label>Próximo Vencimento</label>
-    <input type="date" id="edit-fin-due-date">
-    
-    <button class="btn-primary" onclick="saveFinanceData()">Salvar Alterações</button>
-    <div id="edit-fin-status" class="status"></div>
-  </div>
-</div>
 </body>
 </html>
