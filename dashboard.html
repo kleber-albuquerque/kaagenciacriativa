@@ -169,7 +169,7 @@
 
       <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
       <button class="btn btn-secondary" style="margin-left: 0; margin-bottom: 10px; width: auto; padding: 6px 12px; font-size: 12px; background: #7f1d1d; color: #fca5a5; border-color: #7f1d1d;" onclick="clearAllKnowledge()">🗑️ Limpar Tudo</button>
-      <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
+      <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 10px;">
         <p style="color: #555; font-size: 13px;">Carregando...</p>
       </div>
     </div>
@@ -203,7 +203,10 @@
       <div class="grid-2">
         <div>
           <label>Cor de Destaque</label>
-          <input type="color" id="accent_color" value="#FFD400" style="height:48px;padding:4px;cursor:pointer;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="color" id="accent_color" value="#FFD400" style="height:48px; width: 48px; padding:4px;cursor:pointer;">
+            <button type="button" class="btn btn-secondary" style="margin:0; width:auto; padding: 12px; font-size: 13px;" onclick="pickColor()"> 💧 Conta-gotas </button>
+          </div>
         </div>
         <div>
           <label>Posição do Widget</label>
@@ -501,6 +504,25 @@ function switchTab(tab, btn) {
   if (tab === 'analytics') loadAnalytics();
 }
 
+async function pickColor() {
+  if ('EyeDropper' in window) {
+    try {
+      const eyeDropper = new EyeDropper();
+      const result = await eyeDropper.open();
+      const color = result.sRGBHex;
+      document.getElementById('accent_color').value = color;
+      var prev = document.getElementById('color-preview');
+      if(prev) {
+        prev.style.background = color;
+        var c = color.replace('#','');
+        var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+        prev.style.color = (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
+      }
+    } catch(e) { console.log('Conta-gotas cancelado'); }
+  } else {
+    alert('Seu navegador não suporta o conta-gotas automático. Use o Google Chrome ou Edge no computador para esta função.');
+  }
+}
 function openModal(id){ document.getElementById(id).style.display='flex'; }
 function closeModal(id){ document.getElementById(id).style.display='none'; }
 
