@@ -94,6 +94,29 @@
       <h2>Selecione o Cliente</h2>
       <select id="config-client-id" onchange="loadConfig()"></select>
     </div>
+        <!-- VISÃO 360 DO CLIENTE -->
+    <div id="client-overview" class="card" style="border-color: var(--accent); display: none;">
+      <h2>📊 Visão Geral do Cliente</h2>
+      <div class="grid-3" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
+        <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="font-size: 12px; color: var(--muted); margin: 0;">Visitas no Site</h3>
+          <p id="ov-views" style="font-size: 22px; font-weight: bold; color: #3498db; margin: 5px 0 0;">0</p>
+        </div>
+        <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="font-size: 12px; color: var(--muted); margin: 0;">Aberturas Widget</h3>
+          <p id="ov-opens" style="font-size: 22px; font-weight: bold; color: #9b59b6; margin: 5px 0 0;">0</p>
+        </div>
+        <div style="background: #0a0a0a; padding: 15px; border-radius: 8px; text-align: center;">
+          <h3 style="font-size: 12px; color: var(--muted); margin: 0;">Leads Capturados</h3>
+          <p id="ov-leads" style="font-size: 22px; font-weight: bold; color: var(--success); margin: 5px 0 0;">0</p>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 15px;">
+        <div>💳 <strong>Plano:</strong> <span id="ov-plan">-</span> (R$ <span id="ov-fee">0</span>)</div>
+        <div>📅 Venc: <span id="ov-due">-</span></div>
+        <div>Status: <span id="ov-status" class="badge badge-pending">-</span></div>
+      </div>
+    </div>
     <div class="card">
       <h2>🎤 Voz do Assistente</h2>
       <div class="voice-row">
@@ -529,6 +552,9 @@ async function addClient() {
 async function loadConfig() {
   const cid = document.getElementById('config-client-id').value;
   if (!cid) return;
+
+      loadClientOverview(cid);
+
   try {
     const cfg = await apiCall('/admin/clients/' + cid + '/config');
     document.getElementById('voice').value = cfg.voice || 'pt-BR-FranciscaNeural';
@@ -1025,6 +1051,41 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+async function loadClientOverview(clientId) {
+  if(!clientId) return;
+  try {
+    const data = await apiCall('/admin/clients/' + clientId + '/overview');
+    document.getElementById('client-overview').style.display = 'block';
+    document.getElementById('ov-views').innerText = data.views;
+    document.getElementById('ov-opens').innerText = data.opens;
+    document.getElementById('ov-leads').innerText = data.leads;
+    document.getElementById('ov-plan').innerText = data.plan;
+    document.getElementById('ov-fee').innerText = data.monthly_fee.toFixed(2).replace('.', ',');
+    document.getElementById('ov-due').innerText = data.next_billing;
+
+    const stEl = document.getElementById('ov-status');
+    stEl.className = 'badge badge-' + data.payment_status;
+    stEl.innerText = data.payment_status === 'paid' ? 'Pago' : (data.payment_status === 'pending' ? 'Pendente' : 'Atrasado');
+  } catch(e) { console.error('Overview error:', e); }
+}
+
+</script>
+
+<!-- Modal Recuperar Senha -->
+<div id="modal-recover" class="modal-overlay" onclick="if(event.target===this) closeModal('modal-recover')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 class="display">🔑 Recuperar Acesso</h3>
+      <button class="modal-close" onclick="closeModal('modal-recover')">✕</button>
+    </div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Digite o e-mail administrativo cadastrado. Enviaremos um link para redefinição.</p>
+    <label>E-mail</label>
+    <input type="email" id="recover-email" placeholder="seu-email@email.com">
+    <button class="btn-primary" onclick="sendRecoverLink()">Enviar Link</button>
+    <div id="recover-status" class="status"></div>
+  </div>
+</div>
+
 </script>
 
 <!-- Modal Recuperar Senha -->
