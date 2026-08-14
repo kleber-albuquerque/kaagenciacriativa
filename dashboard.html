@@ -1010,7 +1010,7 @@ async function deleteKnowledge(id) {
   if(!confirm('Tem certeza que deseja apagar este item?')) return;
   const cid = document.getElementById('config-client-id').value;
   try {
-    await apiCall('/admin/clients/' + cid + '/knowledge/' + id, { method: 'DELETE' });
+    await apiCall('/admin/clients/' + cid + '/knowledge/' + id + '/delete', { method: 'POST' });
     loadKnowledge(cid);
   } catch(e) { alert('❌ Erro: ' + e.message); }
 }
@@ -1019,7 +1019,7 @@ async function clearAllKnowledge() {
   if(!confirm('⚠️ ATENÇÃO! Isso vai apagar TODAS as informações aprendidas por esta IA. Tem certeza?')) return;
   const cid = document.getElementById('config-client-id').value;
   try {
-    await apiCall('/admin/clients/' + cid + '/knowledge', { method: 'DELETE' });
+    await apiCall('/admin/clients/' + cid + '/knowledge/clear', { method: 'POST' });
     loadKnowledge(cid);
     alert('✅ Base de conhecimento limpa!');
   } catch(e) { alert('❌ Erro: ' + e.message); }
