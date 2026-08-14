@@ -138,6 +138,20 @@
         <div>Status: <span id="ov-status" class="badge badge-pending">-</span></div>
       </div>
 
+          <!-- GERENCIADOR DE CONHECIMENTO (RAG) -->
+    <div class="card">
+      <h2>📚 Base de Conhecimento (IA)</h2>
+      <div class="info-box">💡 Cole aqui informações sobre produtos, preços, políticas da loja, horários, etc. A IA usará isso para responder aos clientes sem alucinar. Quanto mais detalhado, melhor.</div>
+      <textarea id="kb-content" style="min-height: 120px; margin-bottom: 12px;" placeholder="Ex: Anel Aurora: Feito de ouro 18k. Preço: R$ 1.700. Tamanhos: 15 ao 20..."></textarea>
+      <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
+      <div id="kb-status" class="status"></div>
+
+      <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
+      <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
+        <p style="color: #555; font-size: 13px;">Carregando...</p>
+      </div>
+    </div>
+
       <!-- CAMPO GOOGLE ANALYTICS -->
       <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
         <label style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Link do Google Analytics</label>
@@ -550,6 +564,8 @@ async function loadConfig() {
   const cid = document.getElementById('config-client-id').value;
   if (!cid) return;
   loadClientOverview(cid);
+  loadKnowledge(cid);
+
   try {
     const cfg = await apiCall('/admin/clients/' + cid + '/config');
     document.getElementById('voice').value = cfg.voice || 'pt-BR-FranciscaNeural';
@@ -961,6 +977,54 @@ async function sendRecoverLink() {
     st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
   }
 }
+
+// ========== BASE DE CONHECIMENTO (RAG) ==========
+async function loadKnowledge(clientId) {
+  if(!clientId) return;
+  try {
+    const items = await apiCall('/admin/clients/' + clientId + '/knowledge');
+    const listEl = document.getElementById('kb-list');
+    if (items && items.length > 0) {
+      listEl.innerHTML = items.map(i => `
+        <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);">
+          <span style="color: var(--muted); margin-right: 10px;">${i.preview}...</span>
+          <button onclick="deleteKnowledge(${i.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px;">🗑️</button>
+        </div>
+      `).join('');
+    } else {
+      listEl.innerHTML = '<p style="color: #555; font-size: 13px;">Nenhuma informação cadastrada. A IA está rodando no modo básico.</p>';
+    }
+  } catch (e) { console.error('Knowledge load error:', e); }
+}
+
+async function saveKnowledge() {
+  const cid = document.getElementById('config-client-id').value;
+  const content = document.getElementById('kb-content').value;
+  if(!content || content.length < 10) {
+    alert('❌ Escreva uma informação maior (mínimo 10 caracteres).');
+    return;
+  }
+  const st = document.getElementById('kb-status');
+  st.className = 'status'; st.style.display = 'none';
+
+  try {
+    await apiCall('/admin/clients/' + cid + '/knowledge', {
+      method: 'POST',
+      body: JSON.stringify({ content: content })
+    });
+    document.getElementById('kb-content').value = '';
+    loadKnowledge(cid);
+    st.className = 'status success';
+    st.textContent = '✅ Conhecimento adicionado! A IA já pode usar esta informação.';
+    st.style.display = 'block';
+    setTimeout(() => st.style.display = 'none', 4000);
+  } catch(e) {
+    st.className = 'status error';
+    st.textContent = '❌ ' + e.message;
+    st.style.display = 'block';
+  }
+}
+
 </script>
 </body>
 </html>
