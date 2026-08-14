@@ -147,6 +147,12 @@
           <a id="ov-ga-link" href="#" target="_blank" class="btn btn-primary" style="padding: 8px 15px; margin: 0; font-size: 12px; text-decoration: none; display: none;">Abrir Analytics ↗</a>
         </div>
       </div>
+      
+      <!-- CAMPO GOOGLE CALENDAR ID -->
+      <div style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <label style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Google Calendar ID (Para Agendamentos)</label>
+        <input type="text" id="calendar_id" placeholder="ex: seuemail@gmail.com ou ID@group.calendar.google.com" style="margin-bottom: 0;">
+      </div>
     </div>
 
     <!-- GERENCIADOR DE CONHECIMENTO (RAG) -->
@@ -611,6 +617,7 @@ async function loadConfig() {
     var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
     document.getElementById('notify_email').value = cfg.notify_email || '';
     document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
+    document.getElementById('calendar_id').value = cfg.calendar_id || '';
   } catch (e) { console.error('loadConfig:', e); }
 }
 
@@ -630,7 +637,8 @@ async function saveConfig() {
         greeting: document.getElementById('greeting').value,
         position: document.getElementById('position').value,
         notify_email: document.getElementById('notify_email').value,
-        notify_enabled: document.getElementById('notify_enabled').checked
+        notify_enabled: document.getElementById('notify_enabled').checked,
+        calendar_id: document.getElementById('calendar_id').value
       })
     });
     st.className = 'status success';
