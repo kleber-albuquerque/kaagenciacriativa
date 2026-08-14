@@ -155,6 +155,7 @@
       </div>
 
       <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
+            <button class="btn btn-secondary" style="margin-left: 0; margin-bottom: 10px; width: auto; padding: 6px 12px; font-size: 12px; background: #7f1d1d; color: #fca5a5; border-color: #7f1d1d;" onclick="clearAllKnowledge()">🗑️ Limpar Tudo</button>
       <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px;">
         <p style="color: #555; font-size: 13px;">Carregando...</p>
       </div>
@@ -995,16 +996,34 @@ async function loadKnowledge(clientId) {
     if (items && items.length > 0) {
       listEl.innerHTML = items.map(i => `
         <div style="background: #0a0a0a; padding: 10px; border-radius: 6px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);">
-          <span style="color: var(--muted); margin-right: 10px;">${i.preview}...</span>
-          <button onclick="deleteKnowledge(${i.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px;">🗑️</button>
+          <span style="color: var(--muted); margin-right: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${i.preview}</span>
+          <button onclick="deleteKnowledge(${i.id})" style="background: transparent; border: none; color: #ef4444; cursor: pointer; font-size: 16px; flex-shrink: 0;">🗑️</button>
         </div>
       `).join('');
     } else {
-      listEl.innerHTML = '<p style="color: #555; font-size: 13px;">Nenhuma informação cadastrada. A IA está rodando no modo básico.</p>';
+      listEl.innerHTML = '<p style="color: #555; font-size: 13px;">Nenhuma informação cadastrada.</p>';
     }
   } catch (e) { console.error('Knowledge load error:', e); }
 }
 
+async function deleteKnowledge(id) {
+  if(!confirm('Tem certeza que deseja apagar este item?')) return;
+  const cid = document.getElementById('config-client-id').value;
+  try {
+    await apiCall('/admin/clients/' + cid + '/knowledge/' + id, { method: 'DELETE' });
+    loadKnowledge(cid);
+  } catch(e) { alert('❌ Erro: ' + e.message); }
+}
+
+async function clearAllKnowledge() {
+  if(!confirm('⚠️ ATENÇÃO! Isso vai apagar TODAS as informações aprendidas por esta IA. Tem certeza?')) return;
+  const cid = document.getElementById('config-client-id').value;
+  try {
+    await apiCall('/admin/clients/' + cid + '/knowledge', { method: 'DELETE' });
+    loadKnowledge(cid);
+    alert('✅ Base de conhecimento limpa!');
+  } catch(e) { alert('❌ Erro: ' + e.message); }
+}
 async function saveKnowledge() {
   const cid = document.getElementById('config-client-id').value;
   const content = document.getElementById('kb-content').value;
