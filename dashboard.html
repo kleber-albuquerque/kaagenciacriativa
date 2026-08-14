@@ -272,17 +272,24 @@
       </table>
     </div>
   </div>
-
   <!-- NOVA ABA ANALYTICS -->
   <div id="tab-analytics" class="tab-content">
-    <div class="grid-2" style="margin-bottom: 20px;">
+    <div class="grid-2" style="margin-bottom: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
       <div class="card">
         <h2>Total de Leads</h2>
         <p id="analytics-total-leads" class="stat-value">0</p>
       </div>
       <div class="card">
-        <h2>Média Diária</h2>
-        <p id="analytics-daily-avg" class="stat-value">0</p>
+        <h2>Visitas (Tráfego)</h2>
+        <p id="analytics-total-views" class="stat-value" style="color: #3498db;">0</p>
+      </div>
+      <div class="card">
+        <h2>Abriu o Widget</h2>
+        <p id="analytics-total-opens" class="stat-value" style="color: #9b59b6;">0</p>
+      </div>
+      <div class="card">
+        <h2>Taxa de Conversão</h2>
+        <p id="analytics-conversion-rate" class="stat-value" style="color: var(--accent);">0%</p>
       </div>
     </div>
     <div class="grid-2">
@@ -296,8 +303,6 @@
       </div>
     </div>
   </div>
-</div>
-
 <!-- ===== MODAIS ===== -->
 <style>
   .display { font-family:'Space Grotesk',sans-serif; }
@@ -863,6 +868,13 @@ async function loadAnalytics() {
   try {
     const data = await apiCall('/admin/analytics');
     document.getElementById('analytics-total-leads').innerText = data.total_leads || 0;
+            // Atualiza os novos cards de tráfego
+        const viewsEl = document.getElementById('analytics-total-views');
+        const opensEl = document.getElementById('analytics-total-opens');
+        const convEl = document.getElementById('analytics-conversion-rate');
+        if(viewsEl) viewsEl.innerText = data.total_views || 0;
+        if(opensEl) opensEl.innerText = data.total_opens || 0;
+        if(convEl) convEl.innerText = `${data.conversion_rate || 0}%`;
     document.getElementById('analytics-daily-avg').innerText = data.daily_avg || 0;
 
     const ctxDay = document.getElementById('chart-leads-day').getContext('2d');
