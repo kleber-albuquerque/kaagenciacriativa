@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Portal do Cliente - KA Vox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #0a0a0a; --card: #151515; --border: #252525; --accent: #FFD400; --text: #fff; --muted: #888; --error: #fca5a5; --success: #6ee7b7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; padding: 40px 20px; }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  /* Login Screen */
+  .login-screen { text-align: center; padding: 80px 20px; }
+  .login-screen h1 { font-size: 28px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .login-screen input { max-width: 320px; margin: 0 auto 16px; }
+
+  /* Dashboard */
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
+  .brand-name { color: var(--accent); }
+  .btn-logout { background:transparent; color:var(--muted); border:1px solid var(--border); padding:8px 16px; border-radius:6px; font-weight:600; font-size:13px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:all .2s; }
+  .btn-logout:hover { color:#fca5a5; border-color:#ef4444; }
+
+  .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-card h3 { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .stat-card p { font-size: 28px; font-weight: 700; color: var(--accent); }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin-bottom: 16px; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; }
+  a { color: var(--accent); text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  .empty { text-align: center; color: #555; padding: 20px; font-size: 14px; }
+
+  input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+  input:focus { border-color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #000; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; max-width: 320px; margin-top: 10px; }
+  .status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; text-align: center; font-size: 14px; font-weight: 500; }
+  .status.error { background: #7f1d1d; color: var(--error); display: block; }
+
+  @media(max-width: 768px) { .grid-stats { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen container">
+  <h1>🔐 Portal do Cliente</h1>
+  <p style="color: var(--muted); margin-bottom: 24px;">Acesse seus leads e relatórios de IA</p>
+  <input type="text" id="login-slug" placeholder="Seu identificador (ex: vivi-correa)" onkeypress="if(event.key==='Enter') document.getElementById('login-pwd').focus()">
+  <input type="password" id="login-pwd" placeholder="Sua senha" onkeypress="if(event.key==='Enter') clientLogin()">
+  <button class="btn-primary" onclick="clientLogin()">Entrar no Portal</button>
+  <div id="login-error" class="status error" style="max-width: 320px; margin: 16px auto 0;"></div>
+</div>
+
+<div id="portal-dashboard" class="container" style="display:none;">
+  <div class="header">
+    <h1>📊 Painel de <span id="display-brand" class="brand-name">Cliente</span></h1>
+    <button class="btn-logout" onclick="clientLogout()">Sair ↪</button>
+  </div>
+
+  <div class="grid-stats">
+    <div class="stat-card"><h3>Leads Capturados</h3><p id="stat-leads">0</p></div>
+    <div class="stat-card"><h3>Atendimentos (7d)</h3><p id="stat-week">0</p></div>
+    <div class="stat-card"><h3>Total de Mensagens</h3><p id="stat-msgs">0</p></div>
+  </div>
+
+  <div class="card">
+    <h2>📍 Leads Recentes</h2>
+    <table>
+      <thead><tr><th>Telefone</th><th>Resumo da Conversa</th><th>Data</th></tr></thead>
+      <tbody id="leads-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>💬 Histórico de Atendimento</h2>
+    <table>
+      <thead><tr><th>Quem</th><th>Mensagem</th><th>Quando</th></tr></thead>
+      <tbody id="history-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const API = 'https://ka-voice-backend.onrender.com';
+let CLIENT_TOKEN = sessionStorage.getItem('ka_client_token') || '';
+let CLIENT_ID = sessionStorage.getItem('ka_client_id') || '';
+
+function authHeaders() { return { 'Authorization': 'Bearer ' + CLIENT_TOKEN, 'Content-Type': 'application/json' }; }
+
+async function clientLogin() {
+  const slug = document.getElementById('login-slug').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  const errEl = document.getElementById('login-error');
+
+  try {
+    const res = await fetch(API + '/client/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ client_id: slug, password: pwd })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Erro ao logar');
+
+    CLIENT_TOKEN = data.access_token;
+    CLIENT_ID = slug;
+    sessionStorage.setItem('ka_client_token', CLIENT_TOKEN);
+    sessionStorage.setItem('ka_client_id', CLIENT_ID);
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('portal-dashboard').style.display = 'block';
+    document.getElementById('display-brand').textContent = data.brand_name || slug;
+    loadClientData();
+  } catch (e) {
+    errEl.innerText = '❌ ' + e.message;
+    errEl.style.display = 'block';
+    setTimeout(() => errEl.style.display = 'none', 3000);
+  }
+}
+
+function clientLogout() {
+  CLIENT_TOKEN = ''; CLIENT_ID = '';
+  sessionStorage.removeItem('ka_client_token');
+  sessionStorage.removeItem('ka_client_id');
+  document.getElementById('login-screen').style.display = 'block';
+  document.getElementById('portal-dashboard').style.display = 'none';
+}
+
+async function loadClientData() {
+  try {
+    // Carrega Stats
+    const stats = await fetch(API + '/client/stats', { headers: authHeaders() }).then(r => r.json());
+    document.getElementById('stat-leads').innerText = stats.total_leads || 0;
+    document.getElementById('stat-msgs').innerText = stats.total_messages || 0;
+    document.getElementById('stat-week').innerText = stats.messages_7d || 0;
+
+    // Carrega Leads
+    const leads = await fetch(API + '/client/leads', { headers: authHeaders() }).then(r => r.json());
+    const lBody = document.getElementById('leads-body');
+    if (leads && leads.length > 0) {
+      lBody.innerHTML = leads.map(l => `
+        <tr>
+          <td><a href="https://wa.me/55${String(l.phone||'').replace(/\D/g,'')}" target="_blank">${l.phone || '-'}</a></td>
+          <td>${String(l.summary||'-').substring(0,80)}</td>
+          <td>${new Date(l.date).toLocaleString('pt-BR')}</td>
+        </tr>
+      `).join('');
+    } else { lBody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum lead capturado ainda.</td></tr>'; }
+
+    // Carrega Histórico
+    const history = await fetch(API + '/client/history', { headers: authHeaders() }).then(r => r.json());
+    const hBody = document.getElementById('history-body');
+    if (history && history.length > 0) {
+      hBody.innerHTML = history.map(h => `
+        <tr>
+          <td style="color: ${h.role==='user'?'var(--accent)':'var(--muted)'}; font-weight: ${h.role==='user'?'600':'400'}">${h.role==='user'?'👤 Cliente':'🤖 IA'}</td>
+          <td>${String(h.message).substring(0,150)}</td>
+          <td>${new Date(h.date).toLocaleString('pt-BR')}</td>
+        </tr>
+      `).join('');
+    } else { hBody.innerHTML = '<tr><td colspan="3" class="empty">Nenhuma conversa registrada.</td></tr>'; }
+
+  } catch(e) { console.error('Erro ao carregar dados:', e); }
+}
+
+// Auto-login se já tiver token na sessão
+window.addEventListener('DOMContentLoaded', () => {
+  if (CLIENT_TOKEN) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('portal-dashboard').style.display = 'block';
+    document.getElementById('display-brand').textContent = CLIENT_ID.replace(/-/g, ' ');
+    loadClientData();
+  }
+});
+</script>
+</body>
+</html>
