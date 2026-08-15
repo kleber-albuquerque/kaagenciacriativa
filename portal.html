@@ -92,6 +92,22 @@
       <tbody id="history-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
     </table>
   </div>
+
+  <!-- BASE DE CONHECIMENTO DO CLIENTE -->
+  <div class="card">
+    <h2>📚 Treinar Assistente (Adicionar Conhecimento)</h2>
+    <div class="info-box" style="background:#1a1a1a; border:1px dashed var(--border); padding:12px; border-radius:8px; font-size:12px; color:var(--muted); margin-bottom:16px;">💡 Ensine algo novo à sua IA. Ex: "Novo produto: Anel Zafira, R$ 2.000, ouro branco". A IA usará isso para responder aos clientes.</div>
+    
+    <input type="text" id="kb-title-c" placeholder="Título (Ex: Anel Zafira)" style="margin-bottom: 10px;">
+    <textarea id="kb-content-c" placeholder="Detalhes (Ex: Preço, materiais, tamanhos...)" style="width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; min-height: 80px; resize: vertical; margin-bottom: 10px;"></textarea>
+    <button class="btn-primary" style="max-width: none; width: auto; padding: 10px 20px; font-size: 14px;" onclick="saveClientKnowledge()">➕ Adicionar à IA</button>
+    <div id="kb-status-c" class="status"></div>
+
+    <h2 style="font-size: 14px; margin-top: 24px;">O que a IA já sabe</h2>
+    <div id="kb-list-c" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+      <p style="color: #555; font-size: 13px;">Carregando...</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -124,6 +140,7 @@ async function clientLogin() {
     document.getElementById('portal-dashboard').style.display = 'block';
     document.getElementById('display-brand').textContent = data.brand_name || slug;
     loadClientData();
+    loadClientKnowledge();
   } catch (e) {
     errEl.innerText = '❌ ' + e.message;
     errEl.style.display = 'block';
@@ -183,6 +200,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('portal-dashboard').style.display = 'block';
     document.getElementById('display-brand').textContent = CLIENT_ID.replace(/-/g, ' ');
     loadClientData();
+    loadClientKnowledge();
   }
 });
 
@@ -213,6 +231,56 @@ async function changeClientPwd() {
     st.textContent = '✅ Senha alterada com sucesso!';
     document.getElementById('cur-pwd-c').value = ''; document.getElementById('new-pwd-c').value = ''; document.getElementById('cf-pwd-c').value = '';
     setTimeout(closePwdModal, 2000);
+  } catch(e) {
+    st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
+  }
+}
+// ========== BASE DE CONHECIMENTO (PORTAL CLIENTE) ==========
+async function loadClientKnowledge() {
+  try {
+    const items = await fetch(API + '/client/knowledge', { headers: authHeaders() }).then(r => r.json());
+    const listEl = document.getElementById('kb-list-c');
+    if (items && items.length > 0) {
+      listEl.innerHTML = items.map(i => `
+        <div style="background: var(--bg); padding: 10px; border-radius: 6px; font-size: 13px; border: 1px solid var(--border);">
+          <strong style="color: var(--text);">${i.title}</strong><br>
+          <span style="color: var(--muted); font-size: 12px;">${i.preview}</span>
+        </div>
+      `).join('');
+    } else {
+      listEl.innerHTML = '<p style="color: #555; font-size: 13px;">A IA ainda não tem conhecimentos extras cadastrados por você.</p>';
+    }
+  } catch(e) { console.error('Erro ao carregar conhecimento:', e); }
+}
+
+async function saveClientKnowledge() {
+  const title = document.getElementById('kb-title-c').value;
+  const contentText = document.getElementById('kb-content-c').value;
+  const st = document.getElementById('kb-status-c');
+  
+  if(!contentText || contentText.length < 10) {
+    st.className = 'status error'; st.textContent = '❌ Escreva uma informação maior.'; st.style.display = 'block';
+    return;
+  }
+
+  try {
+    const res = await fetch(API + '/client/knowledge', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ title: title || 'Informação', content: contentText })
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail);
+
+    st.className = 'status'; 
+    st.style.background = '#064e3b'; st.style.color = '#6ee7b7'; 
+    st.textContent = '✅ ' + data.message; 
+    st.style.display = 'block';
+    
+    document.getElementById('kb-title-c').value = '';
+    document.getElementById('kb-content-c').value = '';
+    loadClientKnowledge();
+    setTimeout(() => st.style.display = 'none', 3000);
   } catch(e) {
     st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
   }
