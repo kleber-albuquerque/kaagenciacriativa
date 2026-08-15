@@ -87,10 +87,14 @@
 
   <div class="card">
     <h2>💬 Histórico de Atendimento</h2>
-    <table>
-      <thead><tr><th>Quem</th><th>Mensagem</th><th>Quando</th></tr></thead>
-      <tbody id="history-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
-    </table>
+    <div style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+      <table style="margin-top: 0;">
+        <thead style="position: sticky; top: 0; background: var(--card); z-index: 1;">
+          <tr><th>Quem</th><th>Mensagem</th><th>Quando</th></tr>
+        </thead>
+        <tbody id="history-body"><tr><td colspan="3" class="empty">Carregando...</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- BASE DE CONHECIMENTO DO CLIENTE -->
