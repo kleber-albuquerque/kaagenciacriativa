@@ -181,6 +181,14 @@
         <div id="kb-pdf-status" class="status"></div>
       </div>
 
+      <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <h2 style="font-size: 14px;">Importar Tabela (CSV)</h2>
+        <div class="info-box">💡 Exporte o catálogo da sua loja (Nuvemshop, Shopify) em formato CSV e faça o upload. O sistema vai ler as colunas e treinar a IA automaticamente.</div>
+        <input type="file" id="kb-csv-file" accept=".csv" style="display: none;" onchange="handleCsvUpload()">
+        <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="document.getElementById('kb-csv-file').click()">📊 Enviar CSV (Catálogo)</button>
+        <div id="kb-csv-status" class="status"></div>
+      </div>
+
       <h2 style="margin-top: 24px; font-size: 14px;">Informações Aprendidas</h2>
       <button class="btn btn-secondary" style="margin-left: 0; margin-bottom: 10px; width: auto; padding: 6px 12px; font-size: 12px; background: #7f1d1d; color: #fca5a5; border-color: #7f1d1d;" onclick="clearAllKnowledge()">🗑️ Limpar Tudo</button>
       <div id="kb-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 10px;">
@@ -1142,6 +1150,34 @@ async function handlePdfUpload() {
   try {
     // Usamos fetch direto porque o apiCall força JSON, e aqui precisamos enviar FormData
     const res = await fetch(API + '/admin/clients/' + cid + '/knowledge/upload-pdf', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN },
+      body: formData
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || 'Erro ao enviar arquivo.');
+    
+    st.className = 'status success'; st.textContent = '✅ ' + data.message;
+    loadKnowledge(cid); // Recarrega a lista
+    fileInput.value = '';
+  } catch(e) {
+    st.className = 'status error'; st.textContent = '❌ ' + e.message;
+  }
+}
+async function handleCsvUpload() {
+  const fileInput = document.getElementById('kb-csv-file');
+  const file = fileInput.files[0];
+  const cid = document.getElementById('config-client-id').value;
+  if (!file || !cid) return;
+
+  const st = document.getElementById('kb-csv-status');
+  st.className = 'status'; st.style.display = 'block'; st.textContent = '⏳ Lendo tabela e treinando IA...';
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const res = await fetch(API + '/admin/clients/' + cid + '/knowledge/upload-csv', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + TOKEN },
       body: formData
