@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistente Digital</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: #FFD400; --bg: #0a0a0a; --text: #fff; --muted: #888;
+</style>
+</head>
+<body>
+
+<div id="microsite" style="display:none; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;">
+    <div style="max-width: 600px; width: 100%; text-align: center; margin-bottom: 40px;">
+        <img id="ms-logo" src="" alt="Logo" style="max-height: 80px; margin-bottom: 24px; border-radius: 12px; display: none;">
+        <h1 id="ms-title" style="font-size: 1.5rem; margin-bottom: 12px; color: var(--text);"></h1>
+        <p id="ms-copy" style="font-size: 1.1rem; color: var(--muted); margin-bottom: 32px;"></p>
+    </div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const clientId = urlParams.get('client');
+
+if (clientId) {
+    fetch(`https://ka-voice-backend.onrender.com/widget/config/${clientId}`)
+    .then(res => res.json())
+    .then(config => {
+        document.documentElement.style.setProperty('--accent', config.accent_color || '#FFD400');
+        const microsite = document.getElementById('microsite');
+        microsite.style.display = 'flex';
+        
+        const logo = document.getElementById('ms-logo');
+        if (config.logo_url) {
+            logo.src = config.logo_url;
+            logo.style.display = 'block';
+        }
+        document.getElementById('ms-title').innerText = config.bio_headline || `Assistente da ${config.brand_name || 'Assistente Digital'}`;
+        document.getElementById('ms-copy').innerText = config.bio_cta || 'Toque no microfone e fale comigo!';
+        
+        // Injeta o Widget KA Vox
+        const script = document.createElement('script');
+        script.src = 'https://kaagenciacriativa.vercel.app/widget.js';
+        script.setAttribute('data-client-id', clientId);
+        script.defer = true;
+        document.body.appendChild(script);
+    });
+}
+</script>
+</body>
+</html>
