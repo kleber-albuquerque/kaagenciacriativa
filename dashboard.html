@@ -269,8 +269,9 @@
     <div class="card" style="border: 1px dashed var(--border);">
       <h2>🌐 Microsite (Bio Link)</h2>
       <div class="info-box">💡 Configure a logo e o texto do link para Instagram/TikTok.</div>
-      <label>URL da Logo (ex: https://.../logo.png)</label>
-      <input type="text" id="bio_logo_url" placeholder="https://...">
+      <label>Logo do Microsite</label>
+      <input type="file" id="bio_logo_file" accept="image/png, image/jpeg" style="margin-bottom: 10px;">
+      <input type="hidden" id="bio_logo_url">
       <label>Título do Microsite</label>
       <input type="text" id="bio_headline" placeholder="Recepcionista Digital">
       <label>Chamada (CTA)</label>
