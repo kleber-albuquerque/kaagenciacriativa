@@ -27,7 +27,7 @@ fetch(TRACK_URL, {
 
 // 2. Registra quando o usuário abre o chat do widget
 document.addEventListener('click', function(e) {
-    if (e.target.closest('#ka-vox-button') || e.target.closest('#ka-vox-chat')) {
+    if (e.target.closest('#ka-toggle-btn') || e.target.closest('#ka-chat')) {
         if (!sessionStorage.getItem('ka_vox_opened')) {
             fetch(TRACK_URL, {
                 method: 'POST',
@@ -187,7 +187,7 @@ function kaAddMsg(role, text) {
   var chat = document.getElementById('ka-chat');
   var msgs = document.getElementById('ka-messages');
   var status = document.getElementById('ka-status');
-  if (chat) chat.style.display = 'block';
+  if (chat) chat.style.display = 'flex';
   if (status) status.style.display = 'none';
   var div = document.createElement('div');
   div.setAttribute('data-role', role);
@@ -204,7 +204,7 @@ function kaStartRec() {
   var tooltip = document.getElementById('ka-tooltip');
   var chat = document.getElementById('ka-chat');
   if (tooltip) tooltip.style.display = 'none';
-  if (chat) chat.style.display = 'block';
+  if (chat) chat.style.display = 'flex';
 }
 
 function kaSendMessage(text) {

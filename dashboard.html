@@ -648,6 +648,30 @@ async function loadConfig() {
   } catch (e) { console.error('loadConfig:', e); }
 }
 
+async function uploadBioLogo() {
+  const cid = document.getElementById('config-client-id').value;
+  const fileInput = document.getElementById('bio_logo_file');
+  if (!cid) return alert('Selecione um cliente primeiro.');
+  if (!fileInput.files.length) return;
+  const file = fileInput.files[0];
+  if (file.size > 200 * 1024) {
+    return alert('⚠️ Imagem muito grande (' + Math.round(file.size/1024) + 'KB).\n\nOtimize para ~300px de largura (deve ficar abaixo de 200KB) e tente de novo.');
+  }
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const res = await fetch(API + '/admin/clients/' + cid + '/upload-logo', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN },
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Erro no upload');
+    document.getElementById('bio_logo_url').value = data.logo_url;
+    alert('✅ Logo enviada e salva! Agora clique em "Salvar Configurações" para garantir o título e o CTA.');
+  } catch (e) { alert('❌ ' + e.message); }
+}
+
 async function saveConfig() {
   const cid = document.getElementById('config-client-id').value;
   const st = document.getElementById('status-config');
