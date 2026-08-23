@@ -1,60 +1,1483 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Assistente Digital</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{ --bg:#000000; --fg:#ffffff; --muted:#8c8c8c; --line:rgba(255,255,255,0.10); --line-soft:rgba(255,255,255,0.06); --card:rgba(255,255,255,0.02); --accent:#FFD400;
-</style>
-</head>
-<body>
+import os, re, json, base64, asyncio, threading, urllib.request, urllib.parse
+from cachetools import TTLCache
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+from dotenv import load_dotenv
+from fastapi import FastAPI, Request, HTTPException, Depends, UploadFile, File, Body
+from fastapi.responses import Response, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import JWTError, jwt
+import psycopg
+from groq import Groq
+import edge_tts
+import bcrypt
+import secrets, string
+import csv
+import io
+import re as regex_mod
+import unicodedata
 
-<canvas id="bg"></canvas>
-<div class="grain"></div>
+# --- Google Calendar ---
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
-<div id="microsite" style="display:none; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; position: relative; z-index: 2;">
-    <div style="max-width: 600px; width: 100%; text-align: center; margin-bottom: 40px;">
-        <img id="ms-logo" src="" alt="Logo" style="max-height: 80px; margin-bottom: 24px; border-radius: 12px; display: none;">
-        <h1 id="ms-title" style="font-size: 1.5rem; margin-bottom: 12px; color: var(--fg);"></h1>
-        <p id="ms-copy" style="font-size: 1.1rem; color: var(--muted); margin-bottom: 32px;"></p>
+# --- Rate limiting (opcional) ---
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+load_dotenv()
+app = FastAPI()
+
+# ========== RATE LIMITING ==========
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ========== CONFIG ==========
+DATABASE_URL = os.getenv("DATABASE_URL")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "ka_admin_2026")
+SECRET_KEY = os.getenv("JWT_SECRET", "ka-voice-super-secret-jwt-key-change-me-in-prod")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_HOURS = 24
+WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "kavox_secret_token_2026")
+CALENDAR_ID = os.getenv("GOOGLE_CALENDAR_ID", "")
+
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+
+# ========== CACHES ==========
+prompt_cache = TTLCache(maxsize=50, ttl=300)
+voice_cache = TTLCache(maxsize=50, ttl=300)
+context_cache = TTLCache(maxsize=50, ttl=300)
+history_cache = TTLCache(maxsize=50, ttl=60)
+
+security_scheme = HTTPBearer(auto_error=False)
+
+# ========== FUNÇÕES DE SEGURANÇA ==========
+def hash_password(plain: str) -> str:
+    return bcrypt.hashpw(plain.encode("utf-8")[:72], bcrypt.gensalt()).decode("utf-8")
+
+def verify_hash(plain: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8")[:72], hashed.encode("utf-8"))
+    except Exception:
+        return False
+
+def is_hashed(s) -> bool:
+    return isinstance(s, str) and (s.startswith("$2b$") or s.startswith("$2a$") or s.startswith("$2y$"))
+
+def verify_stored_password(plain: str, stored: str) -> bool:
+    if not stored:
+        return False
+    if is_hashed(stored):
+        return verify_hash(plain, stored)
+    return plain == stored
+
+def generate_password(length: int = 12) -> str:
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+DEFAULT_PROMPT = "Você é um assistente virtual prestativo e profissional."
+
+# ========== CORS ==========
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ========== AUTENTICAÇÃO ADMIN ==========
+def verify_password(plain: str) -> bool:
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT password_hash FROM admin_credentials WHERE username='admin'")
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        if row and row[0]:
+            return verify_hash(plain, row[0])
+    except Exception:
+        pass
+    return plain == ADMIN_PASSWORD
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)):
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Token não fornecido")
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("sub") != "admin":
+            raise HTTPException(status_code=401, detail="Token inválido")
+        return "admin"
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido ou expirado")
+
+async def get_current_client(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)):
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Token não fornecido")
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("role") != "client" or not payload.get("sub"):
+            raise HTTPException(status_code=401, detail="Token de cliente inválido")
+        return payload.get("sub")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token inválido ou expirado")
+
+# ========== FUNÇÕES AUXILIARES (BANCO / IA / TTS) ==========
+def get_client_prompt(client_id):
+    cache_key = f"prompt_{client_id}"
+    if cache_key in prompt_cache:
+        return prompt_cache[cache_key]
+    if not DATABASE_URL:
+        return DEFAULT_PROMPT
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT system_prompt FROM clients WHERE client_id = %s", (client_id,))
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        result = row[0] if row and row[0] else DEFAULT_PROMPT
+        prompt_cache[cache_key] = result
+        return result
+    except Exception as e:
+        print(f"Prompt fetch error: {e}")
+        return DEFAULT_PROMPT
+
+def save_lead(msg, cid):
+    m = re.search(r'\d{10,13}', msg.replace(" ","").replace("-",""))
+    if m and DATABASE_URL:
+        try:
+            conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO leads (client_id, phone, summary) VALUES (%s,%s,%s) ON CONFLICT DO NOTHING",
+                (cid, m.group(), msg[:100])
+            )
+            conn.commit()
+            is_new = cur.rowcount > 0
+            cur.close(); conn.close()
+            if is_new:
+                threading.Thread(target=send_email_notification, args=(cid, m.group(), msg[:100]), daemon=True).start()
+        except Exception as e:
+            print(f"Lead error: {e}")
+
+def save_conversation(msg, role, cid):
+    if not DATABASE_URL or not msg or msg == "[Áudio recebido]":
+        return
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO conversations (client_id, role, message) VALUES (%s,%s,%s)",
+            (cid, role, msg[:1000])
+        )
+        conn.commit(); cur.close(); conn.close()
+    except Exception as e:
+        print(f"Conversation error: {e}")
+
+def get_client_voice(client_id):
+    cache_key = f"voice_{client_id}"
+    if cache_key in voice_cache:
+        return voice_cache[cache_key]
+    if not DATABASE_URL:
+        return "pt-BR-FranciscaNeural"
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT voice FROM clients WHERE client_id = %s", (client_id,))
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        return (row[0] if row and row[0] else "pt-BR-FranciscaNeural")
+    except Exception:
+        return "pt-BR-FranciscaNeural"
+
+async def generate_audio(text, voice="pt-BR-FranciscaNeural"):
+    if not text.strip():
+        return ""
+    try:
+        c = edge_tts.Communicate(text, voice)
+        data = b""
+        async for chunk in c.stream():
+            if chunk["type"] == "audio":
+                data += chunk["data"]
+        return base64.b64encode(data).decode() if data else ""
+    except Exception as e:
+        print(f"TTS error: {e}")
+        return ""
+
+def get_context_for_ai(client_id: str, user_question: str):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cache_key = f"context_{client_id}"
+        if cache_key in context_cache:
+            candidates = context_cache[cache_key]
+        else:
+            cur.execute("SELECT title, content FROM knowledge_base WHERE client_id = %s", (client_id,))
+            candidates = cur.fetchall()
+            cur.close(); conn.close()
+            context_cache[cache_key] = candidates
+        if not candidates:
+            return None
+        clean_question = unicodedata.normalize('NFKD', user_question).encode('ASCII', 'ignore').decode('utf-8')
+        clean_question = re.sub(r'[^a-zA-Z0-9 ]', '', clean_question).strip()
+        words = [w for w in clean_question.split() if len(w) > 2]
+        if not words:
+            return None
+        def score(item):
+            title, content = item
+            text = (title + " " + content).lower()
+            text_clean = unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8').lower()
+            title_clean = unicodedata.normalize('NFKD', title).encode('ASCII', 'ignore').decode('utf-8').lower()
+            s = 0
+            for w in words:
+                if w in title_clean:
+                    s += 3
+                elif w in text_clean:
+                    s += 1
+            return s
+        ranked = sorted(candidates, key=score, reverse=True)
+        top_3 = ranked[:3]
+        if score(top_3[0]) == 0:
+            return None
+        context_parts = []
+        for r in top_3:
+            context_parts.append(f"Item: {r[0]}. Detalhes: {r[1]}")
+        return "\n".join(context_parts)
+    except Exception as e:
+        print(f"Erro no RAG: {e}")
+        return None
+
+# ========== INTEGRAÇÃO GOOGLE CALENDAR ==========
+def get_calendar_service():
+    creds_json_str = os.getenv("GOOGLE_CREDENTIALS", "")
+    if not creds_json_str or not CALENDAR_ID:
+        return None
+    try:
+        creds_dict = json.loads(creds_json_str)
+        credentials = service_account.Credentials.from_service_account_info(creds_dict, scopes=['https://www.googleapis.com/auth/calendar'])
+        service = build('calendar', 'v3', credentials=credentials)
+        return service
+    except Exception as e:
+        print(f"Erro ao conectar Google Calendar: {e}")
+        return None
+
+def get_client_calendar_id(client_id):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT calendar_id FROM clients WHERE client_id = %s", (client_id,))
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        return row[0] if row and row[0] else None
+    except Exception as e:
+        print(f"Erro ao buscar calendar_id: {e}")
+        return None
+
+def check_calendar_availability(client_id, start_dt_str, end_dt_str):
+    service = get_calendar_service()
+    cal_id = get_client_calendar_id(client_id)
+    if not service or not cal_id:
+        return False
+    try:
+        events_result = service.events().list(
+            calendarId=cal_id,
+            timeMin=start_dt_str,
+            timeMax=end_dt_str,
+            singleEvents=True,
+            orderBy='startTime'
+        ).execute()
+        events = events_result.get('items', [])
+        return len(events) == 0
+    except HttpError as e:
+        print(f"Erro ao verificar agenda: {e}")
+        return False
+
+def create_calendar_event(client_id, summary, start_dt_str, end_dt_str):
+    service = get_calendar_service()
+    cal_id = get_client_calendar_id(client_id)
+    if not service or not cal_id:
+        return False
+    event = {
+        'summary': summary,
+        'start': {'dateTime': start_dt_str, 'timeZone': 'America/Bahia'},
+        'end': {'dateTime': end_dt_str, 'timeZone': 'America/Bahia'},
+    }
+    try:
+        service.events().insert(calendarId=cal_id, body=event).execute()
+        return True
+    except HttpError as e:
+        print(f"Erro ao criar evento: {e}")
+        return False
+
+# ========== LLM (com RAG e Function Calling) ==========
+def get_ai(msg, client_id="ka_agencia"):
+    if not msg.strip(): return "Olá! Como posso ajudar?"
+    from datetime import datetime, timedelta
+    # import llm_router (deve estar disponível)
+    from llm_router import route_llm
+
+    prompt_text = get_client_prompt(client_id)
+    catalog_context = get_context_for_ai(client_id, msg)
+    if not catalog_context: catalog_context = "NENHUMA INFO. Peça WhatsApp."
+
+    history_text = ""
+    cache_key_hist = f"hist_{client_id}"
+    if cache_key_hist in history_cache:
+        history_text = history_cache[cache_key_hist]
+    else:
+        try:
+            conn_mem = psycopg.connect(DATABASE_URL); cur_mem = conn_mem.cursor()
+            cur_mem.execute("SELECT role, message FROM conversations WHERE client_id = %s ORDER BY created_at DESC LIMIT 6", (client_id,))
+            rows = cur_mem.fetchall(); cur_mem.close(); conn_mem.close()
+            for row in reversed(rows):
+                if row[0] in ['user', 'assistant'] and '<ACTION' not in row[1]:
+                    history_text += f"{row[0]}: {row[1]}\n"
+            history_cache[cache_key_hist] = history_text
+        except: pass
+
+    system_rules = "REGRAS: 1. Sem Markdown. 2. Breve. 3. Use contexto. 4. Para agendar, use: <ACTION>{\"func\": \"check_availability\", \"date\": \"YYYY-MM-DD\", \"time\": \"HH:MM\"}</ACTION>"
+    full_prompt = f"{prompt_text}\nContexto:\n{catalog_context[:1500]}\nHistórico:\n{history_text}\nuser: {msg}"
+
+    def clean_text(t): return re.sub(r'[*#|>_`]', ' ', t).strip()
+
+    try:
+        response_text, _ = route_llm(system_rules, full_prompt, client_id)
+        response_text = clean_text(response_text)
+
+        if '<ACTION' in response_text or '<action' in response_text.lower():
+            json_str = re.sub(r'<ACTION.*?>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+            json_str = re.sub(r'</?ACTION.*?>', '', json_str, flags=re.DOTALL | re.IGNORECASE).strip()
+            try:
+                args = json.loads(json_str)
+                fn = str(args.get("func","")).replace(" ","_").lower()
+                res = "Erro"
+                if "check" in fn:
+                    d, t = args.get("date",""), args.get("time","")
+                    st = f"{d}T{t}:00-03:00"; o = datetime.fromisoformat(st); et = (o + timedelta(hours=1)).isoformat()
+                    res = "LIVRE" if check_calendar_availability(client_id, st, et) else "OCUPADO"
+                elif "book" in fn:
+                    d, t, s = args.get("date",""), args.get("time",""), args.get("summary","")
+                    st = f"{d}T{t}:00-03:00"; o = datetime.fromisoformat(st); et = (o + timedelta(hours=1)).isoformat()
+                    res = "Confirmado" if create_calendar_event(client_id, s or "Agendamento", st, et) else "Falha"
+            except: res = "Erro ao processar"
+
+            fu = f"Você informou: {response_text}\nResultado da ação: {res}. Comunique o resultado ao usuário de forma breve e natural."
+            ft, _ = route_llm(system_rules, fu, client_id)
+            fr = clean_text(ft)
+            fr = re.sub(r'<ACTION.*?>.*?</?ACTION.*?>', '', fr, flags=re.DOTALL | re.IGNORECASE).strip()
+            save_conversation(fr, 'assistant', client_id)
+            return fr
+        else:
+            save_conversation(response_text, 'assistant', client_id)
+            return response_text
+    except Exception as e:
+        print(f"AI error: {e}")
+        return "No momento estamos com alta demanda. Tente novamente."
+
+# ========== NOTIFICAÇÃO POR E-MAIL (Resend) ==========
+def _is_light(hex_color):
+    c = (hex_color or "#FFD400").replace("#", "")
+    if len(c) < 6:
+        return True
+    r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 150
+
+def _build_lead_email(brand, phone, msg, accent, accent_text):
+    import html as _html
+    phone_digits = "".join(c for c in str(phone) if c.isdigit())
+    if phone_digits and not phone_digits.startswith("55"):
+        phone_digits = "55" + phone_digits
+    wa_link = f"https://wa.me/{phone_digits}"
+    brand_s = _html.escape(str(brand))
+    phone_s = _html.escape(str(phone))
+    msg_s = _html.escape(str(msg))
+    ts = datetime.now().strftime("%d/%m/%Y %H:%M")
+    return f"""
+<div style="font-family:Arial,Helvetica,sans-serif;background:#f6f7f9;padding:32px 16px;">
+  <div style="max-width:520px;margin:0 auto;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e4e6eb;">
+    <div style="background:{accent};padding:22px 28px;">
+      <div style="font-size:12px;letter-spacing:1px;color:{accent_text};opacity:.85;font-weight:600;">🔔 NOVO LEAD RECEBIDO</div>
+      <div style="font-size:24px;font-weight:700;color:{accent_text};margin-top:4px;">{brand_s}</div>
     </div>
+    <div style="padding:28px;">
+      <div style="font-size:13px;color:#7b8190;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">📱 Telefone</div>
+      <div style="font-size:22px;font-weight:700;color:#17191d;margin:6px 0 24px;">{phone_s}</div>
+      <div style="font-size:13px;color:#7b8190;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">💬 Mensagem do lead</div>
+      <div style="font-size:15px;color:#17191d;line-height:1.6;background:#f0f1f4;padding:16px;border-radius:10px;margin:6px 0 28px;">{msg_s}</div>
+      <a href="{wa_link}" style="display:block;text-align:center;background:#25d366;color:#ffffff;padding:15px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">💬 Responder no WhatsApp</a>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:#7b8190;">⚡ Responda rápido para aumentar a conversão</div>
+    </div>
+    <div style="padding:18px 28px;background:#fafafa;border-top:1px solid #e4e6eb;font-size:12px;color:#9aa0ad;text-align:center;">
+      Enviado automaticamente pelo <strong>KA Voice</strong> · {ts}
+    </div>
+  </div>
 </div>
+"""
 
-<script>
-const urlParams = new URLSearchParams(window.location.search);
-const clientId = urlParams.get('client');
+def send_email_notification(client_id, lead_phone, lead_msg, force=False):
+    try:
+        api_key = os.getenv("RESEND_API_KEY", "")
+        from_email = os.getenv("EMAIL_FROM", "KA Voice <onboarding@resend.dev>")
+        if not api_key:
+            return False, "Resend não configurado"
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT notify_email, notify_enabled, brand_name, accent_color FROM clients WHERE client_id=%s", (client_id,))
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        if not row or not row[0]:
+            return False, f"Cliente {client_id} sem e-mail configurado"
+        if not force and not row[1]:
+            return False, f"Notificação desativada para {client_id}"
+        to_email = row[0]
+        brand = row[2] or client_id
+        accent = row[3] or "#FFD400"
+        accent_text = "#000000" if _is_light(accent) else "#ffffff"
+        html_body = _build_lead_email(brand, lead_phone, lead_msg, accent, accent_text)
+        payload = {"from": from_email, "to": [to_email], "subject": f"🔔 Novo lead — {brand}", "html": html_body}
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request("https://api.resend.com/emails", data=data)
+        req.add_header("Authorization", "Bearer " + api_key)
+        req.add_header("Content-Type", "application/json")
+        req.add_header("User-Agent", "KA-Voice-Backend/1.0")
+        urllib.request.urlopen(req, timeout=30)
+        print(f"✅ E-mail de lead enviado para {to_email} ({client_id})")
+        return True, f"Enviado para {to_email}"
+    except Exception as e:
+        print(f"❌ Erro no e-mail: {e}")
+        return False, str(e)
 
-if (clientId) {
-    fetch(`https://ka-voice-backend.onrender.com/widget/config/${clientId}`)
-    .then(res => res.json())
-    .then(config => {
-        document.documentElement.style.setProperty('--accent', config.accent_color || '#FFD400');
-        const microsite = document.getElementById('microsite');
-        microsite.style.display = 'flex';
-        
-        const logo = document.getElementById('ms-logo');
-        if (config.logo_url) {
-            logo.src = config.logo_url;
-            logo.style.display = 'block';
+# ==========================================================
+# WEBHOOK WHATSAPP (META CLOUD API)
+# ==========================================================
+@app.get("/webhook/whatsapp")
+async def verify_whatsapp_webhook(request: Request):
+    params = dict(request.query_params)
+    hub_mode = params.get("hub.mode") or params.get("hub_mode")
+    hub_token = params.get("hub.verify_token") or params.get("hub_token")
+    hub_challenge = params.get("hub.challenge") or params.get("hub_challenge")
+    if hub_mode == "subscribe" and hub_token == WHATSAPP_VERIFY_TOKEN:
+        return Response(content=str(hub_challenge), status_code=200)
+    return Response(content="Forbidden", status_code=403)
+
+@app.post("/webhook/whatsapp")
+async def receive_whatsapp_webhook(request: Request):
+    try:
+        data = await request.json()
+        entry = data.get("entry", [{}])[0]
+        changes = entry.get("changes", [{}])[0]
+        value = changes.get("value", {})
+        if "messages" in value:
+            await process_incoming_messages(value)
+        if "statuses" in value:
+            await process_message_status(value["statuses"])
+        return {"status": "ok"}
+    except Exception as e:
+        print(f"❌ Erro no webhook: {e}")
+        return {"status": "error"}
+
+async def process_incoming_messages(value):
+    for message in value.get("messages", []):
+        from_number = message.get("from")
+        msg_type = message.get("type")
+        print(f"📨 Mensagem recebida de {from_number} (tipo: {msg_type})")
+        if msg_type == "text":
+            text = message.get("text", {}).get("body", "")
+            print(f"   Texto: {text}")
+
+async def process_message_status(statuses):
+    for status in statuses:
+        recipient = status.get("recipient_id")
+        status_type = status.get("status")
+        message_id = status.get("id")
+        emoji = {"sent": "📤", "delivered": "✅", "read": "👀", "failed": "❌"}.get(status_type, "❓")
+        print(f"{emoji} Status [{recipient}]: {status_type} (msg {message_id[:10]}...)")
+        if status_type == "failed" and "errors" in status:
+            for error in status["errors"]:
+                print(f"   Erro: {error.get('code')} - {error.get('title')}")
+
+# ==========================================================
+# ROTAS PÚBLICAS
+# ==========================================================
+@app.get("/")
+def root():
+    return {"status": "Online", "version": "10.0-multitenant-full", "auth": "jwt"}
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+@app.get("/debug/test")
+async def debug_test():
+    results = {}
+    try:
+        if DATABASE_URL:
+            conn = psycopg.connect(DATABASE_URL)
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            cur.close(); conn.close()
+            results["database"] = "✅ OK"
+        else:
+            results["database"] = "❌ DATABASE_URL não configurada"
+    except Exception as e:
+        results["database"] = f"❌ Erro: {str(e)[:100]}"
+    try:
+        prompt = get_client_prompt("lumiere-estetica")
+        if prompt and len(prompt) > 50:
+            results["prompt_lumiere"] = f"✅ OK ({len(prompt)} chars)"
+            results["prompt_preview"] = prompt[:150] + "..."
+        else:
+            results["prompt_lumiere"] = "❌ Prompt vazio ou muito curto"
+    except Exception as e:
+        results["prompt_lumiere"] = f"❌ Erro: {str(e)[:100]}"
+    try:
+        if groq_client:
+            r = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": "Diga 'teste' em 3 palavras"}],
+                max_tokens=20
+            )
+            results["groq"] = f"✅ OK: {r.choices[0].message.content[:50]}"
+        else:
+            results["groq"] = "❌ Groq não configurado"
+    except Exception as e:
+        results["groq"] = f"❌ Erro: {str(e)[:100]}"
+    return results
+
+@app.post("/chat")
+async def chat(data: dict):
+    msg = data.get("message", "")
+    cid = data.get("client_id", "ka_agencia")
+    save_lead(msg, cid)
+    save_conversation(msg, 'user', cid)
+    txt = get_ai(msg, cid)
+    aud = await generate_audio(txt, get_client_voice(cid))
+    return {"response": txt, "audio_base64": aud}
+
+@app.post("/api/text")
+async def api_text(request: Request):
+    import time
+    t0 = time.time()
+    try:
+        data = await request.json()
+    except:
+        data = {}
+    msg = data.get("message", "") or data.get("text", "")
+    cid = data.get("client_id", "ka_agencia")
+    threading.Thread(target=save_lead, args=(msg, cid), daemon=True).start()
+    threading.Thread(target=save_conversation, args=(msg, 'user', cid), daemon=True).start()
+    txt = get_ai(msg, cid)
+    aud = await generate_audio(txt, get_client_voice(cid))
+    return {"response": txt, "status": "success", "audio_base64": aud}
+
+@app.post("/api/voice")
+async def api_voice(request: Request):
+    ct = request.headers.get("content-type", "").lower()
+    msg = ""
+    cid = "ka_agencia"
+    try:
+        if "application/json" in ct:
+            data = await request.json()
+            msg = data.get("message", "") or data.get("text", "") or data.get("transcript", "")
+            cid = data.get("client_id", "ka_agencia")
+        elif "multipart/form-data" in ct:
+            form = await request.form()
+            msg = form.get("text", "") or form.get("transcript", "") or form.get("message", "")
+            cid = form.get("client_id", "ka_agencia")
+            if not msg:
+                msg = "[Áudio recebido]"
+        else:
+            body = await request.body()
+            if len(body) > 0:
+                msg = "[Áudio recebido]"
+    except Exception as e:
+        print(f"Parse error: {e}")
+        msg = ""
+    save_lead(msg, cid)
+    if msg != "[Áudio recebido]":
+        save_conversation(msg, 'user', cid)
+    txt = get_ai(msg, cid)
+    aud = await generate_audio(txt, get_client_voice(cid))
+    return JSONResponse(content={"response": txt, "audio_base64": aud, "status": "success"})
+
+@app.post("/track")
+async def track_visit(data: dict):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO analytics (site_domain, page_url, visitor_id, country, device)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            data.get("domain", "unknown"),
+            data.get("url", "/"),
+            data.get("visitor_id", "anon"),
+            data.get("country", "BR"),
+            data.get("device", "desktop")
+        ))
+        cur.close(); conn.close()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+@app.get("/widget/config/{client_id}")
+async def widget_config(client_id: str):
+    config_data = {
+        "brand_name": "Assistente Virtual",
+        "accent_color": "#FFD400",
+        "tooltip_text": "💬 Fale ou digite para nossa assistente",
+        "greeting": "",
+        "position": "right",
+        "system_prompt": "Você é uma assistente virtual prestativa.",
+        "voice": "pt-BR-FranciscaNeural",
+        "tone": "profissional"
+    }
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+        cur.execute("""
+            SELECT brand_name, accent_color, tooltip_text, greeting, position, system_prompt, voice, tone, logo_url, bio_headline, bio_cta
+            FROM clients
+            WHERE client_id = %s
+        """, (client_id,))
+        db_config = cur.fetchone()
+        cur.close(); conn.close()
+        if db_config:
+            for key in config_data.keys():
+                if db_config.get(key) is not None:
+                    config_data[key] = db_config[key]
+        return config_data
+    except Exception as e:
+        print(f"Widget config error: {e}")
+        return config_data
+
+@app.get("/privacidade")
+async def politica_privacidade():
+    html = """
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Política de Privacidade — KA Vox</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6;">
+        <h1>Política de Privacidade — KA Vox / KA Agência Criativa</h1>
+        <p>Última atualização: 22 de agosto de 2026</p>
+        <h2>1. Dados que coletamos</h2>
+        <p>Nome, telefone e mensagens enviadas ao assistente virtual, utilizados apenas para prestar o serviço de atendimento e agendamento.</p>
+        <h2>2. Como usamos os dados</h2>
+        <p>Os dados são usados para responder mensagens, agendar horários e enviar notificações ao responsável pelo atendimento. Não vendemos dados a terceiros.</p>
+        <h2>3. Compartilhamento</h2>
+        <p>Os dados são processados por provedores de infraestrutura (hospedagem, banco de dados e API do WhatsApp) exclusivamente para operar o serviço.</p>
+        <h2>4. Seus direitos (LGPD)</h2>
+        <p>Você pode solicitar acesso, correção ou exclusão dos seus dados a qualquer momento pelo e-mail: agenciakastudio@gmail.com</p>
+        <h2>5. Retenção</h2>
+        <p>As conversas ficam armazenadas apenas pelo tempo necessário para o atendimento e melhoria do serviço.</p>
+        <h2>6. Contato</h2>
+        <p>Dúvidas? Fale conosco: agenciakastudio@gmail.com</p>
+    </body>
+    </html>
+    """
+    return Response(content=html, media_type="text/html")
+
+# ==========================================================
+# ROTAS ADMIN (PROTEGIDAS)
+# ==========================================================
+@app.post("/admin/login")
+async def admin_login(request: Request):
+    try:
+        data = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="JSON inválido")
+    if not verify_password(data.get("password", "")):
+        raise HTTPException(status_code=401, detail="Senha incorreta")
+    return {
+        "access_token": create_access_token({"sub": "admin"}),
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_HOURS * 3600
+    }
+
+@app.get("/admin/me")
+async def me(user: str = Depends(get_current_user)):
+    return {"user": user, "status": "authenticated"}
+
+@app.get("/admin/clients")
+async def list_clients(user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT client_id, domain, brand_name, system_prompt FROM clients ORDER BY created_at DESC")
+        data = [{"id": r[0], "domain": r[1], "name": r[2], "prompt": r[3]} for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/admin/clients")
+async def create_client(request: Request, user: str = Depends(get_current_user)):
+    try:
+        data = await request.json()
+        cid = data.get("client_id", "").strip()
+        name = data.get("brand_name", "").strip()
+        domain = data.get("domain", "").strip()
+        prompt = data.get("system_prompt", "").strip()
+        if not cid or not name:
+            raise HTTPException(status_code=400, detail="client_id e brand_name obrigatórios")
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO clients (client_id, domain, brand_name, system_prompt)
+               VALUES (%s,%s,%s,%s)
+               ON CONFLICT (client_id) DO UPDATE
+               SET domain=EXCLUDED.domain, brand_name=EXCLUDED.brand_name, system_prompt=EXCLUDED.system_prompt""",
+            (cid, domain, name, prompt if prompt else None)
+        )
+        conn.commit(); cur.close(); conn.close()
+        return {"status": "success", "client_id": cid}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.put("/admin/clients/{client_id}/prompt")
+async def update_prompt(client_id: str, request: Request, user: str = Depends(get_current_user)):
+    try:
+        data = await request.json()
+        prompt = data.get("system_prompt", "").strip()
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("UPDATE clients SET system_prompt = %s WHERE client_id = %s", (prompt, client_id))
+        conn.commit()
+        if cur.rowcount == 0:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        cur.close(); conn.close()
+        return {"status": "success", "message": "Prompt atualizado"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.delete("/admin/clients/{client_id}")
+async def delete_client(client_id: str, user: str = Depends(get_current_user)):
+    if client_id == "ka_agencia":
+        raise HTTPException(status_code=400, detail="Não é possível excluir o cliente principal")
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("DELETE FROM leads WHERE client_id=%s", (client_id,))
+        leads_deleted = cur.rowcount
+        cur.execute("DELETE FROM conversations WHERE client_id=%s", (client_id,))
+        cur.execute("DELETE FROM clients WHERE client_id=%s", (client_id,))
+        client_deleted = cur.rowcount
+        conn.commit(); cur.close(); conn.close()
+        if client_deleted == 0:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        return {"status": "success", "message": f"Cliente e {leads_deleted} leads removidos"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/admin/leads/{client_id}")
+async def list_leads(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT phone, summary, created_at FROM leads WHERE client_id=%s ORDER BY created_at DESC", (client_id,))
+        data = [{"phone": r[0], "summary": r[1], "date": str(r[2])[:19]} for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/admin/leads/{client_id}/export")
+async def export_csv(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT phone, summary, created_at FROM leads WHERE client_id=%s", (client_id,))
+        rows = cur.fetchall()
+        cur.close(); conn.close()
+        csv_content = "Telefone;Contexto;Data\n" + "\n".join([f'"{r[0]}";"{r[1]}";"{str(r[2])[:19]}"' for r in rows])
+        return Response(
+            content=csv_content.encode('utf-8-sig'),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={client_id}.csv"}
+        )
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/admin/history/{client_id}")
+async def get_history(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("""
+            SELECT role, message, created_at
+            FROM conversations
+            WHERE client_id = %s
+            ORDER BY created_at DESC
+            LIMIT 50
+        """, (client_id,))
+        data = [{"role": r[0], "message": r[1], "date": str(r[2])[:19]} for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/admin/clients/{client_id}/config")
+async def get_client_config(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute(
+            "SELECT client_id, domain, brand_name, voice, tone, system_prompt, slug, accent_color, tooltip_text, greeting, position, notify_whatsapp, notify_enabled, notify_email, calendar_id FROM clients WHERE client_id = %s",
+            (client_id,)
+        )
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        if not row:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        return {
+            "client_id": row[0], "domain": row[1], "brand_name": row[2],
+            "voice": row[3] or "pt-BR-FranciscaNeural",
+            "tone": row[4] or "profissional",
+            "system_prompt": row[5] or "", "slug": row[6] or row[0],
+            "accent_color": row[7] or "#FFD400",
+            "tooltip_text": row[8] or "",
+            "greeting": row[9] or "",
+            "position": row[10] or "right",
+            "notify_whatsapp": row[11] or "",
+            "notify_enabled": bool(row[12]),
+            "notify_email": row[13] or "",
+            "calendar_id": row[14] or ""
         }
-        document.getElementById('ms-title').innerText = config.bio_headline || 'Recepcionista Digital';
-        document.getElementById('ms-copy').innerText = config.bio_cta || 'Toque no microfone e fale comigo.';
-        
-        // Injeta o Widget KA Vox
-        const script = document.createElement('script');
-        script.src = 'https://kaagenciacriativa.vercel.app/widget.js';
-        script.setAttribute('data-client-id', clientId);
-        script.defer = true;
-        document.body.appendChild(script);
-    });
-}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
 
-// Script do Canvas (igual ao site mãe)
-var canvas=document.getElementById('bg');var ctx=canvas.getContext('2d');var w,h,dpr=Math.min(window.devicePixelRatio||1,2);var orbs=[],ripples=[];var pointer={x:-9999,y:-9999,active:false};var glow={x:0,y:0};function rand(a,b){return a+Math.random()*(b-a)}function buildOrbs(){orbs=[];for(var i=0;i<6;i++){orbs.push({bx:rand(0,w),by:rand(0,h),x:0,y:0,r:rand(Math.min(w,h)*0.22,Math.min(w,h)*0.5),ph:rand(0,Math.PI*2),sp:rand(0.00012,0.0004),amp:rand(30,90),a:rand(0.05,0.11),g:Math.round(rand(150,255))})}glow.x=w/2;glow.y=h/2}function resize(){w=window.innerWidth;h=window.innerHeight;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildOrbs()}window.addEventListener('resize',resize);resize();window.addEventListener('pointermove',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true},{passive:true});window.addEventListener('pointerdown',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true;ripples.push({x:e.clientX,y:e.clientY,r:0,a:0.5,max:rand(180,260)})},{passive:true});window.addEventListener('pointerleave',function(){pointer.active=false});function frame(t){ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='lighter';if(pointer.active){glow.x+=(pointer.x-glow.x)*0.12;glow.y+=(pointer.y-glow.y)*0.12;var gg=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,260);gg.addColorStop(0,'rgba(255,255,255,0.10)');gg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(glow.x,glow.y,260,0,Math.PI*2);ctx.fill()}for(var i=0;i<orbs.length;i++){var o=orbs[i];var tx=o.bx+Math.cos(t*o.sp+o.ph)*o.amp;var ty=o.by+Math.sin(t*o.sp*1.3+o.ph)*o.amp;if(pointer.active){var dx=tx-pointer.x,dy=ty-pointer.y;var d=Math.sqrt(dx*dx+dy*dy);if(d<240&&d>0.01){var f=(1-d/240)*70;tx+=(dx/d)*f;ty+=(dy/d)*f}}o.x+=(tx-o.x)*0.05;o.y+=(ty-o.y)*0.05;var grad=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=(rp.max-rp.r)*0.06+1.2;rp.a*=0.94;ctx.strokeStyle='rgba(255,255,255,'+rp.a.toFixed(3)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.stroke();if(rp.a<0.01||rp.r>rp.max)ripples.splice(r,1)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
-</script>
-</body>
-</html>
+@app.put("/admin/clients/{client_id}/config")
+async def update_client_config(client_id: str, request: Request, user: str = Depends(get_current_user)):
+    try:
+        data = await request.json()
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute(
+            """UPDATE clients SET
+               brand_name = COALESCE(%s, brand_name),
+               voice = COALESCE(%s, voice),
+               tone = COALESCE(%s, tone),
+               system_prompt = COALESCE(%s, system_prompt),
+               domain = COALESCE(%s, domain),
+               ga_url = COALESCE(%s, ga_url),
+               accent_color = COALESCE(%s, accent_color),
+               tooltip_text = COALESCE(%s, tooltip_text),
+               greeting = COALESCE(%s, greeting),
+               position = COALESCE(%s, position),
+               notify_whatsapp = COALESCE(%s, notify_whatsapp),
+               notify_enabled = COALESCE(%s, notify_enabled),
+               notify_email = COALESCE(%s, notify_email),
+               logo_url = COALESCE(%s, logo_url),
+               bio_headline = COALESCE(%s, bio_headline),
+               bio_cta = COALESCE(%s, bio_cta),
+               calendar_id = COALESCE(%s, calendar_id)
+               WHERE client_id = %s""",
+            (
+                data.get("brand_name"), data.get("voice"),
+                data.get("tone"), data.get("system_prompt"),
+                data.get("domain"),
+                data.get("ga_url"),
+                data.get("accent_color"), data.get("tooltip_text"),
+                data.get("greeting"), data.get("position"),
+                data.get("notify_whatsapp"), data.get("notify_enabled"),
+                data.get("notify_email"), data.get("calendar_id"), client_id
+            )
+        )
+        conn.commit()
+        if cur.rowcount == 0:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        cur.close(); conn.close()
+        return {"status": "success", "message": "Configurações salvas com sucesso"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/admin/preview-voice")
+async def preview_voice(request: Request, user: str = Depends(get_current_user)):
+    try:
+        data = await request.json()
+        voice = data.get("voice", "pt-BR-FranciscaNeural")
+        c = edge_tts.Communicate("Olá! Esta é uma prévia da minha voz. Como posso ajudar?", voice)
+        audio_data = b""
+        async for chunk in c.stream():
+            if chunk["type"] == "audio":
+                audio_data += chunk["data"]
+        return {"audio": base64.b64encode(audio_data).decode()}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/admin/change-password")
+async def admin_change_password(request: Request, user: str = Depends(get_current_user)):
+    try:
+        data = await request.json()
+        current = data.get("current_password", "")
+        new = data.get("new_password", "")
+        if not verify_password(current):
+            raise HTTPException(status_code=401, detail="Senha atual incorreta")
+        if len(new) < 8:
+            raise HTTPException(status_code=400, detail="A nova senha deve ter no mínimo 8 caracteres")
+        hashed = hash_password(new)
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO admin_credentials (username, password_hash, updated_at)
+               VALUES ('admin', %s, NOW())
+               ON CONFLICT (username) DO UPDATE SET password_hash=%s, updated_at=NOW()""",
+            (hashed, hashed)
+        )
+        conn.commit(); cur.close(); conn.close()
+        return {"status": "success", "message": "Senha do admin alterada com sucesso"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/admin/clients/{client_id}/reset-password")
+async def reset_client_password(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        new_pwd = generate_password(12)
+        hashed = hash_password(new_pwd)
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("UPDATE clients SET admin_password = %s WHERE client_id = %s", (hashed, client_id))
+        conn.commit()
+        if cur.rowcount == 0:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        cur.close(); conn.close()
+        return {"status": "success", "client_id": client_id, "new_password": new_pwd,
+                "message": "Entregue esta senha ao cliente. Ela não será exibida novamente."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/admin/clients/{client_id}/test-notification")
+async def test_notification(client_id: str, user: str = Depends(get_current_user)):
+    ok, msg = send_email_notification(client_id, "5571999999999", "Mensagem de teste do painel KA Voice ✅ (pode ignorar)", force=True)
+    if ok:
+        return {"status": "success", "message": f"E-mail de teste enviado! {msg}"}
+    return JSONResponse(status_code=502, content={"detail": msg})
+
+# ==========================================================
+# ROTAS DO PORTAL DO CLIENTE
+# ==========================================================
+@app.post("/client/login")
+async def client_login(request: Request):
+    try:
+        data = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="JSON inválido")
+    cid = data.get("client_id", "").strip()
+    pwd = data.get("password", "")
+    if not cid:
+        raise HTTPException(status_code=400, detail="client_id obrigatório")
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT admin_password, brand_name, accent_color FROM clients WHERE client_id = %s", (cid,))
+        row = cur.fetchone()
+        cur.close(); conn.close()
+        if not row:
+            raise HTTPException(status_code=401, detail="Cliente não encontrado")
+        if not verify_stored_password(pwd, row[0]):
+            raise HTTPException(status_code=401, detail="Senha incorreta")
+        return {
+            "access_token": create_access_token({"sub": cid, "role": "client"}),
+            "token_type": "bearer",
+            "brand_name": row[1] or cid,
+            "accent_color": row[2] or "#FFD400",
+            "expires_in": ACCESS_TOKEN_EXPIRE_HOURS * 3600
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/client/stats")
+async def client_stats(client_id: str = Depends(get_current_client)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM leads WHERE client_id=%s", (client_id,))
+        leads = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM conversations WHERE client_id=%s", (client_id,))
+        msgs = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM conversations WHERE client_id=%s AND role='user' AND created_at > NOW() - INTERVAL '7 days'", (client_id,))
+        week = cur.fetchone()[0]
+        cur.execute("SELECT MAX(created_at) FROM conversations WHERE client_id=%s", (client_id,))
+        last = cur.fetchone()[0]
+        cur.close(); conn.close()
+        return {"total_leads": leads, "total_messages": msgs, "messages_7d": week, "last_activity": str(last)[:19] if last else None}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/client/leads")
+async def client_leads(client_id: str = Depends(get_current_client)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT phone, summary, created_at FROM leads WHERE client_id=%s ORDER BY created_at DESC", (client_id,))
+        data = [{"phone": r[0], "summary": r[1], "date": str(r[2])[:19]} for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/client/history")
+async def client_history(client_id: str = Depends(get_current_client)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT role, message, created_at FROM conversations WHERE client_id=%s ORDER BY created_at DESC LIMIT 100", (client_id,))
+        data = [{"role": r[0], "message": r[1], "date": str(r[2])[:19]} for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/client/leads/export")
+async def client_export(client_id: str = Depends(get_current_client)):
+    try:
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT phone, summary, created_at FROM leads WHERE client_id=%s", (client_id,))
+        rows = cur.fetchall()
+        cur.close(); conn.close()
+        csv_content = "Telefone;Contexto;Data\n" + "\n".join([f'"{r[0]}";"{r[1]}";"{str(r[2])[:19]}"' for r in rows])
+        return Response(content=csv_content.encode('utf-8-sig'), media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={client_id}_leads.csv"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/client/change-password")
+async def client_change_password(request: Request, client_id: str = Depends(get_current_client)):
+    try:
+        data = await request.json()
+        current = data.get("current_password", "")
+        new = data.get("new_password", "")
+        conn = psycopg.connect(DATABASE_URL); cur = conn.cursor()
+        cur.execute("SELECT admin_password FROM clients WHERE client_id = %s", (client_id,))
+        row = cur.fetchone()
+        if not row:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        if not verify_stored_password(current, row[0]):
+            cur.close(); conn.close()
+            raise HTTPException(status_code=401, detail="Senha atual incorreta")
+        if len(new) < 8:
+            cur.close(); conn.close()
+            raise HTTPException(status_code=400, detail="A nova senha deve ter no mínimo 8 caracteres")
+        cur.execute("UPDATE clients SET admin_password = %s WHERE client_id = %s", (hash_password(new), client_id))
+        conn.commit(); cur.close(); conn.close()
+        return {"status": "success", "message": "Senha alterada com sucesso"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.get("/client/knowledge")
+async def get_client_knowledge(client_id: str = Depends(get_current_client)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT id, title, LEFT(content, 100) as preview FROM knowledge_base WHERE client_id = %s ORDER BY id DESC", (client_id,))
+        items = [{"id": row[0], "title": row[1] or "Info", "preview": row[2]} for row in cur.fetchall()]
+        cur.close(); conn.close()
+        return items
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"detail": str(e)})
+
+@app.post("/client/knowledge")
+async def add_client_knowledge(data: dict, client_id: str = Depends(get_current_client)):
+    content = data.get('content')
+    title = data.get('title', 'Informação do Cliente')
+    if not content:
+        raise HTTPException(status_code=400, detail="Conteúdo não pode ser vazio")
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("INSERT INTO knowledge_base (client_id, title, content) VALUES (%s, %s, %s)", (client_id, title, content))
+        conn.commit(); cur.close(); conn.close()
+        return {"success": True, "message": "Conhecimento adicionado à IA!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================================
+# GESTÃO DE CONHECIMENTO (RAG) – ADMIN
+# ==========================================================
+@app.post("/admin/clients/{client_id}/knowledge")
+async def add_knowledge(client_id: str, data: dict = Body(...), user: str = Depends(get_current_user)):
+    content_text = data.get('content')
+    title = data.get('title', 'Informação Geral')
+    if not content_text:
+        raise HTTPException(status_code=400, detail="Conteúdo não pode ser vazio")
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("INSERT INTO knowledge_base (client_id, title, content) VALUES (%s, %s, %s)", (client_id, title, content_text))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": "Conhecimento adicionado à base da IA"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/clients/{client_id}/knowledge")
+async def get_knowledge(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("SELECT id, title, LEFT(content, 80) as preview FROM knowledge_base WHERE client_id = %s", (client_id,))
+        items = [{"id": row[0], "title": row[1], "preview": row[2]} for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/clients/{client_id}/knowledge/import-json")
+async def import_json_knowledge(client_id: str, data: dict, user: str = Depends(get_current_user)):
+    items = data.get("pecas") or data.get("products") or []
+    if not items:
+        raise HTTPException(status_code=400, detail="Nenhum produto encontrado no JSON")
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        for item in items:
+            nome = item.get("nome", "Sem Nome")
+            materiais = item.get("materiais", "")
+            colecao = item.get("colecao", "")
+            preco = item.get("preco", "")
+            inspiracao = item.get("inspiracao", "")
+            descricao = item.get("descricao_oficial", "")
+            titulo_limpo = nome
+            texto_limpo = f"Materiais: {materiais}. Coleção: {colecao}. Preço: R$ {preco}. Inspiração: {inspiracao}. Descrição: {descricao}"
+            cur.execute(
+                "INSERT INTO knowledge_base (client_id, title, content) VALUES (%s, %s, %s)",
+                (client_id, titulo_limpo, texto_limpo)
+            )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": f"{len(items)} produtos importados e formatados com sucesso!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/clients/{client_id}/knowledge/{item_id}/delete")
+async def delete_knowledge_item(client_id: str, item_id: int, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM knowledge_base WHERE id = %s AND client_id = %s", (item_id, client_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": "Item apagado"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/clients/{client_id}/knowledge/clear")
+async def clear_knowledge(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM knowledge_base WHERE client_id = %s", (client_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": "Toda a base de conhecimento foi apagada"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================================
+# UPLOAD DE LOGO, PDF, TXT, CSV (ADMIN)
+# ==========================================================
+@app.post("/admin/clients/{client_id}/upload-logo")
+async def upload_logo(client_id: str, file: UploadFile = File(...), user: str = Depends(get_current_user)):
+    contents = await file.read()
+    b64 = base64.b64encode(contents).decode('utf-8')
+    data_uri = f"data:{file.content_type};base64,{b64}"
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("UPDATE clients SET logo_url = %s WHERE client_id = %s", (data_uri, client_id))
+        conn.commit()
+        cur.close(); conn.close()
+        return {"success": True, "logo_url": data_uri}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/clients/{client_id}/knowledge/upload-pdf")
+async def upload_pdf_knowledge(client_id: str, file: UploadFile = File(...), user: str = Depends(get_current_user)):
+    if not file.filename.endswith(('.pdf', '.txt')):
+        raise HTTPException(status_code=400, detail="Formato não suportado. Envie .pdf ou .txt.")
+    contents = await file.read()
+    text = ""
+    try:
+        if file.filename.endswith('.pdf'):
+            import fitz
+            with fitz.open(stream=contents, filetype="pdf") as doc:
+                for page in doc:
+                    text += page.get_text()
+        else:
+            text = contents.decode('utf-8', errors='ignore')
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Não foi possível extrair texto do arquivo.")
+        paragraphs = re.split(r'\n\s*\n', text)
+        chunks = [p.strip() for p in paragraphs if len(p.strip()) > 20]
+        if not chunks and len(text) > 100:
+            chunks = [text[i:i+500] for i in range(0, len(text), 500)]
+        if not chunks:
+            raise HTTPException(status_code=400, detail="O arquivo não contém informações válidas.")
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        for chunk in chunks:
+            cur.execute(
+                "INSERT INTO knowledge_base (client_id, title, content) VALUES (%s, %s, %s)",
+                (client_id, file.filename, chunk)
+            )
+        conn.commit()
+        cur.close(); conn.close()
+        return {"success": True, "message": f"Arquivo processado! {len(chunks)} trechos adicionados."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar arquivo: {str(e)}")
+
+@app.post("/admin/clients/{client_id}/knowledge/upload-csv")
+async def upload_csv_knowledge(client_id: str, file: UploadFile = File(...), user: str = Depends(get_current_user)):
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Formato não suportado. Envie .csv.")
+    contents = await file.read()
+    try:
+        try:
+            text = contents.decode('utf-8')
+        except UnicodeDecodeError:
+            text = contents.decode('latin-1', errors='ignore')
+        first_line = text.split('\n')[0]
+        delimiter = ';' if ';' in first_line else ','
+        reader = csv.reader(io.StringIO(text), delimiter=delimiter)
+        rows = list(reader)
+        if len(rows) < 2:
+            raise HTTPException(status_code=400, detail="CSV vazio ou sem dados.")
+        def normalize_header(h):
+            h = h.replace('?', 'c')
+            h = unicodedata.normalize('NFKD', h).encode('ASCII', 'ignore').decode('utf-8')
+            return h.strip().lower()
+        header = [normalize_header(h) for h in rows[0]]
+        idx_name = next((i for i, h in enumerate(header) if h in ['nome','produto','titulo','title','name']), -1)
+        idx_price = next((i for i, h in enumerate(header) if h in ['preco','preço']), -1)
+        idx_desc = next((i for i, h in enumerate(header) if h in ['descricao','descrição','descrição oficial','descrição para seo']), -1)
+        if idx_name == -1 or idx_desc == -1:
+            raise HTTPException(status_code=400, detail=f"Colunas 'Nome' e 'Descrição' não encontradas. Cabeçalho: {header}")
+        def strip_html(text):
+            return re.sub(r'<.*?>', '', text)
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        count = 0
+        for row in rows[1:]:
+            if len(row) <= max(idx_name, idx_desc):
+                continue
+            name = row[idx_name].strip() if len(row) > idx_name else ""
+            desc = row[idx_desc].strip() if len(row) > idx_desc else ""
+            price = row[idx_price].strip() if idx_price != -1 and len(row) > idx_price else ""
+            if not name or not desc or len(name) < 3:
+                continue
+            clean_desc = strip_html(desc)
+            clean_desc = re.sub(r'\s+', ' ', clean_desc).strip()
+            if len(clean_desc) > 1000:
+                clean_desc = clean_desc[:1000] + "..."
+            content_text = f"Preço: R$ {price}. Descrição: {clean_desc}"
+            cur.execute(
+                "INSERT INTO knowledge_base (client_id, title, content) VALUES (%s, %s, %s)",
+                (client_id, name, content_text)
+            )
+            count += 1
+        conn.commit()
+        cur.close(); conn.close()
+        return {"success": True, "message": f"CSV processado! {count} produtos importados."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar CSV: {str(e)}")
+
+# ==========================================================
+# RASTREAMENTO DE TRÁFEGO (WIDGET)
+# ==========================================================
+@app.post("/widget/track")
+async def track_widget(data: dict):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO analytics_events (client_id, event_type, page_url) VALUES (%s, %s, %s)",
+            (data.get('client_id'), data.get('event_type'), data.get('url'))
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True}
+    except Exception as e:
+        print(f"Erro no track: {e}")
+        return {"success": False}
+
+# ==========================================================
+# OVERVIEW DO CLIENTE (ADMIN)
+# ==========================================================
+@app.get("/admin/clients/{client_id}/overview")
+async def get_client_overview(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+        cur.execute("SELECT brand_name, plan, monthly_fee, payment_status, next_billing, domain, ga_url FROM clients WHERE client_id = %s", (client_id,))
+        client = cur.fetchone()
+        if not client:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+        cur.execute("SELECT COUNT(*) as views FROM analytics_events WHERE client_id = %s AND event_type = 'pageview'", (client_id,))
+        views = cur.fetchone()['views']
+        cur.execute("SELECT COUNT(*) as opens FROM analytics_events WHERE client_id = %s AND event_type = 'widget_open'", (client_id,))
+        opens = cur.fetchone()['opens']
+        cur.execute("SELECT COUNT(*) as leads FROM leads WHERE client_id = %s", (client_id,))
+        leads = cur.fetchone()['leads']
+        cur.close()
+        conn.close()
+        return {
+            "brand_name": client['brand_name'],
+            "domain": client['domain'] or "Não cadastrado",
+            "plan": client['plan'] or "-",
+            "monthly_fee": float(client['monthly_fee'] or 0),
+            "payment_status": client['payment_status'] or 'pending',
+            "next_billing": client['next_billing'].strftime('%d/%m/%Y') if client['next_billing'] else "-",
+            "views": views,
+            "opens": opens,
+            "leads": leads,
+            "ga_url": client['ga_url'] or ""
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==========================================================
+# FINANCEIRO E ANALYTICS (ADMIN)
+# ==========================================================
+@app.get("/admin/finance")
+async def get_finance_data(user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+        cur.execute("""
+            SELECT
+                COALESCE(SUM(CASE WHEN payment_status IN ('paid', 'active') THEN monthly_fee ELSE 0 END), 0) as mrr,
+                COALESCE(SUM(CASE WHEN payment_status = 'pending' THEN monthly_fee ELSE 0 END), 0) as pending,
+                COALESCE(SUM(CASE WHEN payment_status IN ('overdue', 'late') THEN monthly_fee ELSE 0 END), 0) as late
+            FROM clients
+        """)
+        summary = cur.fetchone()
+        cur.execute("""
+            SELECT client_id, brand_name, plan, monthly_fee, payment_status, next_billing
+            FROM clients
+            ORDER BY next_billing ASC NULLS LAST
+        """)
+        clients = cur.fetchall()
+        cur.close()
+        conn.close()
+        transactions = []
+        for c in clients:
+            status = c.get('payment_status') or 'pending'
+            due_date = c.get('next_billing')
+            if due_date:
+                due_date = due_date.strftime('%Y-%m-%d') if hasattr(due_date, 'strftime') else str(due_date)[:10]
+            else:
+                due_date = ''
+            transactions.append({
+                "client_id": c.get('client_id'),
+                "client_name": c.get('brand_name') or 'Sem Nome',
+                "plan_type": c.get('plan') or '-',
+                "amount": float(c.get('monthly_fee') or 0),
+                "status": status,
+                "due_date": due_date
+            })
+        return {
+            "mrr": float(summary['mrr'] or 0),
+            "pending": float(summary['pending'] or 0),
+            "late": float(summary['late'] or 0),
+            "transactions": transactions
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/admin/payments/{client_id}/pay")
+async def mark_payment_paid(client_id: str, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("UPDATE clients SET payment_status = 'paid' WHERE client_id = %s", (client_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": "Pagamento registrado com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/admin/clients/{client_id}/finance")
+async def update_client_finance(client_id: str, data: dict, user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE clients SET
+                plan = COALESCE(%s, plan),
+                monthly_fee = COALESCE(%s, monthly_fee),
+                next_billing = COALESCE(%s, next_billing),
+                payment_status = COALESCE(%s, payment_status)
+            WHERE client_id = %s
+        """, (
+            data.get('plan'), data.get('monthly_fee'),
+            data.get('due_date'), data.get('status'),
+            client_id
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"success": True, "message": "Dados financeiros atualizados com sucesso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/admin/analytics")
+async def get_analytics_data(user: str = Depends(get_current_user)):
+    try:
+        conn = psycopg.connect(DATABASE_URL)
+        cur = conn.cursor(row_factory=psycopg.rows.dict_row)
+        cur.execute("SELECT COUNT(*) as total FROM leads")
+        total_leads = cur.fetchone()['total']
+        cur.execute("SELECT COUNT(*) as total FROM analytics_events WHERE event_type = 'pageview'")
+        total_views = cur.fetchone()['total']
+        cur.execute("SELECT COUNT(*) as total FROM analytics_events WHERE event_type = 'widget_open'")
+        total_opens = cur.fetchone()['total']
+        conversion_rate = round((total_leads / total_views) * 100, 2) if total_views > 0 else 0.0
+        cur.execute("""
+            SELECT DATE(created_at) as date, COUNT(*) as count
+            FROM leads
+            WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY date ASC
+        """)
+        lead_dates = [{"date": row['date'].strftime('%d/%m'), "count": row['count']} for row in cur.fetchall()]
+        cur.execute("""
+            SELECT c.brand_name as name, COUNT(l.id) as count
+            FROM clients c
+            LEFT JOIN leads l ON c.client_id = l.client_id
+            GROUP BY c.brand_name
+            ORDER BY count DESC
+            LIMIT 5
+        """)
+        leads_by_client = [{"name": row['name'] or 'Sem Nome', "count": row['count']} for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return {
+            "total_leads": total_leads,
+            "total_views": total_views,
+            "total_opens": total_opens,
+            "conversion_rate": conversion_rate,
+            "lead_dates": lead_dates,
+            "leads_by_client": leads_by_client
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
