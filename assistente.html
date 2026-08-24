@@ -10,8 +10,9 @@
 <style>
   :root{
     --bg:#000000; --fg:#ffffff; --muted:#8c8c8c; --muted-2:#5e5e5e;
-    --line:rgba(255,255,255,0.10); --line-soft:rgba(255,255,255,0.06);
-    --card:rgba(255,255,255,0.02); --accent:#FFD400;
+    --line:rgba(255,255,255,0.10);
+    --accent:#FFD400;          /* sobrescrita pela cor do cliente via JS */
+    --mic-ink:#000000;         /* cor do ícone (contraste calculado via JS) */
     --sans:'Inter', sans-serif;
   }
   *{margin:0;padding:0;box-sizing:border-box}
@@ -22,28 +23,54 @@
   #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
-  /* Microsite: INVISÍVEL até o config carregar (a classe .visivel controla) */
-  #microsite{position:relative;z-index:2;min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px 170px}
+  /* ===== MICROSITE ===== */
+  #microsite{position:relative;z-index:2;min-height:100vh;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px 140px;transition:padding .35s ease}
   #microsite.visivel{display:flex}
+  body.chat-aberto #microsite{justify-content:flex-start;padding-top:9vh}
 
-  .eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:22px;display:inline-block}
-  #ms-logo{max-height:80px;width:auto;margin:0 auto 28px;border-radius:12px;display:none}
-  #ms-title{font-size:clamp(1.5rem,6vw,2.4rem);font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--accent);margin-bottom:14px}
-  #ms-copy{font-size:1.05rem;color:var(--muted);max-width:520px}
+  .eyebrow{font-size:.68rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:18px}
+  #ms-logo{max-height:76px;width:auto;margin:0 auto 26px;border-radius:12px;display:none}
+  #ms-title{font-size:clamp(1.45rem,6vw,2.3rem);font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--accent);margin-bottom:12px;max-width:560px}
+  #ms-copy{font-size:1.02rem;color:var(--muted);max-width:480px}
 
-  .status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:28px;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:9px 16px;border-radius:999px}
+  .status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:8px 15px;border-radius:999px}
   .status-dot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulsa 1.6s infinite}
   @keyframes pulsa{0%,100%{opacity:1}50%{opacity:.3}}
 
-  #ms-loading{margin-top:36px;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);animation:pulsa 1.4s infinite}
-  #ms-erro{display:none;margin-top:32px;font-size:.9rem;color:var(--muted)}
+  #ms-loading{margin-top:34px;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted-2);animation:pulsa 1.4s infinite}
+  #ms-erro{display:none;margin-top:30px;font-size:.9rem;color:var(--muted)}
   #ms-erro a{color:var(--accent);border-bottom:1px solid var(--accent)}
 
-  /* Em telas pequenas (Instagram), o chat do widget ocupa quase toda a largura.
-     O !important é necessário para vencer os estilos inline que o widget.js injeta. */
+  /* ===== BOTÃO-HERÓI DE MICROFONE ===== */
+  .mic-wrap{position:relative;margin-top:44px;display:flex;flex-direction:column;align-items:center;transition:opacity .35s ease,transform .35s ease}
+  body.chat-aberto .mic-wrap{opacity:0;transform:scale(.85);pointer-events:none;height:0;margin-top:0;overflow:hidden}
+
+  .mic-btn{position:relative;z-index:2;width:118px;height:118px;border-radius:50%;border:none;cursor:pointer;background:var(--accent);color:var(--mic-ink);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 1px rgba(255,255,255,.08), 0 18px 50px rgba(0,0,0,.55), 0 6px 22px -6px var(--accent);transition:transform .18s ease,box-shadow .18s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .mic-btn:active{transform:scale(.93)}
+  .mic-btn svg{width:46px;height:46px;pointer-events:none}
+
+  /* Anéis de pulso */
+  .mic-wave{position:absolute;top:50%;left:50%;width:118px;height:118px;border-radius:50%;border:1.5px solid var(--accent);transform:translate(-50%,-50%);opacity:0;animation:onda 2.6s cubic-bezier(.2,.6,.35,1) infinite;pointer-events:none;z-index:1}
+  .mic-wave.d2{animation-delay:.85s}
+  .mic-wave.d3{animation-delay:1.7s}
+  @keyframes onda{0%{transform:translate(-50%,-50%) scale(.92);opacity:.55}70%{opacity:.12}100%{transform:translate(-50%,-50%) scale(1.9);opacity:0}}
+
+  .mic-hint{margin-top:26px;font-size:.72rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--fg)}
+  .mic-sub{margin-top:6px;font-size:.8rem;color:var(--muted-2)}
+
+  @media (prefers-reduced-motion: reduce){
+    .mic-wave{animation:none;opacity:0}
+    .status-dot,#ms-loading{animation:none}
+  }
+
+  /* ===== WIDGET: esconde o balão flutuante (redundante com o botão-herói) ===== */
+  #ka-toggle-btn{display:none !important}
+
+  /* ===== CHAT DO WIDGET em telas pequenas ===== */
   @media (max-width:520px){
-    #ka-chat{width:calc(100vw - 48px)!important;max-height:72vh!important}
-    #ka-messages{max-height:none!important;flex:1!important}
+    #ka-widget{right:16px !important;bottom:16px !important;left:16px !important}
+    #ka-chat{width:100% !important;max-height:74vh !important}
+    #ka-messages{max-height:none !important;flex:1 !important}
   }
 </style>
 </head>
@@ -60,51 +87,68 @@
   <span class="status-pill"><span class="status-dot"></span> Online agora — 24 horas</span>
   <div id="ms-loading">Conectando à assistente…<br><small style="letter-spacing:.1em;text-transform:none">Na primeira visita pode levar até 1 minuto</small></div>
   <p id="ms-erro">Não foi possível carregar a assistente. <a href="/">Voltar ao início</a></p>
+
+  <!-- BOTÃO-HERÓI -->
+  <div class="mic-wrap" id="mic-wrap">
+    <span class="mic-wave"></span>
+    <span class="mic-wave d2"></span>
+    <span class="mic-wave d3"></span>
+    <button class="mic-btn" id="mic-central" aria-label="Falar com a assistente">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="22"></line>
+      </svg>
+    </button>
+    <p class="mic-hint">Toque para falar</p>
+    <p class="mic-sub">ou digite sua mensagem</p>
+  </div>
 </div>
 
 <script>
 (function() {
   var urlParams = new URLSearchParams(window.location.search);
-  // Sem ?client= na URL, usa a assistente da própria agência.
-  // ATENÇÃO: confira no dashboard se o cadastro é "ka-agencia" ou "ka_agencia"!
   var clientId = urlParams.get('client') || 'ka_agencia';
 
   var microsite = document.getElementById('microsite');
   var loading = document.getElementById('ms-loading');
   var erro = document.getElementById('ms-erro');
 
+  /* Contraste do ícone sobre a cor de destaque */
+  function corInk(hex){
+    var c = (hex || '#FFD400').replace('#','');
+    if (c.length < 6) return '#000';
+    var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+    return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
+  }
+
   fetch('https://ka-voice-backend.onrender.com/widget/config/' + encodeURIComponent(clientId))
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.json();
-    })
-    .then(function(config) {
-      if (config.accent_color) {
+    .then(function(res){ if(!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+    .then(function(config){
+      if (config.accent_color){
         document.documentElement.style.setProperty('--accent', config.accent_color);
+        document.documentElement.style.setProperty('--mic-ink', corInk(config.accent_color));
       }
       if (loading) loading.style.display = 'none';
 
       var logo = document.getElementById('ms-logo');
-      if (config.logo_url) {
-        logo.src = config.logo_url;
-        logo.style.display = 'block';
-      }
+      if (config.logo_url){ logo.src = config.logo_url; logo.style.display = 'block'; }
+
       var titulo = config.bio_headline || config.brand_name || 'Recepcionista Digital';
       document.getElementById('ms-title').innerText = titulo;
       document.getElementById('ms-copy').innerText = config.bio_cta || 'Toque no microfone e fale comigo.';
-      document.title = titulo; // Aba do navegador com o nome da marca
-
+      document.title = titulo;
       microsite.classList.add('visivel');
 
-      // Widget com caminho RELATIVO: funciona no mesmo domínio onde este arquivo estiver
+      /* Injeta o widget KA Vox (mesmo domínio) */
       var script = document.createElement('script');
       script.src = '/widget.js';
       script.setAttribute('data-client-id', clientId);
       document.body.appendChild(script);
 
-      abrirChatQuandoPronto(60); // ~30s de espera (cold start do Render)
+      quandoWidgetPronto(60);
     })
-    .catch(function(err) {
+    .catch(function(err){
       console.error('Erro ao carregar config:', err);
       document.getElementById('ms-title').innerText = 'Assistente Digital';
       document.getElementById('ms-copy').innerText = 'Estamos preparando a assistente. Tente novamente em instantes.';
@@ -113,15 +157,40 @@
       microsite.classList.add('visivel');
     });
 
-  /* Abre o chat automaticamente assim que o widget terminar de carregar.
-     Para abrir apenas ao toque, comente a linha "abrirChatQuandoPronto(60)" acima. */
-  function abrirChatQuandoPronto(tentativas) {
-    var btn = document.getElementById('ka-toggle-btn');
-    if (btn) {
-      setTimeout(function() { btn.click(); }, 500);
-    } else if (tentativas > 0) {
-      setTimeout(function() { abrirChatQuandoPronto(tentativas - 1); }, 500);
-    }
+  /* Espera o widget criar seu DOM, então conecta o botão-herói a ele */
+  function quandoWidgetPronto(tentativas){
+    if (document.getElementById('ka-toggle-btn')) { configurarBotaoCentral(); return; }
+    if (tentativas > 0) setTimeout(function(){ quandoWidgetPronto(tentativas - 1); }, 500);
+  }
+
+  function configurarBotaoCentral(){
+    var btn = document.getElementById('mic-central');
+    var chat = document.getElementById('ka-chat');
+
+    btn.addEventListener('click', function(){
+      if (!chat) return;
+      if (chat.style.display === 'flex'){
+        /* chat aberto → fecha */
+        var fechar = document.getElementById('ka-close-btn');
+        if (fechar) fechar.click();
+        else document.getElementById('ka-toggle-btn').click();
+      } else {
+        /* chat fechado → abre e tenta voz (ou foca o texto) */
+        document.getElementById('ka-toggle-btn').click();
+        setTimeout(function(){
+          var temVoz = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+          var mic = document.getElementById('ka-mic-btn');
+          var input = document.getElementById('ka-text-input');
+          if (temVoz && mic) mic.click();          /* dispara o reconhecimento */
+          else if (input) input.focus();            /* WebView sem mic → texto */
+        }, 350);
+      }
+    });
+
+    /* Esconde o botão-herói quando o chat abre (por qualquer caminho) */
+    new MutationObserver(function(){
+      document.body.classList.toggle('chat-aberto', chat.style.display === 'flex');
+    }).observe(chat, { attributes: true, attributeFilter: ['style'] });
   }
 })();
 </script>
