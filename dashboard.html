@@ -162,8 +162,8 @@
       <label style="font-size: 11px; color: var(--muted); margin-bottom: 5px;">Título (Ex: Anel Vulcano, ou Política de Troca)</label>
       <input type="text" id="kb-title" placeholder="Ex: Anel Vulcano" style="margin-bottom: 10px;">
       <textarea id="kb-content" style="min-height: 120px; margin-bottom: 12px;" placeholder="Ex: Anel Aurora: Feito de ouro 18k. Preço: R$ 1.700. Tamanhos: 15 ao 20..."></textarea>
-      <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
-      <div id="kb-status" class="status"></div>
+      <button class="btn btn-secondary" style="margin-left: 0; width: auto; padding: 10px 16px; font-size: 13px;" id="kb-save-btn" onclick="saveKnowledge()">➕ Adicionar Conhecimento</button>
+      <input type="hidden" id="kb-editing-id"><button class="btn btn-secondary" id="kb-cancel-btn" style="margin-left:0;width:auto;padding:6px 12px;font-size:12px;display:none;" onclick="cancelEdit()">↩ Cancelar edição</button><div id="kb-status" class="status"></div>
 
       <div style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 15px;">
         <h2 style="font-size: 14px;">Importar Catálogo (JSON)</h2>
@@ -270,7 +270,7 @@
       <h2>🌐 Microsite (Bio Link)</h2>
       <div class="info-box">💡 Configure a logo e o texto do link para Instagram/TikTok.</div>
       <label>Logo do Microsite</label>
-      <input type="file" id="bio_logo_file" accept="image/png, image/jpeg" style="margin-bottom: 10px;">
+      <input type="file" id="bio_logo_file" accept="image/png, image/jpeg" style="margin-bottom: 10px;" onchange="uploadBioLogo()">
       <input type="hidden" id="bio_logo_url">
       <label>Título do Microsite</label>
       <input type="text" id="bio_headline" placeholder="Recepcionista Digital">
@@ -1236,6 +1236,91 @@ async function handleCsvUpload() {
     fileInput.value = '';
   } catch(e) {
     st.className = 'status error'; st.textContent = '❌ ' + e.message;
+  }
+}
+</script>
+<script>
+// KB Edit v2 (override das funções originais)
+async function saveKnowledge() {
+  var cid = document.getElementById('config-client-id').value;
+  var title = document.getElementById('kb-title').value;
+  var content = document.getElementById('kb-content').value;
+  if (!content) return;
+  var st = document.getElementById('kb-status');
+  var eid = document.getElementById('kb-editing-id');
+  var btn = document.getElementById('kb-save-btn');
+  var editingId = eid ? eid.value : '';
+  try {
+    if (editingId) {
+      await apiCall('/admin/clients/' + cid + '/knowledge/' + editingId, {
+        method: 'PUT', body: JSON.stringify({ title: title, content: content })
+      });
+      st.className = 'status success'; st.innerText = '✅ Item atualizado!';
+    } else {
+      await apiCall('/admin/clients/' + cid + '/knowledge', {
+        method: 'POST', body: JSON.stringify({ title: title, content: content })
+      });
+      st.className = 'status success'; st.innerText = '✅ Conhecimento adicionado!';
+    }
+    document.getElementById('kb-title').value = '';
+    document.getElementById('kb-content').value = '';
+    if (eid) eid.value = '';
+    var cb = document.getElementById('kb-cancel-btn'); if (cb) cb.style.display = 'none';
+    if (btn) btn.innerText = '➕ Adicionar Conhecimento';
+    loadKnowledge(cid);
+    st.style.display = 'block';
+    setTimeout(function(){ st.style.display = 'none'; }, 3000);
+  } catch (e) {
+    st.className = 'status error'; st.innerText = '❌ ' + e.message; st.style.display = 'block';
+  }
+}
+async function editKnowledge(itemId, cid) {
+  try {
+    var item = await apiCall('/admin/clients/' + cid + '/knowledge/' + itemId);
+    document.getElementById('kb-title').value = item.title || '';
+    document.getElementById('kb-content').value = item.content || '';
+    var eid = document.getElementById('kb-editing-id'); if (eid) eid.value = itemId;
+    var cb = document.getElementById('kb-cancel-btn'); if (cb) cb.style.display = 'inline-block';
+    var btn = document.getElementById('kb-save-btn'); if (btn) btn.innerText = '💾 Atualizar';
+    document.getElementById('kb-content').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) { alert('Erro ao carregar item: ' + e.message); }
+}
+function cancelEdit() {
+  document.getElementById('kb-title').value = '';
+  document.getElementById('kb-content').value = '';
+  var eid = document.getElementById('kb-editing-id'); if (eid) eid.value = '';
+  var cb = document.getElementById('kb-cancel-btn'); if (cb) cb.style.display = 'none';
+  var btn = document.getElementById('kb-save-btn'); if (btn) btn.innerText = '➕ Adicionar Conhecimento';
+}
+async function deleteKnowledge(itemId, cid) {
+  if (!confirm('Excluir este item da base de conhecimento?')) return;
+  try {
+    await apiCall('/admin/clients/' + cid + '/knowledge/' + itemId + '/delete', { method: 'POST' });
+    loadKnowledge(cid);
+  } catch (e) { alert('Erro: ' + e.message); }
+}
+async function loadKnowledge(cid) {
+  var list = document.getElementById('kb-list');
+  if (!list) return;
+  if (!cid) { list.innerHTML = '<p style="color:#555;font-size:13px;">Selecione um cliente</p>'; return; }
+  try {
+    var items = await apiCall('/admin/clients/' + cid + '/knowledge');
+    if (!Array.isArray(items) || !items.length) {
+      list.innerHTML = '<p style="color:#555;font-size:13px;">Nenhuma info cadastrada</p>'; return;
+    }
+    list.innerHTML = items.map(function(item) {
+      return '<div style="background:#0d0d0d;border:1px solid #252525;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
+        + '<div style="flex:1;min-width:0;">'
+        + '<strong style="font-size:13px;color:var(--accent);">' + (item.title || 'Info') + '</strong>'
+        + '<p style="font-size:12px;color:#777;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (item.preview || '') + '</p>'
+        + '</div>'
+        + '<div style="display:flex;gap:8px;flex-shrink:0;">'
+        + '<a href="#" onclick="editKnowledge(' + item.id + ',&#39;' + cid + '&#39;);return false;" style="font-size:14px;color:#f59e0b;cursor:pointer;">✏️</a>'
+        + '<a href="#" onclick="deleteKnowledge(' + item.id + ',&#39;' + cid + '&#39;);return false;" style="font-size:14px;color:#ef4444;cursor:pointer;">🗑️</a>'
+        + '</div></div>';
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<p style="color:#fca5a5;font-size:13px;">Erro: ' + e.message + '</p>';
   }
 }
 </script>
