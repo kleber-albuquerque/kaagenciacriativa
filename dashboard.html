@@ -629,6 +629,11 @@ async function addClient() {
 async function loadConfig() {
   const cid = document.getElementById('config-client-id').value;
   if (!cid) return;
+  // LIMPA todos os campos antes de carregar — previne contaminação se a API falhar
+  ['brand_name','system_prompt','tooltip_text','greeting','notify_email','calendar_id','bio_headline','bio_cta','bio_logo_url','ov-ga-input'].forEach(function(id){
+    var el = document.getElementById(id); if(el) el.value = '';
+  });
+  var ne = document.getElementById('notify_enabled'); if(ne) ne.checked = false;
   loadClientOverview(cid);
   loadKnowledge(cid);
   try {
