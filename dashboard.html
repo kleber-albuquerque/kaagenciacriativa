@@ -645,6 +645,9 @@ async function loadConfig() {
     document.getElementById('notify_email').value = cfg.notify_email || '';
     document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
     document.getElementById('calendar_id').value = cfg.calendar_id || '';
+    document.getElementById('bio_headline').value = cfg.bio_headline || '';
+    document.getElementById('bio_cta').value = cfg.bio_cta || '';
+    document.getElementById('bio_logo_url').value = cfg.logo_url || '';
   } catch (e) { console.error('loadConfig:', e); }
 }
 
@@ -689,7 +692,10 @@ async function saveConfig() {
         position: document.getElementById('position').value,
         notify_email: document.getElementById('notify_email').value,
         notify_enabled: document.getElementById('notify_enabled').checked,
-        calendar_id: document.getElementById('calendar_id').value
+        calendar_id: document.getElementById('calendar_id').value,
+        logo_url: document.getElementById('bio_logo_url').value,
+        bio_headline: document.getElementById('bio_headline').value,
+        bio_cta: document.getElementById('bio_cta').value
       })
     });
     st.className = 'status success';
