@@ -2,9 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Assistente Virtual 24h</title>
-<meta name="description" content="Fale com nossa assistente virtual. Disponível 24 horas por dia." />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KA Vox | A Assistente que atende 24h — KA Agência Criativa</title>
+<meta name="description" content="KA Vox IA: assistente virtual com voz para sites e Instagram. Atende 24h, tira dúvidas, captura leads e agenda consultas. Teste ao vivo no nosso site." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,64 +13,112 @@
     --bg:#000000; --fg:#ffffff; --muted:#8c8c8c; --muted-2:#5e5e5e;
     --line:rgba(255,255,255,0.10); --line-soft:rgba(255,255,255,0.06);
     --card:rgba(255,255,255,0.02); --accent:#FFD400;
-    --sans:'Inter', sans-serif;
+    --sans:'Inter', sans-serif; --maxw:1120px; --nav-h:74px;
   }
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html{scroll-behavior:smooth}
-  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:var(--nav-h)}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
   ::selection{background:var(--accent);color:#000}
   a{color:inherit;text-decoration:none} img{max-width:100%;display:block}
-
   #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
   .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 
-  .bio-wrap{max-width:640px;margin:0 auto;padding:60px 28px 120px;position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;position:relative;z-index:2}
+  section{position:relative;z-index:2;padding:clamp(80px,12vh,140px) 0}
+  .center{text-align:center} .lead-block{max-width:760px;margin:0 auto}
+  .eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:22px;display:inline-block}
+  h1,h2,h3{font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--accent)}
+  h1{font-size:clamp(2rem,5.4vw,3.5rem)} h2{font-size:clamp(1.35rem,3.2vw,2.2rem);margin-bottom:20px}
+  h3{font-size:1.2rem;color:var(--fg);margin-bottom:10px}
+  p{color:var(--muted);font-size:1.05rem}
+  .sub{margin-top:15px;color:var(--muted);font-size:1.05rem}
 
-  /* HEADER / LOGO */
-  .bio-header{text-align:center;width:100%}
-  .logo-wrap{width:120px;height:120px;border-radius:50%;margin:0 auto 28px;background:rgba(255,255,255,0.02);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;transition:border-color .3s, box-shadow .3s}
-  .logo-wrap:hover{border-color:var(--accent);box-shadow:0 0 40px rgba(255,212,0,0.15)}
-  .logo-wrap img{width:100%;height:100%;object-fit:cover}
-  .logo-placeholder{font-size:56px;font-weight:800;color:var(--accent);letter-spacing:-.04em}
+  header.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);display:flex;align-items:center;background:rgba(0,0,0,.8);backdrop-filter:blur(14px);border-bottom:1px solid var(--line-soft)}
+  .nav-inner{max-width:var(--maxw);margin:0 auto;padding:0 28px;width:100%;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-weight:800;letter-spacing:.22em;font-size:.95rem;color:var(--fg);text-decoration:none}
+  .logo span{color:var(--accent)}
+  .nav-links{display:flex;gap:30px}
+  .nav-links a{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .25s}
+  .nav-links a:hover{color:var(--fg)}
+  .nav-cta{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--accent);padding:10px 18px;color:var(--accent);transition:.3s;cursor:pointer;background:transparent}
+  .nav-cta:hover{background:var(--accent);color:#000}
 
-  .eyebrow{font-size:.7rem;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:18px;display:inline-block}
-  h1{font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--accent);font-size:clamp(1.8rem,4.5vw,2.8rem);margin-bottom:14px}
-  .bio-tag{font-size:.9rem;color:var(--muted);letter-spacing:.05em}
-  .bio-tag .dot{display:inline-block;width:7px;height:7px;background:#10b981;border-radius:50%;margin-right:8px;animation:pulse 2s ease-in-out infinite;vertical-align:middle}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .hero{min-height:100vh;display:flex;align-items:center;padding-top:var(--nav-h)}
+  .hero h1 .dim{color:var(--muted)}
+  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
 
-  /* CARD CENTRAL */
-  .bio-card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:40px 32px;width:100%;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-  .bio-card h2{font-weight:700;color:var(--fg);font-size:1.2rem;margin-bottom:14px;letter-spacing:-.01em}
-  .bio-card p{color:var(--muted);font-size:1rem;margin-bottom:14px}
-  .bio-card p strong{color:var(--accent);font-weight:600}
-  .bio-card ul{list-style:none;margin-top:20px;padding-top:20px;border-top:1px solid var(--line-soft)}
-  .bio-card li{color:var(--muted);font-size:.95rem;padding:10px 0 10px 30px;position:relative}
-  .bio-card li::before{content:'';position:absolute;left:0;top:18px;width:16px;height:1px;background:var(--accent)}
+  .btn{display:inline-flex;align-items:center;gap:9px;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;padding:15px 28px;cursor:pointer;transition:.3s;border:1px solid var(--accent);font-family:var(--sans);font-weight:700;text-decoration:none}
+  .btn-primary{background:var(--accent);color:#000}
+  .btn-primary:hover{background:transparent;color:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--accent)}
+  .btn-ghost:hover{background:var(--accent);color:#000}
 
-  /* CTA BUTTON */
-  .bio-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;background:var(--accent);color:#000;border:1px solid var(--accent);padding:18px 28px;font-family:var(--sans);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;cursor:pointer;transition:.3s;text-decoration:none}
-  .bio-cta:hover{background:transparent;color:var(--accent)}
-  .bio-cta:active{transform:scale(0.98)}
+  .demo-hint{display:inline-flex;align-items:center;gap:10px;margin-top:36px;padding:12px 20px;border:1px dashed var(--accent);border-radius:999px;font-size:.78rem;color:var(--muted)}
+  .demo-hint b{color:var(--accent);font-weight:600}
+  .pulse-dot{width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulsa 1.6s infinite;flex-shrink:0}
+  @keyframes pulsa{0%,100%{opacity:1}50%{opacity:.3}}
 
-  /* FOOTER */
-  .bio-footer{text-align:center;margin-top:auto;padding-top:40px;color:var(--muted-2);font-size:.75rem;letter-spacing:.1em}
-  .bio-footer a{color:var(--muted);transition:color .25s}
-  .bio-footer a:hover{color:var(--accent)}
-  .bio-footer .sep{display:inline-block;width:3px;height:3px;background:var(--muted-2);border-radius:50%;margin:0 12px;vertical-align:middle}
+  .launch-banner{display:inline-flex;align-items:center;gap:10px;margin-top:28px;padding:12px 24px;border:1px dashed var(--accent);border-radius:999px;font-size:.78rem;color:var(--accent);letter-spacing:.05em;font-weight:600}
+  .launch-banner .pulse-dot{background:var(--accent)}
 
-  /* LOADING */
-  .loading{text-align:center;color:var(--muted);font-size:.85rem;letter-spacing:.1em;padding:40px 0}
-  .loading .dot{display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:10px;animation:pulse 1s ease-in-out infinite}
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px}
+  .feature-card{background:#0a0a0a;border:1px solid var(--line);padding:32px;border-radius:4px;transition:.3s;text-align:left}
+  .feature-card:hover{border-color:var(--accent)}
+  .feature-icon{width:48px;height:48px;background:rgba(255,212,0,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:var(--accent)}
+  .feature-icon svg{width:24px;height:24px}
 
-  /* HIDE WIDGET TOGGLE AT FIRST (we trigger it manually) */
-  #ka-toggle-btn{display:none !important}
+  .duo-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:50px}
+  .duo-card{background:#0a0a0a;border:1px solid var(--line);padding:40px 32px;border-radius:4px;transition:.3s;text-align:left}
+  .duo-card:hover{border-color:var(--accent)}
+  .duo-tag{display:inline-block;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:#000;background:var(--accent);padding:6px 12px;border-radius:3px;font-weight:700;margin-bottom:20px}
+  .duo-card p{font-size:.95rem}
 
-  @media(max-width:480px){
-    .bio-wrap{padding:40px 20px 80px;gap:28px}
-    .logo-wrap{width:96px;height:96px;margin-bottom:20px}
-    .logo-placeholder{font-size:44px}
-    .bio-card{padding:28px 22px}
+  /* PLANOS */
+  .plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:50px;align-items:stretch}
+  .plan-card{background:#0a0a0a;border:1px solid var(--line);padding:32px 22px;border-radius:4px;transition:.3s;display:flex;flex-direction:column;text-align:left;position:relative}
+  .plan-card:hover{border-color:var(--accent)}
+  .plan-card.destaque{border-color:var(--accent);background:rgba(255,212,0,0.03)}
+  .plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#000;font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700;padding:6px 14px;border-radius:999px;white-space:nowrap}
+  .plan-name{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:14px;margin-top:14px}
+  .plan-price{font-size:2.2rem;font-weight:800;color:var(--accent);letter-spacing:-.02em;line-height:1}
+  .plan-price small{font-size:.9rem;color:var(--muted);font-weight:500;letter-spacing:0}
+  .plan-setup{font-size:.8rem;color:var(--muted-2);margin-top:8px;margin-bottom:24px}
+  .plan-setup s{font-weight:400}
+  .plan-features{list-style:none;flex:1;margin-bottom:28px}
+  .plan-features li{font-size:.85rem;color:var(--muted);padding:7px 0;display:flex;gap:10px;align-items:flex-start;border-bottom:1px solid var(--line-soft)}
+  .plan-features li:last-child{border-bottom:none}
+  .plan-features .check{color:var(--accent);font-weight:700;flex-shrink:0}
+  .plan-features .off{color:var(--muted-2)}
+  .plan-note{margin-top:36px;font-size:.78rem;color:var(--muted-2);text-align:center}
+
+  /* CASES */
+  .cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px}
+  .case-card{background:#0a0a0a;border:1px solid var(--line);padding:28px;border-radius:4px;text-align:left}
+  .case-emoji{font-size:1.6rem;margin-bottom:14px;display:block}
+  .case-card p{font-size:.9rem}
+
+  /* FAQ */
+  .faq-block{max-width:680px;margin:50px auto 0;text-align:left}
+  details{border:1px solid var(--line);border-radius:4px;margin-bottom:12px;background:#0a0a0a}
+  details[open]{border-color:var(--accent)}
+  summary{padding:18px 22px;cursor:pointer;font-weight:600;font-size:.95rem;color:var(--fg);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';color:var(--accent);font-size:1.3rem;font-weight:400;transition:.25s;flex-shrink:0}
+  details[open] summary::after{transform:rotate(45deg)}
+  .faq-answer{padding:0 22px 20px;color:var(--muted);font-size:.92rem}
+
+  .highlight-box{border:1px solid var(--accent);background:rgba(255,212,0,0.03);padding:60px 40px;border-radius:8px;margin-top:50px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+
+  @media(max-width:1100px){
+    .plans-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:900px){
+    .features-grid,.cases-grid{grid-template-columns:1fr}
+    .duo-grid{grid-template-columns:1fr}
+    .nav-links{display:none}
+  }
+  @media(max-width:640px){
+    .plans-grid{grid-template-columns:1fr;max-width:440px;margin-left:auto;margin-right:auto}
   }
 </style>
 </head>
@@ -79,246 +127,261 @@
 <canvas id="bg"></canvas>
 <div class="grain"></div>
 
-<div class="bio-wrap">
-
-  <!-- HEADER -->
-  <header class="bio-header">
-    <div class="logo-wrap" id="logo-wrap">
-      <span class="logo-placeholder" id="logo-placeholder">•</span>
-    </div>
-    <span class="eyebrow">Assistente Virtual</span>
-    <h1 id="bio-name">Carregando...</h1>
-    <p class="bio-tag"><span class="dot"></span><span id="bio-status">Online agora</span></p>
-  </header>
-
-  <!-- CARD -->
-  <div class="bio-card">
-    <h2>Olá. Seja bem-vindo(a).</h2>
-    <p>
-      Você está falando com nossa <strong>assistente virtual</strong>.
-      Estou disponível agora — e a qualquer hora do dia ou da noite — para tirar
-      suas dúvidas, apresentar nossos serviços e agendar um atendimento.
-    </p>
-    <p>Posso te ajudar com:</p>
-    <ul id="bio-services">
-      <li>Dúvidas sobre nossos serviços e valores</li>
-      <li>Agendamento de consultas ou horários</li>
-      <li>Informações sobre localização e atendimento</li>
-      <li>Encaminhamento para nossa equipe humana</li>
-    </ul>
+<header class="nav">
+  <div class="nav-inner">
+    <a href="/" class="logo">KA<span>.</span> <span style="margin-left:10px;font-size:.6rem;letter-spacing:.3em;">VOX</span></a>
+    <nav class="nav-links">
+      <a href="#solucao">Como Funciona</a>
+      <a href="#onde">Onde Atende</a>
+      <a href="#planos">Planos</a>
+      <a href="#faq">Dúvidas</a>
+    </nav>
+    <button class="nav-cta" onclick="abrirAssistente()">Falar com a Assistente</button>
   </div>
+</header>
 
-  <!-- CTA -->
-  <button class="bio-cta" id="start-chat-btn">
-    <span>Iniciar conversa</span>
-    <span>→</span>
-  </button>
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap center">
+    <div class="lead-block">
+      <span class="eyebrow">KA Vox · Inteligência de Atendimento</span>
+      <h1>Converse com quem te visita.<br><span class="dim">Antes que ela vá embora.</span></h1>
+      <p class="sub">A Assistente de voz que atende no seu site e no seu Instagram. Ela conhece o seu negócio, responde na hora, captura o lead e agenda — 24 horas por dia, todos os dias.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="abrirAssistente()">Testar ao Vivo Agora</button>
+        <a href="#planos" class="btn btn-ghost">Ver Planos</a>
+      </div>
+      <div class="demo-hint"><span class="pulse-dot"></span><span>A Assistente no canto desta página é <b>uma demonstração real</b> — toque no balão e pergunte algo.</span></div>
+    </div>
+  </div>
+</section>
 
-  <!-- FOOTER -->
-  <footer class="bio-footer">
-    <a href="https://kaagenciacriativa.com.br" target="_blank" rel="noopener">KA Agência Criativa</a>
-    <span class="sep"></span>
-    <span>Presença digital sem ruído</span>
-  </footer>
+<!-- O PROBLEMA -->
+<section id="problema" style="padding-top:0">
+  <div class="wrap center">
+    <div class="lead-block">
+      <span class="eyebrow">O problema</span>
+      <h2>Tráfego caro. Atendimento mudo.</h2>
+      <p class="sub">Você investe em anúncios, conteúdo e design. Mas a maioria dos visitantes chega fora do horário comercial — e encontra silêncio. No site, um formulário que ninguém preenche. No Instagram, um link de bio que não conversa. Resultado: o cliente com dúvida de preço vai direto para o concorrente.</p>
+    </div>
+  </div>
+</section>
 
-</div>
+<!-- A SOLUÇÃO -->
+<section id="solucao">
+  <div class="wrap">
+    <div class="lead-block center">
+      <span class="eyebrow">A solução</span>
+      <h2>Uma atendente que fala, entende e vende.</h2>
+      <p class="sub">A Assistente, impulsionada pelo KA Vox, conversa por voz como uma atendente humana — treinada com as informações do seu negócio.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        </div>
+        <h3>Conhece seu negócio</h3>
+        <p>Treinada com o seu catálogo, preços e políticas. Ela responde exatamente o que o cliente quer saber — sem inventar.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </div>
+        <h3>Atende por voz e texto</h3>
+        <p>No site ou no Instagram, a experiência é natural: o visitante toca, fala, e ela responde com voz humana, no tom da sua marca.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+        </div>
+        <h3>Entrega o lead no seu WhatsApp</h3>
+        <p>Quando o visitante demonstra interesse, ela coleta o contato — e você recebe o alerta na hora, com botão de resposta direta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ONDE ELA TRABALHA -->
+<section id="onde" style="background:linear-gradient(180deg, transparent, rgba(255,212,0,0.03), transparent)">
+  <div class="wrap">
+    <div class="lead-block center">
+      <span class="eyebrow">Dois lugares, uma Assistente</span>
+      <h2>Onde ela trabalha.</h2>
+      <p class="sub">Com ou sem site, a Assistente está exatamente onde o seu cliente chega.</p>
+    </div>
+    <div class="duo-grid">
+      <div class="duo-card">
+        <span class="duo-tag">KA Vox Site</span>
+        <h3>No seu website</h3>
+        <p>O balão de conversa no canto do seu site. A Assistente atende visitantes, tira dúvidas sobre produtos e preços, e agenda consultas direto no seu Google Agenda — mesmo de madrugada.</p>
+      </div>
+      <div class="duo-card">
+        <span class="duo-tag">KA Vox Bio</span>
+        <h3>No link da sua bio</h3>
+        <p>Um microsite de atendimento no endereço que já está no seu Instagram. O seguidor toca no botão, conversa por voz com a Assistente e vira lead. Sem precisar de site.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLANOS -->
+<section id="planos">
+  <div class="wrap">
+    <div class="lead-block center">
+      <span class="eyebrow">Investimento</span>
+      <h2>Simples e transparente.</h2>
+      <p class="sub">Instalação única + mensalidade. Sem surpresa, sem fidelidade longa.</p>
+      <div class="launch-banner"><span class="pulse-dot"></span>Valores promocionais de lançamento — para os primeiros clientes</div>
+    </div>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-name">KA Vox Bio</div>
+        <div class="plan-price">R$ 197<small>/mês</small></div>
+        <div class="plan-setup">Instalação: R$ 490</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Para quem só tem Instagram</li>
+          <li><span class="check">✓</span> Assistente 24h no link da bio</li>
+          <li><span class="check">✓</span> Atendimento por voz e texto</li>
+          <li><span class="check">✓</span> Treinada com seu catálogo</li>
+          <li><span class="check">✓</span> Leads direto no WhatsApp</li>
+          <li><span class="check">✓</span> Microsite com a sua marca</li>
+          <li><span class="check">✓</span> Até 300 conversas/mês</li>
+        </ul>
+        <a href="/#contato" class="btn btn-ghost" style="justify-content:center">Quero o Bio</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">KA Vox Site</div>
+        <div class="plan-price">R$ 297<small>/mês</small></div>
+        <div class="plan-setup">Instalação: R$ 990</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Para quem já tem site</li>
+          <li><span class="check">✓</span> Assistente 24h no seu site</li>
+          <li><span class="check">✓</span> Atendimento por voz e texto</li>
+          <li><span class="check">✓</span> Leads direto no WhatsApp</li>
+          <li><span class="check">✓</span> Agendamento no Google Agenda</li>
+          <li><span class="check">✓</span> Até 500 conversas/mês</li>
+        </ul>
+        <a href="/#contato" class="btn btn-ghost" style="justify-content:center">Quero no Meu Site</a>
+      </div>
+      <div class="plan-card">
+        <span class="plan-badge">Não tem site?</span>
+        <div class="plan-name">Site Novo + KA Vox</div>
+        <div class="plan-price">R$ 297<small>/mês</small></div>
+        <div class="plan-setup">Instalação: R$ 1.700 <s>R$ 1.980</s></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Landing page criada pela KA</li>
+          <li><span class="check">✓</span> Assistente 24h no novo site</li>
+          <li><span class="check">✓</span> Hospedagem e domínio inclusos</li>
+          <li><span class="check">✓</span> Leads direto no WhatsApp</li>
+          <li><span class="check">✓</span> Agendamento no Google Agenda</li>
+          <li><span class="check">✓</span> Até 500 conversas/mês</li>
+        </ul>
+        <a href="/#contato" class="btn btn-ghost" style="justify-content:center">Quero Site + IA</a>
+      </div>
+      <div class="plan-card destaque">
+        <span class="plan-badge">Mais completo</span>
+        <div class="plan-name">Site + Bio</div>
+        <div class="plan-price">R$ 347<small>/mês</small></div>
+        <div class="plan-setup">Instalação: R$ 1.190 <s>R$ 1.480</s></div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span> Assistente 24h no site</li>
+          <li><span class="check">✓</span> Assistente 24h na bio</li>
+          <li><span class="check">✓</span> Atendimento por voz e texto</li>
+          <li><span class="check">✓</span> Leads direto no WhatsApp</li>
+          <li><span class="check">✓</span> Agendamento no Google Agenda</li>
+          <li><span class="check">✓</span> Até 800 conversas/mês</li>
+        </ul>
+        <a href="/#contato" class="btn btn-primary" style="justify-content:center">Quero os Dois</a>
+      </div>
+    </div>
+    <p class="plan-note">Todos os planos incluem hospedagem da IA, manutenção e suporte. Ao atingir o limite de conversas, avisamos com antecedência — upgrade opcional, nunca corte de surpresa. Site novo + bio? Instalação combo: R$ 1.900. Em breve: plano Premium com atendimento por voz no WhatsApp.</p>
+  </div>
+</section>
+
+<!-- PROVA + FAQ -->
+<section id="prova">
+  <div class="wrap">
+    <div class="lead-block center">
+      <span class="eyebrow">Quem já atende com a KA</span>
+      <h2>Ajudando negócios a nunca mais perder um cliente.</h2>
+    </div>
+    <div class="cases-grid">
+      <div class="case-card">
+        <span class="case-emoji">🏥</span>
+        <p><strong style="color:var(--fg)">Clínica de saúde mental — SP</strong><br>A Assistente informa valores, convênios e acomodações com precisão, 24h por dia, no tom acolhedor que a clínica exige.</p>
+      </div>
+      <div class="case-card">
+        <span class="case-emoji">🎸</span>
+        <p><strong style="color:var(--fg)">Estúdio musical — Serra da Mantiqueira</strong><br>Qualifica projetos musicais, apresenta a estrutura do estúdio e agenda gravações direto no WhatsApp da equipe.</p>
+      </div>
+      <div class="case-card">
+        <span class="case-emoji">💍</span>
+        <p><strong style="color:var(--fg)">Joalheria autoral</strong><br>Responde preço e detalhes de cada peça do catálogo por voz, no tom da designer — e captura o contato de quem quer encomendar.</p>
+      </div>
+    </div>
+
+    <div class="faq-block" id="faq">
+      <div class="lead-block center" style="margin-bottom:40px">
+        <span class="eyebrow">Dúvidas frequentes</span>
+        <h2>Perguntas que sempre fazem.</h2>
+      </div>
+      <details>
+        <summary>Funciona no celular?</summary>
+        <div class="faq-answer">Sim — é onde mais funciona. A Assistente foi desenhada mobile-first: o visitante toca no botão e conversa por voz, como numa ligação.</div>
+      </details>
+      <details>
+        <summary>Preciso ter um site?</summary>
+        <div class="faq-answer">Não — você tem dois caminhos: o KA Vox Bio (funciona só com o link do seu Instagram) ou o Site Novo + KA Vox, em que a nossa equipe cria sua landing page com a Assistente já embutida, por R$ 1.700 de instalação.</div>
+      </details>
+      <details>
+        <summary>Como ela aprende sobre o meu negócio?</summary>
+        <div class="faq-answer">Você nos envia catálogo, PDF ou tabela de produtos. Nós treinamos a Assistente e você aprova o comportamento em um ambiente de teste antes da publicação.</div>
+      </details>
+      <details>
+        <summary>E se ela não souber responder?</summary>
+        <div class="faq-answer">Ela nunca inventa. Quando não tem a informação, encaminha o cliente direto para o seu WhatsApp — e você recebe o contato na hora.</div>
+      </details>
+      <details>
+        <summary>Os valores vão aumentar?</summary>
+        <div class="faq-answer">Os valores atuais são promocionais de lançamento. Quem contrata agora garante essa condição enquanto permanecer cliente.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="contato" style="padding-top:0">
+  <div class="wrap center">
+    <div class="highlight-box">
+      <span class="eyebrow">Comece agora</span>
+      <h2>Sua marca atendendo 24h. A partir de R$ 197/mês.</h2>
+      <p class="sub" style="max-width:560px;margin:0 auto;">Valores de lançamento para os primeiros clientes. Instalação em 48 horas após o envio do material — e você aprova tudo em ambiente de teste antes de ir ao ar.</p>
+      <a href="/#contato" class="btn btn-primary" style="margin-top:10px;">Quero uma Assistente assim →</a>
+      <p style="font-size:.75rem;color:var(--muted-2)">Prefere testar antes? Converse com a nossa própria Assistente no balão desta página. 😉</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="padding:40px 28px; text-align:center; border-top:1px solid var(--line-soft);">
+    <p style="font-size:.66rem;letter-spacing:.12em;color:var(--muted-2);text-transform:uppercase;">© 2026 KA Agência Criativa · KA Vox — Presença digital sem ruído.</p>
+  </div>
+</footer>
 
 <script>
-// ==========================================================
-// 1. RESOLVE O clientId ANTES DE CARREGAR O WIDGET
-// ==========================================================
-(function() {
-  // Lê o client de (a) localStorage (via 404.html) ou (b) query param ou (c) path
-  var clientId = localStorage.getItem('ka_bio_client');
-  if (!clientId) {
-    var params = new URLSearchParams(window.location.search);
-    clientId = params.get('client');
-  }
-  if (!clientId) {
-    var parts = window.location.pathname.split('/').filter(Boolean);
-    if (parts.length >= 2 && parts[0] === 'kavox' && parts[1] !== 'bio.html') {
-      clientId = parts[1];
-    }
-  }
-  window.KA_BIO_CLIENT_ID = clientId || 'ka_agencia';
-  // Limpa o localStorage para não poluir navegações futuras
-  localStorage.removeItem('ka_bio_client');
-
-  console.log('🎯 Bio page client:', window.KA_BIO_CLIENT_ID);
-
-  // Injeta o script do widget COM o data-client-id correto
-  var s = document.createElement('script');
-  s.src = 'https://kaagenciacriativa.com.br/widget.js';
-  s.setAttribute('data-client-id', window.KA_BIO_CLIENT_ID);
-  s.defer = true;
-  document.body.appendChild(s);
-})();
-
-// ==========================================================
-// 2. CANVAS DE FUNDO (idêntico ao index.html)
-// ==========================================================
-var canvas = document.getElementById('bg');
-var ctx = canvas.getContext('2d');
-var w, h, dpr = Math.min(window.devicePixelRatio || 1, 2);
-var orbs = [], ripples = [];
-var pointer = {x:-9999, y:-9999, active:false};
-var glow = {x:0, y:0};
-
-function rand(a,b){return a+Math.random()*(b-a)}
-
-function buildOrbs(){
-  orbs = [];
-  for(var i=0;i<6;i++){
-    orbs.push({
-      bx: rand(0,w), by: rand(0,h),
-      x:0, y:0,
-      r: rand(Math.min(w,h)*0.22, Math.min(w,h)*0.5),
-      ph: rand(0, Math.PI*2),
-      sp: rand(0.00012, 0.0004),
-      amp: rand(30, 90),
-      a: rand(0.05, 0.11),
-      g: Math.round(rand(150, 255))
-    });
-  }
-  glow.x = w/2; glow.y = h/2;
+/* Abre a Assistente (demo ao vivo) — espera o widget carregar */
+function abrirAssistente(tent){
+  var btn = document.getElementById('ka-toggle-btn');
+  if (btn) { btn.click(); return; }
+  if ((tent||0) < 60) setTimeout(function(){ abrirAssistente((tent||0)+1); }, 500);
 }
-
-function resize(){
-  w = window.innerWidth; h = window.innerHeight;
-  canvas.width = w*dpr; canvas.height = h*dpr;
-  canvas.style.width = w+'px'; canvas.style.height = h+'px';
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  buildOrbs();
-}
-window.addEventListener('resize', resize);
-resize();
-
-window.addEventListener('pointermove', function(e){
-  pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
-}, {passive:true});
-
-window.addEventListener('pointerdown', function(e){
-  pointer.x = e.clientX; pointer.y = e.clientY; pointer.active = true;
-  ripples.push({x:e.clientX, y:e.clientY, r:0, a:0.5, max:rand(180,260)});
-}, {passive:true});
-
-window.addEventListener('pointerleave', function(){ pointer.active = false; });
-
-function frame(t){
-  ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0,0,w,h);
-  ctx.globalCompositeOperation = 'lighter';
-
-  if(pointer.active){
-    glow.x += (pointer.x - glow.x) * 0.12;
-    glow.y += (pointer.y - glow.y) * 0.12;
-    var gg = ctx.createRadialGradient(glow.x, glow.y, 0, glow.x, glow.y, 260);
-    gg.addColorStop(0, 'rgba(255,255,255,0.10)');
-    gg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gg;
-    ctx.beginPath();
-    ctx.arc(glow.x, glow.y, 260, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  for(var i=0;i<orbs.length;i++){
-    var o = orbs[i];
-    var tx = o.bx + Math.cos(t*o.sp + o.ph) * o.amp;
-    var ty = o.by + Math.sin(t*o.sp*1.3 + o.ph) * o.amp;
-    if(pointer.active){
-      var dx = tx - pointer.x, dy = ty - pointer.y;
-      var d = Math.sqrt(dx*dx + dy*dy);
-      if(d < 240 && d > 0.01){
-        var f = (1 - d/240) * 70;
-        tx += (dx/d) * f;
-        ty += (dy/d) * f;
-      }
-    }
-    o.x += (tx - o.x) * 0.05;
-    o.y += (ty - o.y) * 0.05;
-    var grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
-    grad.addColorStop(0, 'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');
-    grad.addColorStop(1, 'rgba('+o.g+','+o.g+','+o.g+',0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
-    ctx.fill();
-  }
-
-  for(var r=ripples.length-1;r>=0;r--){
-    var rp = ripples[r];
-    rp.r += (rp.max - rp.r) * 0.06 + 1.2;
-    rp.a *= 0.94;
-    ctx.strokeStyle = 'rgba(255,255,255,'+rp.a.toFixed(3)+')';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI*2);
-    ctx.stroke();
-    if(rp.a < 0.01 || rp.r > rp.max) ripples.splice(r,1);
-  }
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-
-// ==========================================================
-// 3. CARREGA LOGO E NOME DO CLIENTE VIA API
-// ==========================================================
-var API_URL = 'https://ka-voice-backend.onrender.com';
-
-fetch(API_URL + '/widget/config/' + window.KA_BIO_CLIENT_ID)
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    var name = data.brand_name || 'Assistente Virtual';
-    var logo = data.logo_url;
-    var accent = data.accent_color || '#FFD400';
-
-    // Atualiza título e headline
-    document.title = name + ' | Atendimento 24h';
-    document.getElementById('bio-name').innerText = name;
-
-    // Atualiza logo
-    var logoWrap = document.getElementById('logo-wrap');
-    var placeholder = document.getElementById('logo-placeholder');
-    if (logo) {
-      var img = document.createElement('img');
-      img.src = logo;
-      img.alt = name;
-      img.onerror = function(){
-        placeholder.innerText = name.charAt(0).toUpperCase();
-        placeholder.style.color = accent;
-        img.remove();
-      };
-      placeholder.replaceWith(img);
-    } else {
-      placeholder.innerText = name.charAt(0).toUpperCase();
-      placeholder.style.color = accent;
-    }
-
-    // Aplica cor de acento dinâmica
-    document.documentElement.style.setProperty('--accent', accent);
-  })
-  .catch(function(){
-    document.getElementById('bio-name').innerText = 'Assistente Virtual';
-  });
-
-// ==========================================================
-// 4. CTA: abre o widget ao clicar
-// ==========================================================
-document.getElementById('start-chat-btn').addEventListener('click', function(){
-  // Primeiro mostra o toggle (que estava escondido via CSS)
-  var toggle = document.getElementById('ka-toggle-btn');
-  if (toggle) {
-    toggle.style.display = 'flex';
-    // Pequeno delay para garantir que está renderizado
-    setTimeout(function(){ toggle.click(); }, 50);
-  } else {
-    // Widget ainda não carregou, tenta abrir direto
-    var chat = document.getElementById('ka-chat');
-    if (chat) chat.style.display = 'flex';
-  }
-});
 </script>
 
+<!-- A ASSISTENTE DA KA (demo ao vivo do produto) -->
+<script src="/widget.js" data-client-id="ka_agencia" defer></script>
+
+<script>
+var canvas=document.getElementById('bg');var ctx=canvas.getContext('2d');var w,h,dpr=Math.min(window.devicePixelRatio||1,2);var orbs=[],ripples=[];var pointer={x:-9999,y:-9999,active:false};var glow={x:0,y:0};function rand(a,b){return a+Math.random()*(b-a)}function buildOrbs(){orbs=[];for(var i=0;i<6;i++){orbs.push({bx:rand(0,w),by:rand(0,h),x:0,y:0,r:rand(Math.min(w,h)*0.22,Math.min(w,h)*0.5),ph:rand(0,Math.PI*2),sp:rand(0.00012,0.0004),amp:rand(30,90),a:rand(0.05,0.11),g:Math.round(rand(150,255))})}glow.x=w/2;glow.y=h/2}function resize(){w=window.innerWidth;h=window.innerHeight;canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+'px';canvas.style.height=h+'px';ctx.setTransform(dpr,0,0,dpr,0,0);buildOrbs()}window.addEventListener('resize',resize);resize();window.addEventListener('pointermove',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true},{passive:true});window.addEventListener('pointerdown',function(e){pointer.x=e.clientX;pointer.y=e.clientY;pointer.active=true;ripples.push({x:e.clientX,y:e.clientY,r:0,a:0.5,max:rand(180,260)})},{passive:true});window.addEventListener('pointerleave',function(){pointer.active=false});function frame(t){ctx.globalCompositeOperation='source-over';ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='lighter';if(pointer.active){glow.x+=(pointer.x-glow.x)*0.12;glow.y+=(pointer.y-glow.y)*0.12;var gg=ctx.createRadialGradient(glow.x,glow.y,0,glow.x,glow.y,260);gg.addColorStop(0,'rgba(255,255,255,0.10)');gg.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(glow.x,glow.y,260,0,Math.PI*2);ctx.fill()}for(var i=0;i<orbs.length;i++){var o=orbs[i];var tx=o.bx+Math.cos(t*o.sp+o.ph)*o.amp;var ty=o.by+Math.sin(t*o.sp*1.3+o.ph)*o.amp;if(pointer.active){var dx=tx-pointer.x,dy=ty-pointer.y;var d=Math.sqrt(dx*dx+dy*dy);if(d<240&&d>0.01){var f=(1-d/240)*70;tx+=(dx/d)*f;ty+=(dy/d)*f}}o.x+=(tx-o.x)*0.05;o.y+=(ty-o.y)*0.05;var grad=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);grad.addColorStop(0,'rgba('+o.g+','+o.g+','+o.g+','+o.a+')');grad.addColorStop(1,'rgba('+o.g+','+o.g+','+o.g+',0)');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}for(var r=ripples.length-1;r>=0;r--){var rp=ripples[r];rp.r+=(rp.max-rp.r)*0.06+1.2;rp.a*=0.94;ctx.strokeStyle='rgba(255,255,255,'+rp.a.toFixed(3)+')';ctx.lineWidth=1;ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,Math.PI*2);ctx.stroke();if(rp.a<0.01||rp.r>rp.max)ripples.splice(r,1)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
+</script>
 </body>
 </html>
