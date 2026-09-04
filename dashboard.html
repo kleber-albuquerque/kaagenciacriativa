@@ -106,6 +106,7 @@
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
     <button class="tab-btn" onclick="switchTab('finance', this)">💰 Financeiro</button>
     <button class="tab-btn" onclick="switchTab('analytics', this)">📈 Analytics</button>
+    <button class="tab-btn" onclick="switchTab('status', this)">🩺 Status</button>
   </div>
 
   <!-- ABA CONFIGURAÇÃO -->
@@ -369,6 +370,17 @@
         <thead><tr><th>Cliente</th><th>Plano</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ação</th></tr></thead>
         <tbody id="finance-table-body"><tr><td colspan="6" class="empty">Carregando cobranças...</td></tr></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ABA STATUS -->
+  <div id="tab-status" class="tab-content">
+    <div class="card">
+      <h2>🩺 Saúde do Sistema</h2>
+      <button class="btn btn-secondary" style="margin-left:0;" onclick="loadHealthStatus()">🔄 Verificar Agora</button>
+      <div id="health-status" style="margin-top:20px;">
+        <p style="color:#555;font-size:13px;">Clique para verificar todos os serviços.</p>
+      </div>
     </div>
   </div>
 
@@ -1321,6 +1333,35 @@ async function loadKnowledge(cid) {
     }).join('');
   } catch (e) {
     list.innerHTML = '<p style="color:#fca5a5;font-size:13px;">Erro: ' + e.message + '</p>';
+  }
+}
+</script>
+<script>
+// Painel de Status — saúde do sistema em tempo real
+async function loadHealthStatus() {
+  const el = document.getElementById('health-status');
+  el.innerHTML = '<p style="color:#888;font-size:14px;">Verificando serviços... ⏳</p>';
+  try {
+    const data = await apiCall('/admin/health-detailed');
+    const icons = { ok: '🟢', DOWN: '🔴' };
+    const nomes = { service: 'Serviço (Render)', database: 'Banco (Neon)', groq: 'Groq (IA)', edge_tts: 'Voz (Edge TTS)', pool: 'Pool de Conexões' };
+    let html = '';
+    for (const [key, info] of Object.entries(data.checks)) {
+      const st = info.status || 'ok';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--border);">'
+        + '<span style="font-size:14px;">' + (icons[st] || '🟡') + ' ' + (nomes[key] || key) + '</span>'
+        + '<span style="font-size:12px;color:' + (st === 'ok' ? 'var(--success)' : 'var(--error)') + ';">'
+        + (st === 'ok' ? 'Operacional' : 'FORA DO AR') + ' ' + (info.latency || '')
+        + (info.error ? ' — ' + info.error : '') + '</span></div>';
+    }
+    const cor = data.summary === 'ok' ? 'var(--success)' : 'var(--error)';
+    const emoji = data.summary === 'ok' ? '✅' : '⚠️';
+    el.innerHTML = '<div style="padding:14px;border:1px solid ' + cor + ';border-radius:8px;margin-bottom:16px;text-align:center;font-weight:600;color:' + cor + ';">'
+      + emoji + ' Sistema ' + (data.summary === 'ok' ? 'Totalmente Operacional' : 'Degradado — verifique os itens em vermelho') + '</div>' + html;
+  } catch (e) {
+    el.innerHTML = '<div style="padding:14px;border:1px solid var(--error);border-radius:8px;color:var(--error);text-align:center;">'
+      + '❌ BACKEND INACESSÍVEL — ' + e.message
+      + '<br><small>Se persistir: Render → Logs (últimas linhas) + Events (deploy)</small></div>';
   }
 }
 </script>
