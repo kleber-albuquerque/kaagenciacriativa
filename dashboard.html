@@ -267,6 +267,19 @@
       <label>Sistema (Prompt)</label>
       <textarea id="system_prompt" placeholder="Defina quem é a assistente, preços, regras, tom..."></textarea>
     </div>
+    <div class="card">
+      <h2>📦 Plano e Limites</h2>
+      <div class="info-box">💡 Defina o plano do cliente e o limite de conversas mensais. Ao atingir o limite, a IA avisa que o plano gratuito acabou.</div>
+      <label>Nome do Plano</label>
+      <select id="plan_name">
+        <option value="Free">Free (Até 30 conversas)</option>
+        <option value="Pro">Pro (Até 100 conversas)</option>
+        <option value="Premium">Premium (Até 250 conversas)</option>
+        <option value="Ilimitado">Ilimitado (0 = sem limite)</option>
+      </select>
+      <label>Limite de Conversas/Mês (0 = Ilimitado)</label>
+      <input type="number" id="plan_limit" min="0" max="10000" placeholder="30">
+    </div>
     <div class="card" style="border: 1px dashed var(--border);">
       <h2>🌐 Microsite (Bio Link)</h2>
       <div class="info-box">💡 Configure a logo e o texto do link para Instagram/TikTok.</div>
@@ -665,6 +678,8 @@ async function loadConfig() {
     document.getElementById('bio_headline').value = cfg.bio_headline || '';
     document.getElementById('bio_cta').value = cfg.bio_cta || '';
     document.getElementById('bio_logo_url').value = cfg.logo_url || '';
+    document.getElementById('plan_name').value = cfg.plan_name || 'Free';
+    document.getElementById('plan_limit').value = cfg.plan_limit !== undefined ? cfg.plan_limit : 30;
   } catch (e) { console.error('loadConfig:', e); }
 }
 
@@ -712,7 +727,9 @@ async function saveConfig() {
         calendar_id: document.getElementById('calendar_id').value,
         logo_url: document.getElementById('bio_logo_url').value,
         bio_headline: document.getElementById('bio_headline').value,
-        bio_cta: document.getElementById('bio_cta').value
+        bio_cta: document.getElementById('bio_cta').value,
+        plan_name: document.getElementById('plan_name').value,
+        plan_limit: parseInt(document.getElementById('plan_limit').value)
       })
     });
     st.className = 'status success';
