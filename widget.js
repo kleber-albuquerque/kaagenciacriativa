@@ -1,37 +1,17 @@
-// KA Widget v4.0 - White-label com branding dinâmico
-(function() {
-console.log('🚀 KA Widget v4.0 inicializando...');
-var currentScript = document.currentScript;
-var urlParams = new URLSearchParams(window.location.search);
-var CONFIG = {
-  apiUrl: 'https://ka-voice-backend.onrender.com',
-  clientId: (currentScript && currentScript.getAttribute('data-client-id')) || urlParams.get('client') || 'ka_agencia'
-};
-console.log('🎯 Cliente identificado:', CONFIG.clientId);
-
-var BRAND = {
-  brand_name: 'Assistente Virtual',
-  accent_color: '#FFD400',
-  tooltip_text: '💬 Fale ou digite para nossa assistente',
-  greeting: '',
-  position: 'right'
-};
-
 function textColorFor(hex) {
-  var c = (hex || '#FFD400').replace('#', '');
-  if (c.length < 6) return '#000';
-  var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
-  return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
+  hex = hex.replace('#', '');
+  var r = parseInt(hex.substring(0, 2), 16);
+  var g = parseInt(hex.substring(2, 4), 16);
+  var b = parseInt(hex.substring(4, 6), 16);
+  var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+  return (yiq >= 128) ? '#000000' : '#ffffff';
 }
-
-var kaIsListening = false, kaIsPlaying = false, kaRecognizer = null, kaAudioUrl = null;
 
 function initWidget() {
   var accent = BRAND.accent_color || '#FFD400';
   var accentText = textColorFor(accent);
   var isLeft = BRAND.position === 'left';
   var pos = isLeft ? 'left:24px;' : 'right:24px;';
-  var align = isLeft ? 'flex-start' : 'flex-end';
 
   var html = '<div id="ka-widget" style="position:fixed;bottom:24px;' + pos + 'z-index:99999;font-family:Inter,sans-serif;">'
   + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:320px;max-height:450px;overflow:hidden;margin-bottom:12px;flex-direction:column;">'
@@ -52,7 +32,11 @@ function initWidget() {
   + '</div><audio id="ka-audio" style="display:none;"></audio>';
 
   document.body.insertAdjacentHTML('beforeend', html);
-     injectAvatarSafely();
+
+  // === INJEÇÃO SEGURA DO AVATAR ===
+  injectAvatarSafely();
+  // ================================
+
   // === TOGGLE CHAT ===
   var toggleBtn = document.getElementById('ka-toggle-btn');
   var chatBox = document.getElementById('ka-chat');
@@ -73,7 +57,6 @@ function initWidget() {
   });
   if (closeBtn) closeBtn.addEventListener('click', kaCloseChat);
   toggleBtn.title = BRAND.tooltip_text || 'Fale conosco';
-
 
   var link = document.createElement('link');
   link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
@@ -244,15 +227,8 @@ function kaToggleMic() {
   }
 }
 
-// Busca branding e inicializa (com fallback para defaults)
-fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
-  .then(function(r) { return r.json(); })
-  .then(function(cfg) { BRAND = cfg; initWidget(); })
-  .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
-})();
-// ===== AVATAR DO ASSISTENTE (Injeção Segura via DOM) =====
+// ===== AVATAR DO ASSISTENTE (Injeção Segura) =====
 (function() {
-  // 1. Injeta o CSS do avatar
   if (!document.getElementById('ka-avatar-style')) {
     const style = document.createElement('style');
     style.id = 'ka-avatar-style';
@@ -296,7 +272,6 @@ function setAvatarSpeaking(isSpeaking) {
   }
 }
 
-// 2. Injeção Segura no Header do Chat (executa após o widget ser criado)
 function injectAvatarSafely() {
   var kaHeader = document.querySelector('#ka-chat > div:first-child');
   if (kaHeader && typeof BRAND !== 'undefined') {
@@ -312,6 +287,11 @@ function injectAvatarSafely() {
     }
   }
 }
+// ===== FIM DO AVATAR =====
 
-// Chama a injeção segura logo após o widget ser montado
-// (Vamos adicionar esta chamada no local certo no Passo 2)
+// Busca branding e inicializa (com fallback para defaults)
+fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
+  .then(function(r) { return r.json(); })
+  .then(function(cfg) { BRAND = cfg; initWidget(); })
+  .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
+})();
