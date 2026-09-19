@@ -129,6 +129,20 @@ function initWidget() {
   if (sendBtn) sendBtn.addEventListener('click', kaSendText);
   if (playBtn) playBtn.addEventListener('click', kaPlayAudio);
   if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') kaSendText(); });
+  
+  // === INJEÇÃO SEGURA DO AVATAR (DOM) ===
+  if (BRAND && (BRAND.logo_url || BRAND.avatar_url)) {
+    var imgUrl = BRAND.logo_url || BRAND.avatar_url;
+    var kaHeader = document.querySelector('#ka-chat > div:first-child');
+    if (kaHeader) {
+      var img = document.createElement('img');
+      img.src = imgUrl;
+      img.style.cssText = 'width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid ' + (BRAND.accent_color || '#FFD400') + ';';
+      kaHeader.insertBefore(img, kaHeader.firstChild);
+    }
+  }
+  // =======================================
+
   console.log('🎉 KA Widget v4.0 Finalizado! Marca:', BRAND.brand_name, '| Cor:', BRAND.accent_color);
 }
 
