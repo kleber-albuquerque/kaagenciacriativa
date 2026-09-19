@@ -1,3 +1,54 @@
+
+  /* Avatar do Assistente */
+  .ka-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--ka-color, #6366f1);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .ka-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ka-avatar.speaking {
+    animation: ka-pulse 1.2s ease-in-out infinite;
+    border-color: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+  }
+  @keyframes ka-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+    50% { transform: scale(1.08); box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
+  }
+  .ka-avatar-placeholder {
+    font-size: 28px;
+  }
+  .ka-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.3);
+  }
+  .ka-chat-header-info h4 {
+    margin: 0;
+    font-size: 14px;
+    color: #fff;
+  }
+  .ka-chat-header-info span {
+    font-size: 11px;
+    color: #10b981;
+  }
+
 // KA Widget v4.0 - White-label com branding dinâmico
 (function() {
 console.log('🚀 KA Widget v4.0 inicializando...');
@@ -287,3 +338,23 @@ fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
   .then(function(cfg) { BRAND = cfg; initWidget(); })
   .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
 })();
+
+
+function renderAvatar(config) {
+  const avatarUrl = config.avatar_url || '';
+  if (avatarUrl) {
+    return '<div class="ka-avatar" id="ka-avatar"><img src="' + avatarUrl + '" onerror="this.parentElement.innerHTML=\'<span class=ka-avatar-placeholder>🤖</span>\'"></div>';
+  }
+  return '<div class="ka-avatar" id="ka-avatar"><span class="ka-avatar-placeholder">🤖</span></div>';
+}
+
+function setAvatarSpeaking(isSpeaking) {
+  const avatar = document.getElementById('ka-avatar');
+  if (avatar) {
+    if (isSpeaking) {
+      avatar.classList.add('speaking');
+    } else {
+      avatar.classList.remove('speaking');
+    }
+  }
+}
