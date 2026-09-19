@@ -1,58 +1,3 @@
-// Injeção do CSS do Widget
-var ka_style = document.createElement('style');
-ka_style.innerHTML = `
-  /* Avatar do Assistente */
-  .ka-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 3px solid var(--ka-color, #6366f1);
-    overflow: hidden;
-    flex-shrink: 0;
-    background: #1a1a1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .ka-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .ka-avatar.speaking {
-    animation: ka-pulse 1.2s ease-in-out infinite;
-    border-color: #10b981;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-  }
-  @keyframes ka-pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
-    50% { transform: scale(1.08); box-shadow: 0 0 30px rgba(16, 185, 129, 0.6); }
-  }
-  .ka-avatar-placeholder {
-    font-size: 28px;
-  }
-  .ka-chat-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    background: rgba(0,0,0,0.3);
-  }
-  .ka-chat-header-info h4 {
-    margin: 0;
-    font-size: 14px;
-    color: #fff;
-  }
-  .ka-chat-header-info span {
-    font-size: 11px;
-    color: #10b981;
-  }
-`;
-document.head.appendChild(ka_style);
-
 // KA Widget v4.0 - White-label com branding dinâmico
 (function() {
 console.log('🚀 KA Widget v4.0 inicializando...');
@@ -63,74 +8,6 @@ var CONFIG = {
   clientId: (currentScript && currentScript.getAttribute('data-client-id')) || urlParams.get('client') || 'ka_agencia'
 };
 console.log('🎯 Cliente identificado:', CONFIG.clientId);
-
-// ==========================================================
-// RASTREAMENTO DE TRÁFEGO (ANALYTICS)
-// ==========================================================
-const TRACK_URL = 'https://ka-voice-backend.onrender.com/widget/track';
-
-// 1. Registra que a página foi carregada (Pageview)
-fetch(TRACK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        client_id: CONFIG.clientId,
-        event_type: 'pageview',
-        url: window.location.href
-    })
-}).catch(() => {});
-
-// 2. Registra quando o usuário abre o chat do widget
-document.addEventListener('click', function(e) {
-    if (e.target.closest('#ka-toggle-btn') || e.target.closest('#ka-chat')) {
-        if (!sessionStorage.getItem('ka_vox_opened')) {
-            fetch(TRACK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    client_id: CONFIG.clientId,
-                    event_type: 'widget_open',
-                    url: window.location.href
-                })
-            }).catch(() => {});
-            sessionStorage.setItem('ka_vox_opened', 'true');
-        }
-    }
-});
-// ==========================================================
-// RASTREAMENTO DE TRÁFEGO (ANALYTICS)
-// ==========================================================
-const TRACK_URL = 'https://ka-voice-backend.onrender.com/widget/track';
-
-// 1. Registra que a página foi carregada (Pageview)
-fetch(TRACK_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        client_id: CONFIG.clientId,
-        event_type: 'pageview',
-        url: window.location.href
-    })
-}).catch(() => {});
-
-// 2. Registra quando o usuário abre o chat do widget
-document.addEventListener('click', function(e) {
-    if (e.target.closest('#ka-toggle-btn') || e.target.closest('#ka-chat')) {
-        if (!sessionStorage.getItem('ka_vox_opened')) {
-            fetch(TRACK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    client_id: CONFIG.clientId,
-                    event_type: 'widget_open',
-                    url: window.location.href
-                })
-            }).catch(() => {});
-            sessionStorage.setItem('ka_vox_opened', 'true');
-        }
-    }
-});
-// ==========================================================
 
 var BRAND = {
   brand_name: 'Assistente Virtual',
@@ -146,6 +23,7 @@ function textColorFor(hex) {
   var r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
   return (0.299*r + 0.587*g + 0.114*b) > 150 ? '#000' : '#fff';
 }
+
 var kaIsListening = false, kaIsPlaying = false, kaRecognizer = null, kaAudioUrl = null;
 
 function initWidget() {
@@ -174,6 +52,7 @@ function initWidget() {
   + '</div><audio id="ka-audio" style="display:none;"></audio>';
 
   document.body.insertAdjacentHTML('beforeend', html);
+     injectAvatarSafely();
   // === TOGGLE CHAT ===
   var toggleBtn = document.getElementById('ka-toggle-btn');
   var chatBox = document.getElementById('ka-chat');
@@ -275,7 +154,7 @@ function kaAddMsg(role, text) {
   var chat = document.getElementById('ka-chat');
   var msgs = document.getElementById('ka-messages');
   var status = document.getElementById('ka-status');
-  if (chat) chat.style.display = 'flex';
+  if (chat) chat.style.display = 'block';
   if (status) status.style.display = 'none';
   var div = document.createElement('div');
   div.setAttribute('data-role', role);
@@ -292,7 +171,7 @@ function kaStartRec() {
   var tooltip = document.getElementById('ka-tooltip');
   var chat = document.getElementById('ka-chat');
   if (tooltip) tooltip.style.display = 'none';
-  if (chat) chat.style.display = 'flex';
+  if (chat) chat.style.display = 'block';
 }
 
 function kaSendMessage(text) {
@@ -330,11 +209,7 @@ function kaPlayAudio() {
   if (kaIsPlaying) { audio.pause(); audio.currentTime = 0; kaIsPlaying = false; playBtn.innerText = '▶️ Ouvir'; return; }
   audio.src = kaAudioUrl;
   audio.play().then(function() { kaIsPlaying = true; playBtn.style.display = 'block'; playBtn.innerText = '⏹️ Parar'; })
-  .catch(function(e) {
-    console.error('Áudio bloqueado pelo navegador:', e);
-    playBtn.innerText = '🔊 Ouvir resposta';
-    playBtn.style.display = 'block'; // CORREÇÃO: exibe o botão quando o áudio é bloqueado
-  });
+  .catch(function(e) { console.error(e); playBtn.innerText = '▶️ Ouvir'; });
   audio.onended = function() { kaIsPlaying = false; playBtn.innerText = '▶️ Ouvir'; };
 }
 
@@ -375,10 +250,38 @@ fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
   .then(function(cfg) { BRAND = cfg; initWidget(); })
   .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
 })();
-
+// ===== AVATAR DO ASSISTENTE (Injeção Segura via DOM) =====
+(function() {
+  // 1. Injeta o CSS do avatar
+  if (!document.getElementById('ka-avatar-style')) {
+    const style = document.createElement('style');
+    style.id = 'ka-avatar-style';
+    style.textContent = `
+      .ka-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 2px solid var(--ka-color, #6366f1);
+        overflow: hidden; flex-shrink: 0; background: #1a1a1a;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      }
+      .ka-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .ka-avatar.speaking {
+        animation: ka-pulse 1.2s ease-in-out infinite;
+        border-color: #10b981;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      }
+      @keyframes ka-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+      }
+      .ka-avatar-placeholder { font-size: 20px; }
+    `;
+    document.head.appendChild(style);
+  }
+})();
 
 function renderAvatar(config) {
-  const avatarUrl = config.avatar_url || '';
+  const avatarUrl = (config && (config.avatar_url || config.logo_url)) || '';
   if (avatarUrl) {
     return '<div class="ka-avatar" id="ka-avatar"><img src="' + avatarUrl + '" onerror="this.parentElement.innerHTML=\'<span class=ka-avatar-placeholder>🤖</span>\'"></div>';
   }
@@ -388,10 +291,27 @@ function renderAvatar(config) {
 function setAvatarSpeaking(isSpeaking) {
   const avatar = document.getElementById('ka-avatar');
   if (avatar) {
-    if (isSpeaking) {
-      avatar.classList.add('speaking');
-    } else {
-      avatar.classList.remove('speaking');
+    if (isSpeaking) avatar.classList.add('speaking');
+    else avatar.classList.remove('speaking');
+  }
+}
+
+// 2. Injeção Segura no Header do Chat (executa após o widget ser criado)
+function injectAvatarSafely() {
+  var kaHeader = document.querySelector('#ka-chat > div:first-child');
+  if (kaHeader && typeof BRAND !== 'undefined') {
+    var brandSpan = kaHeader.querySelector('span');
+    if (brandSpan) {
+      var avatarHTML = renderAvatar(BRAND);
+      var wrapper = document.createElement('div');
+      wrapper.style.display = 'flex';
+      wrapper.style.alignItems = 'center';
+      wrapper.style.gap = '10px';
+      wrapper.innerHTML = avatarHTML + brandSpan.outerHTML;
+      brandSpan.replaceWith(wrapper);
     }
   }
 }
+
+// Chama a injeção segura logo após o widget ser montado
+// (Vamos adicionar esta chamada no local certo no Passo 2)
