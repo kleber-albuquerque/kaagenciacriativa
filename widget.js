@@ -98,19 +98,6 @@ document.addEventListener('click', function(e) {
     }
 });
 // ==========================================================
-
-// KA Widget v4.0 - White-label com branding dinâmico
-(function() {
-console.log('🚀 KA Widget v4.0 inicializando...');
-var currentScript = document.currentScript;
-var urlParams = new URLSearchParams(window.location.search);
-var CONFIG = {
-  apiUrl: 'https://ka-voice-backend.onrender.com',
-  clientId: (currentScript && currentScript.getAttribute('data-client-id')) || urlParams.get('client') || 'ka_agencia'
-};
-console.log('🎯 Cliente identificado:', CONFIG.clientId);
-
-// ==========================================================
 // RASTREAMENTO DE TRÁFEGO (ANALYTICS)
 // ==========================================================
 const TRACK_URL = 'https://ka-voice-backend.onrender.com/widget/track';
