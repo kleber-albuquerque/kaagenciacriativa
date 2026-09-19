@@ -471,9 +471,10 @@ async function loadConfig() {
     var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
     document.getElementById('notify_email').value = cfg.notify_email || '';
     document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
-    if (cfg.avatar_url) {
-      document.getElementById('cfg-avatar-url').value = cfg.avatar_url;
-      document.getElementById('avatar-preview').innerHTML = '<img src="' + cfg.avatar_url + '" style="width:100%; height:100%; object-fit:cover;">';
+    const imgUrl = cfg.avatar_url || cfg.logo_url || '';
+    if (imgUrl) {
+      document.getElementById('cfg-avatar-url').value = imgUrl;
+      document.getElementById('avatar-preview').innerHTML = '<img src="' + imgUrl + '" style="width:100%; height:100%; object-fit:cover;">';
     } else {
       document.getElementById('cfg-avatar-url').value = '';
       document.getElementById('avatar-preview').innerHTML = '<span style="font-size:32px;">🤖</span>';
