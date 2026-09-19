@@ -52,6 +52,7 @@ function initWidget() {
   + '</div><audio id="ka-audio" style="display:none;"></audio>';
 
   document.body.insertAdjacentHTML('beforeend', html);
+     injectAvatarSafely();
   // === TOGGLE CHAT ===
   var toggleBtn = document.getElementById('ka-toggle-btn');
   var chatBox = document.getElementById('ka-chat');
@@ -249,3 +250,68 @@ fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
   .then(function(cfg) { BRAND = cfg; initWidget(); })
   .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
 })();
+// ===== AVATAR DO ASSISTENTE (Injeção Segura via DOM) =====
+(function() {
+  // 1. Injeta o CSS do avatar
+  if (!document.getElementById('ka-avatar-style')) {
+    const style = document.createElement('style');
+    style.id = 'ka-avatar-style';
+    style.textContent = `
+      .ka-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 2px solid var(--ka-color, #6366f1);
+        overflow: hidden; flex-shrink: 0; background: #1a1a1a;
+        display: flex; align-items: center; justify-content: center;
+        transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      }
+      .ka-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .ka-avatar.speaking {
+        animation: ka-pulse 1.2s ease-in-out infinite;
+        border-color: #10b981;
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+      }
+      @keyframes ka-pulse {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); }
+      }
+      .ka-avatar-placeholder { font-size: 20px; }
+    `;
+    document.head.appendChild(style);
+  }
+})();
+
+function renderAvatar(config) {
+  const avatarUrl = (config && (config.avatar_url || config.logo_url)) || '';
+  if (avatarUrl) {
+    return '<div class="ka-avatar" id="ka-avatar"><img src="' + avatarUrl + '" onerror="this.parentElement.innerHTML=\'<span class=ka-avatar-placeholder>🤖</span>\'"></div>';
+  }
+  return '<div class="ka-avatar" id="ka-avatar"><span class="ka-avatar-placeholder">🤖</span></div>';
+}
+
+function setAvatarSpeaking(isSpeaking) {
+  const avatar = document.getElementById('ka-avatar');
+  if (avatar) {
+    if (isSpeaking) avatar.classList.add('speaking');
+    else avatar.classList.remove('speaking');
+  }
+}
+
+// 2. Injeção Segura no Header do Chat (executa após o widget ser criado)
+function injectAvatarSafely() {
+  var kaHeader = document.querySelector('#ka-chat > div:first-child');
+  if (kaHeader && typeof BRAND !== 'undefined') {
+    var brandSpan = kaHeader.querySelector('span');
+    if (brandSpan) {
+      var avatarHTML = renderAvatar(BRAND);
+      var wrapper = document.createElement('div');
+      wrapper.style.display = 'flex';
+      wrapper.style.alignItems = 'center';
+      wrapper.style.gap = '10px';
+      wrapper.innerHTML = avatarHTML + brandSpan.outerHTML;
+      brandSpan.replaceWith(wrapper);
+    }
+  }
+}
+
+// Chama a injeção segura logo após o widget ser montado
+// (Vamos adicionar esta chamada no local certo no Passo 2)
