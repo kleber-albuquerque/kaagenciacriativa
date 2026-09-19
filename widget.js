@@ -132,7 +132,7 @@ function initWidget() {
   
   // === INJEÇÃO SEGURA DO AVATAR (DOM) ===
   if (BRAND && (BRAND.logo_url || BRAND.avatar_url)) {
-    var imgUrl = BRAND.logo_url || BRAND.avatar_url;
+    var imgUrl = BRAND.avatar_url || BRAND.logo_url;
     var kaHeader = document.querySelector('#ka-chat > div:first-child');
     if (kaHeader) {
       var img = document.createElement('img');
