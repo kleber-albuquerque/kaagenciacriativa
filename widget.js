@@ -1,4 +1,6 @@
-
+// Injeção do CSS do Widget
+var ka_style = document.createElement('style');
+ka_style.innerHTML = `
   /* Avatar do Assistente */
   .ka-avatar {
     width: 60px;
@@ -48,6 +50,54 @@
     font-size: 11px;
     color: #10b981;
   }
+`;
+document.head.appendChild(ka_style);
+
+// KA Widget v4.0 - White-label com branding dinâmico
+(function() {
+console.log('🚀 KA Widget v4.0 inicializando...');
+var currentScript = document.currentScript;
+var urlParams = new URLSearchParams(window.location.search);
+var CONFIG = {
+  apiUrl: 'https://ka-voice-backend.onrender.com',
+  clientId: (currentScript && currentScript.getAttribute('data-client-id')) || urlParams.get('client') || 'ka_agencia'
+};
+console.log('🎯 Cliente identificado:', CONFIG.clientId);
+
+// ==========================================================
+// RASTREAMENTO DE TRÁFEGO (ANALYTICS)
+// ==========================================================
+const TRACK_URL = 'https://ka-voice-backend.onrender.com/widget/track';
+
+// 1. Registra que a página foi carregada (Pageview)
+fetch(TRACK_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        client_id: CONFIG.clientId,
+        event_type: 'pageview',
+        url: window.location.href
+    })
+}).catch(() => {});
+
+// 2. Registra quando o usuário abre o chat do widget
+document.addEventListener('click', function(e) {
+    if (e.target.closest('#ka-toggle-btn') || e.target.closest('#ka-chat')) {
+        if (!sessionStorage.getItem('ka_vox_opened')) {
+            fetch(TRACK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_id: CONFIG.clientId,
+                    event_type: 'widget_open',
+                    url: window.location.href
+                })
+            }).catch(() => {});
+            sessionStorage.setItem('ka_vox_opened', 'true');
+        }
+    }
+});
+// ==========================================================
 
 // KA Widget v4.0 - White-label com branding dinâmico
 (function() {
