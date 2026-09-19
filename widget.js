@@ -37,24 +37,27 @@ function initWidget() {
   injectAvatarSafely();
   // ================================
 
-  // === TOGGLE CHAT ===
   var toggleBtn = document.getElementById('ka-toggle-btn');
   var chatBox = document.getElementById('ka-chat');
   var closeBtn = document.getElementById('ka-close-btn');
+
   function kaOpenChat() {
     chatBox.style.display = 'flex';
     toggleBtn.textContent = '\u2715';
     toggleBtn.style.transform = 'rotate(90deg)';
     setTimeout(function(){ var inp = document.getElementById('ka-text-input'); if(inp) inp.focus(); }, 100);
   }
+
   function kaCloseChat() {
     chatBox.style.display = 'none';
     toggleBtn.textContent = '\ud83d\udcac';
     toggleBtn.style.transform = 'rotate(0deg)';
   }
+
   toggleBtn.addEventListener('click', function() {
     if (chatBox.style.display === 'flex') { kaCloseChat(); } else { kaOpenChat(); }
   });
+
   if (closeBtn) closeBtn.addEventListener('click', kaCloseChat);
   toggleBtn.title = BRAND.tooltip_text || 'Fale conosco';
 
@@ -107,11 +110,13 @@ function initWidget() {
   var sendBtn = document.getElementById('ka-send-btn');
   var playBtn = document.getElementById('ka-play-btn');
   var textInput = document.getElementById('ka-text-input');
+
   if (tooltip) tooltip.addEventListener('click', kaStartRec);
   if (micBtn) micBtn.addEventListener('click', kaToggleMic);
   if (sendBtn) sendBtn.addEventListener('click', kaSendText);
   if (playBtn) playBtn.addEventListener('click', kaPlayAudio);
   if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') kaSendText(); });
+
   console.log('🎉 KA Widget v4.0 Finalizado! Marca:', BRAND.brand_name, '| Cor:', BRAND.accent_color);
 }
 
@@ -294,4 +299,3 @@ fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
   .then(function(r) { return r.json(); })
   .then(function(cfg) { BRAND = cfg; initWidget(); })
   .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
-})();
