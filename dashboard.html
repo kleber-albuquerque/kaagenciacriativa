@@ -187,6 +187,24 @@ async function changePassword() {
       <h2>
     <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
       <h3 style="margin-bottom:12px; font-size:15px;">🎭 Avatar do Assistente</h3>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Imagem que aparece ao lado do widget quando o assistente fala. Use PNG/JPG quadrado (recomendado 200x200px).</p>
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div id="avatar-preview" style="width:80px; height:80px; border-radius:50%; background:#333; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+          <span style="font-size:32px;">🤖</span>
+        </div>
+        <div style="flex:1;">
+          <input type="text" id="cfg-avatar-url" placeholder="URL da imagem (ex: https://...)" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border); background:#0a0a0a; color:#fff; margin-bottom:8px;">
+          <div style="display:flex; gap:8px;">
+            <button onclick="previewAvatar()" style="padding:8px 16px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--muted); cursor:pointer; font-size:13px;">👁️ Preview</button>
+            <button onclick="document.getElementById('cfg-avatar-url').value=''; previewAvatar();" style="padding:8px 16px; border-radius:6px; border:1px solid #ef4444; background:transparent; color:#ef4444; cursor:pointer; font-size:13px;">🗑️ Remover</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+     <!-- SEÇÃO AVATAR -->
+    <div style="background:#1a1a1a; padding:16px; border-radius:8px; border:1px solid var(--border); margin-bottom:16px;">
+      <h3 style="margin-bottom:12px; font-size:15px;">🎭 Avatar do Assistente</h3>
       <p style="font-size:12px; color:var(--muted); margin-bottom:12px;">Imagem que aparece ao lado do widget. Recomendado: PNG/JPG quadrado (máx. 500KB).</p>
       <div style="display:flex; align-items:center; gap:16px;">
         <div id="avatar-preview" style="width:80px; height:80px; border-radius:50%; background:#333; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
@@ -364,11 +382,15 @@ function switchTab(tab, btn) {
 }
 
 function copyScript(slug) {
-  const script = `<script src="https://kaagenciacriativa.com.br/widget.js" data-client="${slug}"><\/script>`;
-  navigator.clipboard.writeText(script).then(() => {
-    alert('✅ Código copiado! Cole no seu site antes do </body>');
+  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  navigator.clipboard.writeText(tag).then(() => {
+    const btn = event.target;
+    const orig = btn.innerText;
+    btn.innerText = '✅ Copiado!';
+    btn.style.color = '#6ee7b7';
+    setTimeout(() => { btn.innerText = orig; btn.style.color = '#10b981'; }, 2000);
   }).catch(() => {
-    prompt('Copie o código abaixo:', script);
+    prompt('Copie o código abaixo e cole no HTML do site do cliente:', tag);
   });
 }
 
@@ -449,10 +471,9 @@ async function loadConfig() {
     var prev = document.getElementById('color-preview'); if(prev){ prev.style.background = cfg.accent_color || '#FFD400'; }
     document.getElementById('notify_email').value = cfg.notify_email || '';
     document.getElementById('notify_enabled').checked = !!cfg.notify_enabled;
-    const imgUrl = cfg.avatar_url || cfg.logo_url || '';
-    if (imgUrl) {
-      document.getElementById('cfg-avatar-url').value = imgUrl;
-      document.getElementById('avatar-preview').innerHTML = '<img src="' + imgUrl + '" style="width:100%; height:100%; object-fit:cover;">';
+    if (cfg.avatar_url) {
+      document.getElementById('cfg-avatar-url').value = cfg.avatar_url;
+      document.getElementById('avatar-preview').innerHTML = '<img src="' + cfg.avatar_url + '" style="width:100%; height:100%; object-fit:cover;">';
     } else {
       document.getElementById('cfg-avatar-url').value = '';
       document.getElementById('avatar-preview').innerHTML = '<span style="font-size:32px;">🤖</span>';
@@ -913,7 +934,7 @@ async function checkWidgetStatus(slug, domain) {
 }
 
 function copySiteScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
     alert('✅ Script copiado!\n\n' + tag);
   }).catch(() => {
@@ -999,27 +1020,6 @@ function clearAvatar() {
   document.getElementById('cfg-avatar-url').value = '';
   document.getElementById('avatar-preview').innerHTML = '<span style="font-size:32px;">🤖</span>';
 }
-
-async function editDomain(slug, currentDomain) {
-  const newDomain = prompt("Digite o novo domínio (ex: www.vivicorrea.com.br):", currentDomain);
-  if (newDomain === null) return; // Usuário cancelou
-  
-  // Limpa o domínio (remove http://, https:// e barras no final)
-  const cleanDomain = newDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').trim();
-  
-  try {
-    await apiCall('/admin/clients/' + slug + '/config', {
-      method: 'PUT',
-      body: JSON.stringify({ domain: cleanDomain || null })
-    });
-    alert('✅ Domínio atualizado com sucesso!');
-    loadSites();      // Recarrega a tabela
-    loadClientsList(); // Atualiza os dropdowns
-  } catch (e) {
-    alert('❌ Erro ao atualizar: ' + e.message);
-  }
-}
-
 </script>
 
 </body>
