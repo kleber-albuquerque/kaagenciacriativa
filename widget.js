@@ -160,7 +160,7 @@ function initWidget() {
   if (sendBtn) sendBtn.addEventListener('click', kaSendText);
   if (playBtn) playBtn.addEventListener('click', kaPlayAudio);
   if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') kaSendText(); });
-  console.log('🎉 KA Widget v4.0 Finalizado! Marca:', BRAND.brand_name, '| Cor:', BRAND.accent_color);
+  console.log('🎉 KA Widget v4.1 Finalizado! Marca:', BRAND.brand_name, '| Cor:', BRAND.accent_color);
 }
 
 function getChatHistory() {
