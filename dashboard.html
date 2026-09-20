@@ -364,15 +364,11 @@ function switchTab(tab, btn) {
 }
 
 function copyScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
-  navigator.clipboard.writeText(tag).then(() => {
-    const btn = event.target;
-    const orig = btn.innerText;
-    btn.innerText = '✅ Copiado!';
-    btn.style.color = '#6ee7b7';
-    setTimeout(() => { btn.innerText = orig; btn.style.color = '#10b981'; }, 2000);
+  const script = `<script src="https://kaagenciacriativa.com.br/widget.js" data-client="${slug}"><\/script>`;
+  navigator.clipboard.writeText(script).then(() => {
+    alert('✅ Código copiado! Cole no seu site antes do </body>');
   }).catch(() => {
-    prompt('Copie o código abaixo e cole no HTML do site do cliente:', tag);
+    prompt('Copie o código abaixo:', script);
   });
 }
 
