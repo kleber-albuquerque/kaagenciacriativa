@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><title>Teste Widget</title></head>
+<body style="font-family:sans-serif;padding:40px;">
+<h1>Teste - Vivi Correa (script dinâmico)</h1>
+<p>Abra o console (F12) e veja os logs. Deve identificar "vivi-correa".</p>
+<script>
+  // Simula o cenário que quebra: script injetado dinamicamente (como GTM/plugins)
+  window.addEventListener('load', function() {
+    var s = document.createElement('script');
+    s.src = '/widget.js';
+    s.setAttribute('data-client-id', 'vivi-correa');
+    s.defer = true;
+    document.body.appendChild(s);
+  });
+</script>
+</body>
+</html>

@@ -1,20 +1,49 @@
-// KA Widget v4.0 - White-label com branding dinâmico
+// KA Widget v4.1 - Identificação robusta de cliente + avatar
 (function() {
-console.log('🚀 KA Widget v4.0 inicializando...');
-var currentScript = document.currentScript;
-var urlParams = new URLSearchParams(window.location.search);
-var CONFIG = {
-  apiUrl: 'https://ka-voice-backend.onrender.com',
-  clientId: (currentScript && currentScript.getAttribute('data-client-id')) || urlParams.get('client') || 'ka_agencia'
-};
-console.log('🎯 Cliente identificado:', CONFIG.clientId);
+  console.log('🚀 KA Widget v4.1 inicializando...');
+
+  function findClientId() {
+    // 1) currentScript (quando inserido direto no HTML)
+    try {
+      if (document.currentScript) {
+        var id = document.currentScript.getAttribute('data-client-id');
+        if (id) { console.log('🔎 ID via currentScript:', id); return id; }
+      }
+    } catch (e) {}
+
+    // 2) Parâmetro ?client= na URL
+    try {
+      var id = new URLSearchParams(window.location.search).get('client');
+      if (id) { console.log('🔎 ID via URL:', id); return id; }
+    } catch (e) {}
+
+    // 3) Varredura em todas as tags <script> que carregam widget.js
+    try {
+      var scripts = document.querySelectorAll('script[src*="widget.js"]');
+      for (var i = 0; i < scripts.length; i++) {
+        var id = scripts[i].getAttribute('data-client-id');
+        if (id) { console.log('🔎 ID via varredura de scripts:', id); return id; }
+      }
+    } catch (e) {}
+
+    // 4) Fallback final
+    console.log('⚠️  Nenhum ID encontrado, usando fallback ka_agencia');
+    return 'ka_agencia';
+  }
+
+  var CONFIG = {
+    apiUrl: 'https://ka-voice-backend.onrender.com',
+    clientId: findClientId()
+  };
+  console.log('🎯 Cliente identificado:', CONFIG.clientId);
 
 var BRAND = {
   brand_name: 'Assistente Virtual',
   accent_color: '#FFD400',
   tooltip_text: '💬 Fale ou digite para nossa assistente',
   greeting: '',
-  position: 'right'
+  position: 'right',
+  avatar_url: ''
 };
 
 function textColorFor(hex) {
@@ -36,7 +65,10 @@ function initWidget() {
   var html = '<div id="ka-widget" style="position:fixed;bottom:24px;' + pos + 'z-index:99999;font-family:Inter,sans-serif;">'
   + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:320px;max-height:450px;overflow:hidden;margin-bottom:12px;flex-direction:column;">'
   + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:8px;">'
+  + '<div style="display:flex;align-items:center;gap:8px;">'
+  + (BRAND.avatar_url ? '<img src="' + BRAND.avatar_url + '" alt="" style="width:24px;height:24px;border-radius:50%;object-fit:cover;background:#333;" onerror="this.style.display=\'none\'">' : '')
   + '<span style="font-size:13px;font-weight:700;color:' + accent + ';">' + (BRAND.brand_name || 'Assistente') + '</span>'
+  + '</div>'
   + '<button id="ka-close-btn" style="background:none;border:none;color:#888;cursor:pointer;font-size:18px;padding:0;line-height:1;">\u2715</button>'
   + '</div>'
   + '<div id="ka-messages" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;overflow-y:auto;flex:1;max-height:280px;"></div>'
@@ -244,7 +276,7 @@ function kaToggleMic() {
 }
 
 // Busca branding e inicializa (com fallback para defaults)
-fetch(CONFIG.apiUrl + '/widget/config/' + CONFIG.clientId)
+fetch(CONFIG.apiUrl + '/widget/config/' + encodeURIComponent(CONFIG.clientId) + '?t=' + Date.now(), { cache: 'no-store' })
   .then(function(r) { return r.json(); })
   .then(function(cfg) { BRAND = cfg; initWidget(); })
   .catch(function() { console.warn('Branding indisponível, usando padrões'); initWidget(); });
