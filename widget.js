@@ -3,6 +3,14 @@
   console.log('🚀 KA Widget v4.1 inicializando...');
 
   function findClientId() {
+    // 0) Variável global (mais confiável para GTM e injeções dinâmicas)
+    try {
+      if (window.KAVOX_CLIENT_ID) {
+        console.log('🔎 ID via window.KAVOX_CLIENT_ID:', window.KAVOX_CLIENT_ID);
+        return window.KAVOX_CLIENT_ID;
+      }
+    } catch (e) {}
+
     // 1) currentScript (quando inserido direto no HTML)
     try {
       if (document.currentScript) {
