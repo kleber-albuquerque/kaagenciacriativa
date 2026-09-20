@@ -74,6 +74,7 @@
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
     <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
+    <button class="tab-btn" onclick="switchTab('status', this); loadHealth();">🩺 Status</button>
   </div>
 
   <div id="tab-config" class="tab-content active">
@@ -253,6 +254,16 @@
         </tbody>
       </table>
     </div>
+  </div>
+
+  <div id="tab-status" class="tab-content">
+    <div class="card">
+      <h2>🩺 Status do Sistema</h2>
+      <p style="color:#888;margin-bottom:16px;font-size:13px;">Verifica em tempo real se cada serviço do KA Vox está respondendo. Use quando algo parecer lento ou instável.</p>
+      <button class="btn btn-primary" style="width:auto;" onclick="loadHealth()" id="btn-health-refresh">🔄 Verificar agora</button>
+      <div id="health-summary" style="margin-top:16px;font-size:13px;color:#888;"></div>
+    </div>
+    <div id="health-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;"></div>
   </div>
 </div>
 
@@ -892,6 +903,64 @@ function clearAvatar() {
   document.getElementById('cfg-avatar-file').value = '';
   document.getElementById('cfg-avatar-url').value = '';
   document.getElementById('avatar-preview').innerHTML = '<span style="font-size:32px;">🤖</span>';
+}
+
+// ========== STATUS DO SISTEMA ==========
+async function loadHealth() {
+  const grid = document.getElementById('health-grid');
+  const summary = document.getElementById('health-summary');
+  const btn = document.getElementById('btn-health-refresh');
+  if (!grid) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Verificando...'; }
+  grid.innerHTML = '<div class="empty" style="grid-column:1/-1;">Consultando serviços...</div>';
+  summary.textContent = '';
+
+  const labels = {
+    backend:   { name: 'Backend',         icon: '🖥️' },
+    groq:      { name: 'Groq (LLM)',      icon: '⚡' },
+    gemini:    { name: 'Gemini (LLM)',    icon: '✨' },
+    edge_tts:  { name: 'Edge TTS (voz)',  icon: '🎙️' },
+    resend:    { name: 'Resend (e-mail)', icon: '📧' },
+    whatsapp:  { name: 'WhatsApp API',    icon: '💬' },
+    calendar:  { name: 'Google Calendar', icon: '📅' },
+  };
+
+  try {
+    const data = await apiCall('/admin/health');
+    const services = data.services || {};
+
+    grid.innerHTML = Object.entries(services).map(([key, info]) => {
+      const meta = labels[key] || { name: key, icon: '⚙️' };
+      const dotColor = info.status === 'ok' ? '#10b981' : info.status === 'warn' ? '#f59e0b' : '#ef4444';
+      const statusLabel = info.status === 'ok' ? 'OK' : info.status === 'warn' ? 'AVISO' : 'ERRO';
+      const ms = info.ms ? ` · ${info.ms}ms` : '';
+      const detail = info.detail ? `<div style="font-size:11px;color:#666;margin-top:6px;">${info.detail}</div>` : '';
+      return `
+        <div class="card" style="border-left:4px solid ${dotColor};padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:14px;font-weight:600;">${meta.icon} ${meta.name}</span>
+            <span style="font-size:11px;font-weight:700;color:${dotColor};">${statusLabel}</span>
+          </div>
+          <div style="font-size:12px;color:#888;">${info.message || '-'}${ms}</div>
+          ${detail}
+        </div>
+      `;
+    }).join('');
+
+    const s = data.summary || {};
+    summary.innerHTML = `
+      Total: <strong>${s.total || 0}</strong> ·
+      <span style="color:#10b981;">OK: ${s.ok || 0}</span> ·
+      <span style="color:#f59e0b;">Avisos: ${s.warn || 0}</span> ·
+      <span style="color:#ef4444;">Erros: ${s.error || 0}</span>
+      <br><span style="font-size:12px;">Última verificação: ${new Date(data.timestamp * 1000).toLocaleString('pt-BR')}</span>
+    `;
+  } catch (e) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;color:#ef4444;">❌ ${e.message}</div>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Verificar agora'; }
+  }
 }
 </script>
 
