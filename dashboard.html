@@ -142,45 +142,11 @@
     })();
     
 // ========== TROCA DE SENHA ==========
-function openChangePwdModal() {
-  document.getElementById('modal-changepwd').style.display = 'flex';
-}
 
-function closeModal(modalId) {
-  document.getElementById(modalId).style.display = 'none';
-  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
-}
 
-async function changePassword() {
-  const currentPwd = document.getElementById('current-pwd').value;
-  const newPwd = document.getElementById('new-pwd').value;
-  const confirmPwd = document.getElementById('confirm-pwd').value;
 
-  if (newPwd !== confirmPwd) {
-    alert('❌ As novas senhas não coincidem!');
-    return;
-  }
-  if (newPwd.length < 6) {
-    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
-    return;
-  }
 
-  try {
-    await apiCall('/admin/change-password', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        current_password: currentPwd, 
-        new_password: newPwd 
-      })
-    });
-    
-    alert('✅ Senha alterada com sucesso! Faça login novamente.');
-    localStorage.removeItem('ka_token');
-    location.reload();
-  } catch (e) {
-    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
-  }
-}
+
 
 </script>
     <div class="card">
@@ -364,7 +330,7 @@ function switchTab(tab, btn) {
 }
 
 function copyScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  const tag = '<script src="https://www.kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
     const btn = event.target;
     const orig = btn.innerText;
@@ -567,45 +533,11 @@ async function loadHistory() {
 }
 
 // ========== TROCA DE SENHA ==========
-function openChangePwdModal() {
-  document.getElementById('modal-changepwd').style.display = 'flex';
-}
 
-function closeModal(modalId) {
-  document.getElementById(modalId).style.display = 'none';
-  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
-}
 
-async function changePassword() {
-  const currentPwd = document.getElementById('current-pwd').value;
-  const newPwd = document.getElementById('new-pwd').value;
-  const confirmPwd = document.getElementById('confirm-pwd').value;
 
-  if (newPwd !== confirmPwd) {
-    alert('❌ As novas senhas não coincidem!');
-    return;
-  }
-  if (newPwd.length < 6) {
-    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
-    return;
-  }
 
-  try {
-    await apiCall('/admin/change-password', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        current_password: currentPwd, 
-        new_password: newPwd 
-      })
-    });
-    
-    alert('✅ Senha alterada com sucesso! Faça login novamente.');
-    localStorage.removeItem('ka_token');
-    location.reload();
-  } catch (e) {
-    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
-  }
-}
+
 
 </script>
 
@@ -743,45 +675,11 @@ function copyGeneratedPwd(){
 }
 
 // ========== TROCA DE SENHA ==========
-function openChangePwdModal() {
-  document.getElementById('modal-changepwd').style.display = 'flex';
-}
 
-function closeModal(modalId) {
-  document.getElementById(modalId).style.display = 'none';
-  document.querySelectorAll(`#${modalId} input`).forEach(i => i.value = '');
-}
 
-async function changePassword() {
-  const currentPwd = document.getElementById('current-pwd').value;
-  const newPwd = document.getElementById('new-pwd').value;
-  const confirmPwd = document.getElementById('confirm-pwd').value;
 
-  if (newPwd !== confirmPwd) {
-    alert('❌ As novas senhas não coincidem!');
-    return;
-  }
-  if (newPwd.length < 6) {
-    alert('❌ A nova senha deve ter pelo menos 6 caracteres.');
-    return;
-  }
 
-  try {
-    await apiCall('/admin/change-password', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        current_password: currentPwd, 
-        new_password: newPwd 
-      })
-    });
-    
-    alert('✅ Senha alterada com sucesso! Faça login novamente.');
-    localStorage.removeItem('ka_token');
-    location.reload();
-  } catch (e) {
-    alert('❌ Erro ao alterar senha: ' + (e.message || 'Verifique a senha atual.'));
-  }
-}
+
 
 </script>
 
@@ -849,10 +747,7 @@ async function loadSites() {
       return `<tr>
         <td><strong>${name}</strong><br><small style="color:#888;">${slug}</small></td>
         <td>
-          ${domain ? 
-            `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>` : 
-            `<input type="text" placeholder="ex: site.com.br" style="width:180px;padding:6px;margin:0;" value="" onchange="updateDomain('${slug}', this.value)">`
-          }
+          <div style="display:flex;align-items:center;gap:6px;"><input type="text" placeholder="ex: site.com.br" style="width:170px;padding:6px;margin:0;" value="${domain}" onchange="updateDomain('${slug}', this.value, this)">${domain ? `<a href="https://${domain}" target="_blank" title="Abrir site" style="color:var(--accent);text-decoration:none;font-size:16px;">↗</a>` : ''}</div>
         </td>
         <td id="status-${slug}">
           ${domain ? '⏳ Verificando...' : '❓ Sem domínio'}
@@ -877,23 +772,19 @@ async function loadSites() {
   }
 }
 
-async function updateDomain(slug, domain) {
+async function updateDomain(slug, domain, inputEl) {
   try {
-    const res = await apiCall('/admin/clients/' + slug + '/config', {
+    await apiCall('/admin/clients/' + slug + '/config', {
       method: 'PUT',
-      body: JSON.stringify({ domain: domain.trim() })
+      body: JSON.stringify({ domain: (domain || '').trim() })
     });
-    
-    // Atualiza a linha
-    const row = event.target.closest('tr');
-    const domainCell = row.cells[1];
-    domainCell.innerHTML = `<a href="https://${domain}" target="_blank" style="color:var(--accent);">${domain}</a>`;
-    
-    // Verifica status
-    checkWidgetStatus(slug, domain);
-    
+    if (inputEl) {
+      inputEl.style.borderColor = '#10b981';
+      setTimeout(function() { inputEl.style.borderColor = ''; }, 1500);
+    }
+    loadSites();
   } catch (e) {
-    alert('❌ Erro: ' + e.message);
+    alert('❌ Erro ao salvar domínio: ' + e.message);
   }
 }
 
@@ -916,7 +807,7 @@ async function checkWidgetStatus(slug, domain) {
 }
 
 function copySiteScript(slug) {
-  const tag = '<script src="https://kaagenciacriativa.vercel.app/widget.js" data-client-id="' + slug + '" defer><\/script>';
+  const tag = '<script src="https://www.kaagenciacriativa.com.br/widget.js" data-client-id="' + slug + '" defer><\/script>';
   navigator.clipboard.writeText(tag).then(() => {
     alert('✅ Script copiado!\n\n' + tag);
   }).catch(() => {
