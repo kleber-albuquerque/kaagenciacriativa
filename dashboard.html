@@ -73,8 +73,8 @@
     <button class="tab-btn" onclick="switchTab('leads', this)">📊 Leads</button>
     <button class="tab-btn" onclick="switchTab('history', this)">💬 Histórico</button>
     <button class="tab-btn" onclick="switchTab('sites', this)">🌐 Meus Sites</button>
-    <button class="tab-btn" onclick="switchTab('analytics', this)">📊 Analytics</button>
     <button class="tab-btn" onclick="switchTab('status', this); loadHealth();">🩺 Status</button>
+    <button class="tab-btn" onclick="switchTab('analytics', this); loadAnalytics();">📈 Analytics</button>
   </div>
 
   <div id="tab-config" class="tab-content active">
@@ -256,6 +256,38 @@
     </div>
   </div>
 
+
+  <div id="tab-analytics" class="tab-content">
+    <div class="card">
+      <h2>Analytics</h2>
+      <p style="color:#888;margin-bottom:16px;font-size:13px;">Metricas de uso do KA Vox no site do cliente.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+        <select id="analytics-client" style="max-width:280px;margin:0;"></select>
+        <select id="analytics-period" style="max-width:160px;margin:0;" onchange="loadAnalytics()">
+          <option value="24h">Ultimas 24h</option>
+          <option value="7d" selected>Ultimos 7 dias</option>
+          <option value="30d">Ultimos 30 dias</option>
+          <option value="90d">Ultimos 90 dias</option>
+        </select>
+        <button class="btn btn-primary" style="width:auto;margin:0;" onclick="loadAnalytics()" id="btn-analytics-refresh">Atualizar</button>
+      </div>
+      <div id="analytics-period-label" style="font-size:12px;color:#666;"></div>
+    </div>
+    <div id="analytics-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px;"></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h2 style="margin:0;">Eventos no tempo</h2>
+        <div style="display:flex;gap:6px;">
+          <button id="btn-serie-dia" class="btn-secondary" style="margin-left:0;padding:6px 12px;font-size:12px;" onclick="setSerieMode('dia')">Por dia</button>
+          <button id="btn-serie-hora" class="btn-secondary" style="margin-left:0;padding:6px 12px;font-size:12px;" onclick="setSerieMode('hora')">Por hora</button>
+        </div>
+      </div>
+      <div id="analytics-serie" style="min-height:120px;"></div>
+      <div id="analytics-serie-resumo" style="font-size:12px;color:#888;margin-top:12px;"></div>
+    </div>
+    <div class="card"><h2>Distribuicao por hora</h2><div id="analytics-horas" style="min-height:80px;"></div></div>
+    <div class="card"><h2>Dispositivos</h2><div id="analytics-devices"></div></div>
+  </div>
   <div id="tab-status" class="tab-content">
     <div class="card">
       <h2>🩺 Status do Sistema</h2>
@@ -960,6 +992,197 @@ async function loadHealth() {
     grid.innerHTML = `<div class="empty" style="grid-column:1/-1;color:#ef4444;">❌ ${e.message}</div>`;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔄 Verificar agora'; }
+  }
+}
+
+
+var _analyticsData = null;
+var _serieMode = 'dia';
+
+function setSerieMode(mode) {
+  _serieMode = mode;
+  var bDia = document.getElementById('btn-serie-dia');
+  var bHora = document.getElementById('btn-serie-hora');
+  if (bDia && bHora) {
+    bDia.style.background = mode === 'dia' ? 'var(--accent)' : '#333';
+    bDia.style.color = mode === 'dia' ? '#000' : '#fff';
+    bHora.style.background = mode === 'hora' ? 'var(--accent)' : '#333';
+    bHora.style.color = mode === 'hora' ? '#000' : '#fff';
+  }
+  if (_analyticsData) renderSerie(_analyticsData);
+}
+
+function renderSerie(data) {
+  var serieDiv = document.getElementById('analytics-serie');
+  var resumoDiv = document.getElementById('analytics-serie-resumo');
+  if (!serieDiv) return;
+
+  if (_serieMode === 'dia') {
+    var serie = data.serie_temporal || [];
+    if (!serie.length) {
+      serieDiv.innerHTML = '<div class="empty">Sem dados no periodo</div>';
+      if (resumoDiv) resumoDiv.textContent = '';
+      return;
+    }
+    var maxMsg = Math.max.apply(null, serie.map(function(s){return s.mensagens;}).concat([1]));
+    serieDiv.innerHTML = serie.map(function(s) {
+      var pct = Math.round((s.mensagens / maxMsg) * 100);
+      var dataFmt = s.dia;
+      try {
+        var parts = s.dia.split('-');
+        dataFmt = parts[2] + '/' + parts[1];
+      } catch(e) {}
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;">' +
+        '<span style="min-width:60px;color:#888;">' + dataFmt + '</span>' +
+        '<div style="flex:1;background:#1a1a1a;border-radius:4px;height:24px;overflow:hidden;position:relative;">' +
+          '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#10b981,#8b5cf6);"></div>' +
+          '<span style="position:absolute;left:10px;top:4px;font-size:11px;color:#fff;">' + s.mensagens + ' mensagens</span>' +
+        '</div>' +
+        '<span style="min-width:130px;text-align:right;color:#aaa;font-size:12px;">' +
+          s.aberturas + ' abert. - ' + s.leads + ' leads' +
+        '</span>' +
+      '</div>';
+    }).join('');
+
+    var totalMsg = serie.reduce(function(a,s){return a + s.mensagens;}, 0);
+    var totalAbert = serie.reduce(function(a,s){return a + s.aberturas;}, 0);
+    var totalLeads = serie.reduce(function(a,s){return a + s.leads;}, 0);
+    if (resumoDiv) {
+      resumoDiv.innerHTML = '<b>Resumo do periodo:</b> ' + totalMsg + ' mensagens - ' +
+        totalAbert + ' aberturas - ' + totalLeads + ' leads - ' +
+        serie.length + ' dia(s) com atividade';
+    }
+  } else {
+    var horas = data.distribuicao_hora || [];
+    if (!horas.length) {
+      serieDiv.innerHTML = '<div class="empty">Sem dados no periodo</div>';
+      if (resumoDiv) resumoDiv.textContent = '';
+      return;
+    }
+    var maxHora = Math.max.apply(null, horas.map(function(h){return h.total;}).concat([1]));
+    var fullMap = {};
+    horas.forEach(function(h){ fullMap[h.hora] = h.total; });
+    var fullHoras = [];
+    for (var i = 0; i < 24; i++) fullHoras.push({ hora: i, total: fullMap[i] || 0 });
+
+    serieDiv.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:140px;padding-top:10px;">' +
+      fullHoras.map(function(h) {
+        var hPx = Math.round((h.total / maxHora) * 110) + 6;
+        var cor = h.total > 0 ? '#FFD400' : '#333';
+        return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="' + h.hora + ':00 - ' + h.total + ' eventos">' +
+          (h.total > 0 ? '<span style="font-size:10px;color:#FFD400;font-weight:600;">' + h.total + '</span>' : '') +
+          '<div style="width:100%;height:' + hPx + 'px;background:' + cor + ';border-radius:2px 2px 0 0;min-height:6px;"></div>' +
+          '<span style="font-size:9px;color:#666;">' + h.hora + 'h</span>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+
+    var totalHora = horas.reduce(function(a,h){return a + h.total;}, 0);
+    var pico = horas.reduce(function(a,h){return h.total > a.total ? h : a;}, {hora:0,total:0});
+    if (resumoDiv) {
+      resumoDiv.innerHTML = '<b>Resumo:</b> ' + totalHora + ' mensagens no periodo - ' +
+        'horario de pico: <b>' + pico.hora + 'h</b> (' + pico.total + ' mensagens)';
+    }
+  }
+}
+
+async function loadAnalytics() {
+  const clientSel = document.getElementById('analytics-client');
+  const periodSel = document.getElementById('analytics-period');
+  const kpisDiv = document.getElementById('analytics-kpis');
+  const serieDiv = document.getElementById('analytics-serie');
+  const horasDiv = document.getElementById('analytics-horas');
+  const devicesDiv = document.getElementById('analytics-devices');
+  const label = document.getElementById('analytics-period-label');
+  const btn = document.getElementById('btn-analytics-refresh');
+  if (!clientSel || !kpisDiv) return;
+
+  if (clientSel.options.length === 0) {
+    try {
+      const clients = await apiCall('/admin/clients');
+      clientSel.innerHTML = clients.map(c =>
+        '<option value="' + (c.id || c.slug) + '">' + (c.name || c.brand_name || c.id) + '</option>'
+      ).join('');
+    } catch (e) {
+      kpisDiv.innerHTML = '<div class="empty" style="grid-column:1/-1;color:#ef4444;">Erro: ' + e.message + '</div>';
+      return;
+    }
+  }
+
+  const cid = clientSel.value;
+  const period = periodSel ? periodSel.value : '7d';
+  if (!cid) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  kpisDiv.innerHTML = '<div class="empty" style="grid-column:1/-1;">Carregando...</div>';
+  serieDiv.innerHTML = ''; horasDiv.innerHTML = ''; devicesDiv.innerHTML = '';
+
+  try {
+    const data = await apiCall('/admin/analytics/' + encodeURIComponent(cid) + '?period=' + period);
+    if (data.error) throw new Error(data.error);
+
+    const k = data.kpis || {};
+    if (label) label.textContent = 'Cliente: ' + cid + ' - Periodo: ' + period;
+    setSerieMode(_serieMode || 'dia');
+
+    const kpiCard = (label, value, sub, color) =>
+      '<div class="card" style="border-left:4px solid ' + (color || '#FFD400') + ';padding:16px;margin:0;">' +
+        '<div style="font-size:11px;color:#888;text-transform:uppercase;">' + label + '</div>' +
+        '<div style="font-size:26px;font-weight:700;color:#fff;margin:6px 0;">' + value + '</div>' +
+        '<div style="font-size:11px;color:#666;">' + (sub || '') + '</div>' +
+      '</div>';
+
+    kpisDiv.innerHTML =
+      kpiCard('Visitas', k.visitas || 0, 'widget carregado', '#3b82f6') +
+      kpiCard('Abriram', k.abriram || 0, (k.taxa_abertura || 0) + '% das visitas', '#8b5cf6') +
+      kpiCard('Conversas', k.conversas || 0, (k.taxa_conversa || 0) + '% dos que abriram', '#10b981') +
+      kpiCard('Leads', k.leads || 0, (k.taxa_lead || 0) + '% das conversas', '#f59e0b') +
+      kpiCard('Voz', k.voice || 0, 'usaram microfone', '#06b6d4') +
+      kpiCard('Eventos', k.total_eventos || 0, 'total registrado', '#666');
+
+    _analyticsData = data;
+    renderSerie(data);
+
+    const horas = data.distribuicao_hora || [];
+    if (!horas.length) {
+      horasDiv.innerHTML = '<div class="empty">Sem dados no periodo</div>';
+    } else {
+      const maxHora = Math.max.apply(null, horas.map(h => h.total).concat([1]));
+      const fullMap = {};
+      horas.forEach(h => { fullMap[h.hora] = h.total; });
+      const fullHoras = [];
+      for (let i = 0; i < 24; i++) fullHoras.push({ hora: i, total: fullMap[i] || 0 });
+      horasDiv.innerHTML = '<div style="display:flex;align-items:flex-end;gap:3px;height:100px;">' +
+        fullHoras.map(h => {
+          const hPx = Math.round((h.total / maxHora) * 90) + 4;
+          return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="' + h.hora + 'h: ' + h.total + ' eventos">' +
+            '<div style="width:100%;height:' + hPx + 'px;background:#FFD400;border-radius:2px 2px 0 0;min-height:4px;"></div>' +
+            '<span style="font-size:9px;color:#666;">' + h.hora + '</span>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+
+    const d = data.dispositivo || {mobile: 0, desktop: 0};
+    const total = (d.mobile + d.desktop) || 1;
+    const pMobile = Math.round((d.mobile / total) * 100);
+    const pDesktop = 100 - pMobile;
+    devicesDiv.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">' +
+          '<span>Mobile</span><span style="color:#aaa;">' + d.mobile + ' (' + pMobile + '%)</span></div>' +
+          '<div style="background:#1a1a1a;border-radius:4px;height:10px;overflow:hidden;">' +
+            '<div style="width:' + pMobile + '%;height:100%;background:#06b6d4;"></div></div></div>' +
+        '<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">' +
+          '<span>Desktop</span><span style="color:#aaa;">' + d.desktop + ' (' + pDesktop + '%)</span></div>' +
+          '<div style="background:#1a1a1a;border-radius:4px;height:10px;overflow:hidden;">' +
+            '<div style="width:' + pDesktop + '%;height:100%;background:#8b5cf6;"></div></div></div>' +
+      '</div>';
+
+  } catch (e) {
+    kpisDiv.innerHTML = '<div class="empty" style="grid-column:1/-1;color:#ef4444;">Erro: ' + e.message + '</div>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Atualizar'; }
   }
 }
 </script>
