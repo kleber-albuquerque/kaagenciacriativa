@@ -45,6 +45,40 @@
   };
   console.log('🎯 Cliente identificado:', CONFIG.clientId);
 
+  // ========== ANALYTICS ==========
+  function getSessionId() {
+    try {
+      var sid = localStorage.getItem('kavox_session_id');
+      if (!sid) {
+        sid = 'sess-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10);
+        localStorage.setItem('kavox_session_id', sid);
+      }
+      return sid;
+    } catch (e) {
+      return 'sess-fallback-' + Date.now();
+    }
+  }
+
+  var SESSION_ID = getSessionId();
+
+  function trackEvent(eventType, metadata) {
+    try {
+      fetch(CONFIG.apiUrl + '/track/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: CONFIG.clientId,
+          event_type: eventType,
+          session_id: SESSION_ID,
+          page_url: window.location.href,
+          referrer: document.referrer || null,
+          user_agent: navigator.userAgent,
+          metadata: metadata || null
+        })
+      }).catch(function(){});
+    } catch (e) {}
+  }
+
 var BRAND = {
   brand_name: 'Assistente Virtual',
   accent_color: '#FFD400',
@@ -97,12 +131,14 @@ function initWidget() {
   var chatBox = document.getElementById('ka-chat');
   var closeBtn = document.getElementById('ka-close-btn');
   function kaOpenChat() {
+    trackEvent('widget_opened');
     chatBox.style.display = 'flex';
     toggleBtn.textContent = '\u2715';
     toggleBtn.style.transform = 'rotate(90deg)';
     setTimeout(function(){ var inp = document.getElementById('ka-text-input'); if(inp) inp.focus(); }, 100);
   }
   function kaCloseChat() {
+    trackEvent('widget_closed');
     chatBox.style.display = 'none';
     toggleBtn.textContent = '\ud83d\udcac';
     toggleBtn.style.transform = 'rotate(0deg)';
@@ -169,6 +205,7 @@ function initWidget() {
   if (playBtn) playBtn.addEventListener('click', kaPlayAudio);
   if (textInput) textInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') kaSendText(); });
   console.log('🎉 KA Widget v4.1 Finalizado! Marca:', BRAND.brand_name, '| Cor:', BRAND.accent_color);
+  trackEvent('widget_loaded');
 }
 
 function getChatHistory() {
@@ -214,6 +251,7 @@ function kaStartRec() {
 }
 
 function kaSendMessage(text) {
+  trackEvent('message_sent', { length: text ? text.length : 0 });
   kaStartRec();
   kaAddMsg('user', text);
   kaSetStatus('Processando... ⏳');
@@ -259,6 +297,7 @@ function kaToggleMic() {
     if (!kaRecognizer) { kaAddMsg('assistant', 'Navegador não suporta voz.'); return; }
     try {
       kaRecognizer.start();
+      trackEvent('voice_used');
       kaIsListening = true;
       btn.style.background = '#ef4444';
       btn.innerText = '⏹️';
