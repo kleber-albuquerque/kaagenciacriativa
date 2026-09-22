@@ -61,6 +61,31 @@
 
   var SESSION_ID = getSessionId();
 
+  // ========== DETECÇÃO DE BANNERS DE TERCEIROS ==========
+  function detectBannerOffset() {
+    try {
+      var maxBottom = 0;
+      var iframes = document.querySelectorAll('iframe');
+      var viewportH = window.innerHeight;
+      var viewportW = window.innerWidth;
+      for (var i = 0; i < iframes.length; i++) {
+        var f = iframes[i];
+        if (f.id === 'ka-widget' || f.closest('#ka-widget')) continue;
+        var style = window.getComputedStyle(f);
+        var z = parseInt(style.zIndex, 10);
+        if (isNaN(z) || z < 100000) continue;
+        var rect = f.getBoundingClientRect();
+        // Só considera banners colados na base
+        if (rect.bottom >= viewportH - 5 && rect.height < viewportH * 0.5 && rect.width > viewportW * 0.5) {
+          if (rect.height > maxBottom) maxBottom = rect.height;
+        }
+      }
+      return maxBottom > 0 ? maxBottom + 16 : 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
   function trackEvent(eventType, metadata) {
     try {
       fetch(CONFIG.apiUrl + '/track/event', {
@@ -97,14 +122,17 @@ function textColorFor(hex) {
 
 var kaIsListening = false, kaIsPlaying = false, kaRecognizer = null, kaAudioUrl = null;
 
+var bannerOffset = 0;
+
 function initWidget() {
+  bannerOffset = detectBannerOffset();
   var accent = BRAND.accent_color || '#FFD400';
   var accentText = textColorFor(accent);
   var isLeft = BRAND.position === 'left';
   var pos = isLeft ? 'left:24px;' : 'right:24px;';
   var align = isLeft ? 'flex-start' : 'flex-end';
 
-  var html = '<div id="ka-widget" style="position:fixed;bottom:24px;' + pos + 'z-index:99999;font-family:Inter,sans-serif;">'
+  var html = '<div id="ka-widget" style="position:fixed;bottom:' + (24 + (typeof bannerOffset !== 'undefined' ? bannerOffset : 0)) + 'px;' + pos + 'z-index:2147483647;font-family:Inter,sans-serif;">'
   + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:320px;max-height:450px;overflow:hidden;margin-bottom:12px;flex-direction:column;">'
   + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:8px;">'
   + '<div style="display:flex;align-items:center;gap:8px;">'
