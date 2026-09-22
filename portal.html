@@ -97,6 +97,40 @@
     </div>
   </div>
 
+  <!-- ANALYTICS -->
+  <div class="card">
+    <h2>📈 Analytics</h2>
+    <p style="color:#888;font-size:13px;margin-bottom:16px;">Como os visitantes usam seu assistente no site.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;">
+      <select id="pa-period" style="max-width:160px;margin:0;padding:8px 12px;" onchange="loadClientAnalytics()">
+        <option value="24h">Últimas 24h</option>
+        <option value="7d" selected>Últimos 7 dias</option>
+        <option value="30d">Últimos 30 dias</option>
+        <option value="90d">Últimos 90 dias</option>
+      </select>
+      <button class="btn-primary" style="width:auto;padding:8px 16px;font-size:13px;margin:0;" onclick="loadClientAnalytics()" id="pa-refresh">🔄 Atualizar</button>
+    </div>
+
+    <div id="pa-kpis" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:20px;"></div>
+
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;font-size:14px;">Eventos no tempo</h3>
+        <div style="display:flex;gap:6px;">
+          <button id="pa-btn-dia" style="padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:var(--accent);color:#000;cursor:pointer;" onclick="paSetSerieMode('dia')">Por dia</button>
+          <button id="pa-btn-hora" style="padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:#333;color:#fff;cursor:pointer;" onclick="paSetSerieMode('hora')">Por hora</button>
+        </div>
+      </div>
+      <div id="pa-serie" style="min-height:100px;"></div>
+      <div id="pa-serie-resumo" style="font-size:12px;color:#888;margin-top:12px;"></div>
+    </div>
+
+    <div>
+      <h3 style="margin:0 0 10px 0;font-size:14px;">Dispositivos</h3>
+      <div id="pa-devices"></div>
+    </div>
+  </div>
+
   <!-- BASE DE CONHECIMENTO DO CLIENTE -->
   <div class="card">
     <h2>📚 Treinar Assistente (Adicionar Conhecimento)</h2>
@@ -161,6 +195,7 @@ function clientLogout() {
 }
 
 async function loadClientData() {
+  loadClientAnalytics();
   try {
     // Carrega Stats
     const stats = await fetch(API + '/client/stats', { headers: authHeaders() }).then(r => r.json());
@@ -287,6 +322,131 @@ async function saveClientKnowledge() {
     setTimeout(() => st.style.display = 'none', 3000);
   } catch(e) {
     st.className = 'status error'; st.textContent = '❌ ' + e.message; st.style.display = 'block';
+  }
+}
+
+// ========== ANALYTICS DO CLIENTE ==========
+var _paData = null;
+var _paMode = 'dia';
+
+function paSetSerieMode(mode) {
+  _paMode = mode;
+  var bDia = document.getElementById('pa-btn-dia');
+  var bHora = document.getElementById('pa-btn-hora');
+  if (bDia && bHora) {
+    bDia.style.background = mode === 'dia' ? 'var(--accent)' : '#333';
+    bDia.style.color = mode === 'dia' ? '#000' : '#fff';
+    bHora.style.background = mode === 'hora' ? 'var(--accent)' : '#333';
+    bHora.style.color = mode === 'hora' ? '#000' : '#fff';
+  }
+  if (_paData) paRenderSerie(_paData);
+}
+
+function paRenderSerie(data) {
+  var serieDiv = document.getElementById('pa-serie');
+  var resumoDiv = document.getElementById('pa-serie-resumo');
+  if (!serieDiv) return;
+
+  if (_paMode === 'dia') {
+    var serie = data.serie_temporal || [];
+    if (!serie.length) { serieDiv.innerHTML = '<p style="color:#555;font-size:13px;">Sem dados no período</p>'; if (resumoDiv) resumoDiv.textContent = ''; return; }
+    var maxMsg = 1;
+    serie.forEach(function(s){ if (s.mensagens > maxMsg) maxMsg = s.mensagens; });
+    serieDiv.innerHTML = serie.map(function(s) {
+      var pct = Math.round((s.mensagens / maxMsg) * 100);
+      var parts = (s.dia || '').split('-');
+      var dataFmt = parts.length === 3 ? (parts[2] + '/' + parts[1]) : s.dia;
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;">' +
+        '<span style="min-width:50px;color:#888;">' + dataFmt + '</span>' +
+        '<div style="flex:1;background:#1a1a1a;border-radius:4px;height:22px;overflow:hidden;position:relative;">' +
+          '<div style="width:' + pct + '%;height:100%;background:linear-gradient(90deg,#10b981,#8b5cf6);"></div>' +
+          '<span style="position:absolute;left:8px;top:3px;font-size:11px;color:#fff;">' + s.mensagens + ' msg</span>' +
+        '</div>' +
+        '<span style="min-width:110px;text-align:right;color:#aaa;font-size:11px;">' + s.aberturas + ' abert · ' + s.leads + ' leads</span>' +
+      '</div>';
+    }).join('');
+    var totalMsg = 0, totalAbert = 0, totalLeads = 0;
+    serie.forEach(function(s){ totalMsg += s.mensagens; totalAbert += s.aberturas; totalLeads += s.leads; });
+    if (resumoDiv) resumoDiv.innerHTML = '<b>Período:</b> ' + totalMsg + ' mensagens · ' + totalAbert + ' aberturas · ' + totalLeads + ' leads';
+  } else {
+    var horas = data.distribuicao_hora || [];
+    if (!horas.length) { serieDiv.innerHTML = '<p style="color:#555;font-size:13px;">Sem dados no período</p>'; if (resumoDiv) resumoDiv.textContent = ''; return; }
+    var maxH = 1;
+    horas.forEach(function(h){ if (h.total > maxH) maxH = h.total; });
+    var fullMap = {};
+    horas.forEach(function(h){ fullMap[h.hora] = h.total; });
+    var html = '<div style="display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;">';
+    for (var i = 0; i < 24; i++) {
+      var t = fullMap[i] || 0;
+      var hPx = Math.round((t / maxH) * 90) + 6;
+      var cor = t > 0 ? 'var(--accent)' : '#333';
+      html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;" title="' + i + 'h: ' + t + ' eventos">' +
+        '<div style="width:100%;height:' + hPx + 'px;background:' + cor + ';border-radius:2px 2px 0 0;min-height:6px;"></div>' +
+        '<span style="font-size:9px;color:#666;">' + i + '</span></div>';
+    }
+    html += '</div>';
+    serieDiv.innerHTML = html;
+    var totalH = 0, pico = {hora:0,total:0};
+    horas.forEach(function(h){ totalH += h.total; if (h.total > pico.total) pico = h; });
+    if (resumoDiv) resumoDiv.innerHTML = '<b>Pico:</b> ' + pico.hora + 'h (' + pico.total + ' mensagens) · Total: ' + totalH;
+  }
+}
+
+async function loadClientAnalytics() {
+  var kpisDiv = document.getElementById('pa-kpis');
+  var serieDiv = document.getElementById('pa-serie');
+  var devicesDiv = document.getElementById('pa-devices');
+  var periodSel = document.getElementById('pa-period');
+  var btn = document.getElementById('pa-refresh');
+  if (!kpisDiv) return;
+
+  var period = periodSel ? periodSel.value : '7d';
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  kpisDiv.innerHTML = '<p style="color:#555;font-size:13px;grid-column:1/-1;">Carregando...</p>';
+  serieDiv.innerHTML = '';
+  devicesDiv.innerHTML = '';
+
+  try {
+    var res = await fetch(API + '/portal/analytics?period=' + period, { headers: authHeaders() });
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    if (!res.ok) throw new Error(data.detail || 'Erro ' + res.status);
+
+    var k = data.kpis || {};
+    var kpiCard = function(label, value, sub, color) {
+      return '<div class="stat-card" style="border-left:4px solid ' + (color || '#FFD400') + ';padding:12px;">' +
+        '<h3 style="margin:0 0 6px 0;font-size:10px;">' + label + '</h3>' +
+        '<p style="font-size:24px;margin:0;color:#fff;">' + value + '</p>' +
+        '<div style="font-size:10px;color:#666;margin-top:4px;">' + (sub || '') + '</div>' +
+      '</div>';
+    };
+
+    kpisDiv.innerHTML =
+      kpiCard('Visitas', k.visitas || 0, 'widget carregado', '#3b82f6') +
+      kpiCard('Abriram', k.abriram || 0, (k.taxa_abertura || 0) + '% das visitas', '#8b5cf6') +
+      kpiCard('Conversas', k.conversas || 0, (k.taxa_conversa || 0) + '% dos que abriram', '#10b981') +
+      kpiCard('Leads', k.leads || 0, (k.taxa_lead || 0) + '% das conversas', '#f59e0b') +
+      kpiCard('Voz', k.voice || 0, 'usaram microfone', '#06b6d4') +
+      kpiCard('Eventos', k.total_eventos || 0, 'total', '#666');
+
+    _paData = data;
+    paRenderSerie(data);
+
+    var d = data.dispositivo || {mobile:0, desktop:0};
+    var total = (d.mobile + d.desktop) || 1;
+    var pM = Math.round((d.mobile / total) * 100);
+    var pD = 100 - pM;
+    devicesDiv.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">' +
+        '<div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>📱 Mobile</span><span style="color:#aaa;">' + d.mobile + ' (' + pM + '%)</span></div>' +
+          '<div style="background:#1a1a1a;border-radius:3px;height:8px;overflow:hidden;"><div style="width:' + pM + '%;height:100%;background:#06b6d4;"></div></div></div>' +
+        '<div><div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span>💻 Desktop</span><span style="color:#aaa;">' + d.desktop + ' (' + pD + '%)</span></div>' +
+          '<div style="background:#1a1a1a;border-radius:3px;height:8px;overflow:hidden;"><div style="width:' + pD + '%;height:100%;background:#8b5cf6;"></div></div></div>' +
+      '</div>';
+  } catch (e) {
+    kpisDiv.innerHTML = '<p style="color:#ef4444;font-size:13px;grid-column:1/-1;">❌ ' + e.message + '</p>';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 Atualizar'; }
   }
 }
 </script>
