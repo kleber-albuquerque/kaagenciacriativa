@@ -309,6 +309,7 @@
 <script>
 const API = 'https://ka-voice-backend.onrender.com';
 let TOKEN = sessionStorage.getItem('ka_token') || '';
+let currentEditingClient = '';
 
 function authHeaders() {
   return { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' };
@@ -469,6 +470,7 @@ async function addClient() {
 
 async function loadConfig() {
   const cid = document.getElementById('config-client-id').value;
+  currentEditingClient = cid;  // fixa o cliente em edição
   if (!cid) return;
   try {
     const cfg = await apiCall('/admin/clients/' + cid + '/config');
@@ -495,7 +497,8 @@ async function loadConfig() {
 }
 
 async function saveConfig() {
-  const cid = document.getElementById('config-client-id').value;
+  const cid = currentEditingClient || document.getElementById('config-client-id').value;
+  if (!cid) { alert('Selecione um cliente primeiro'); return; }
   const st = document.getElementById('status-config');
   try {
     const data = await apiCall('/admin/clients/' + cid + '/config', {
