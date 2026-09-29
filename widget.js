@@ -128,17 +128,8 @@ function initWidget() {
   bannerOffset = detectBannerOffset();
   var accent = BRAND.accent_color || '#FFD400';
   var accentText = textColorFor(accent);
-  var position = BRAND.position || 'right';
-var pos = '';
-var transform = '';
-if (position === 'left') {
-  pos = 'left:24px;';
-} else if (position === 'center') {
-  pos = 'left:50%;';
-  transform = 'transform:translateX(-50%);';
-} else {
-  pos = 'right:24px;';
-}
+  var isLeft = BRAND.position === 'left';
+  var pos = isLeft ? 'left:24px;' : 'right:24px;';
   var align = isLeft ? 'flex-start' : 'flex-end';
 
   var html = '<div id="ka-widget" style="position:fixed;bottom:' + (24 + (typeof bannerOffset !== 'undefined' ? bannerOffset : 0)) + 'px;' + pos + 'z-index:2147483647;font-family:Inter,sans-serif;">'
