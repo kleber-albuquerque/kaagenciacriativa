@@ -125,7 +125,7 @@ var kaIsListening = false, kaIsPlaying = false, kaRecognizer = null, kaAudioUrl 
 var bannerOffset = 0;
 
 function initWidget() {
-  bannerOffset = detectBannerOffset();
+  bannerOffset = 0; // desativado temporariamente
   var accent = BRAND.accent_color || '#FFD400';
   var accentText = textColorFor(accent);
   var position = BRAND.position || 'right';
