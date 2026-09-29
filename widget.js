@@ -128,11 +128,19 @@ function initWidget() {
   bannerOffset = detectBannerOffset();
   var accent = BRAND.accent_color || '#FFD400';
   var accentText = textColorFor(accent);
-  var isLeft = BRAND.position === 'left';
-  var pos = isLeft ? 'left:24px;' : 'right:24px;';
-  var align = isLeft ? 'flex-start' : 'flex-end';
+  var position = BRAND.position || 'right';
+  var pos = '';
+  var transformCss = '';
+  if (position === 'left') {
+    pos = 'left:24px;';
+  } else if (position === 'center') {
+    pos = 'left:50%;';
+    transformCss = 'transform:translateX(-50%);';
+  } else {
+    pos = 'right:24px;';
+  }
 
-  var html = '<div id="ka-widget" style="position:fixed;bottom:' + (24 + (typeof bannerOffset !== 'undefined' ? bannerOffset : 0)) + 'px;' + pos + 'z-index:2147483647;font-family:Inter,sans-serif;">'
+  var html = '<div id="ka-widget" style="position:fixed;bottom:' + (24 + (typeof bannerOffset !== 'undefined' ? bannerOffset : 0)) + 'px;' + pos + transformCss + 'z-index:2147483647;font-family:Inter,sans-serif;">'
   + '<div id="ka-chat" style="display:none;background:#111;color:#fff;padding:16px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);border:1px solid #333;width:320px;max-height:450px;overflow:hidden;margin-bottom:12px;flex-direction:column;">'
   + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid #333;padding-bottom:8px;">'
   + '<div style="display:flex;align-items:center;gap:8px;">'
