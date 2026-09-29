@@ -399,6 +399,10 @@ async function loadClientsList() {
     const selLeads = document.getElementById('lead-filter');
     const selHistory = document.getElementById('history-filter');
     const tbody = document.getElementById('clients-body');
+    // Preservar seleções atuais antes de limpar
+    const prevConfig = selConfig.value;
+    const prevLeads = selLeads.value;
+    const prevHistory = selHistory.value;
     selConfig.innerHTML = ''; selLeads.innerHTML = ''; selHistory.innerHTML = ''; tbody.innerHTML = '';
     if (!Array.isArray(clients) || !clients.length) {
       tbody.innerHTML = '<tr><td colspan="3" class="empty">Nenhum cliente</td></tr>'; return;
@@ -415,6 +419,16 @@ async function loadClientsList() {
         + '<a href="#" onclick="deleteClient(\'' + slug + '\'); return false;" style="color:#ef4444;">🗑️ Excluir</a>'
         + '</td></tr>';
     });
+    // Restaurar seleções (se ainda existirem)
+    if (prevConfig && Array.from(selConfig.options).some(o => o.value === prevConfig)) {
+      selConfig.value = prevConfig;
+    }
+    if (prevLeads && Array.from(selLeads.options).some(o => o.value === prevLeads)) {
+      selLeads.value = prevLeads;
+    }
+    if (prevHistory && Array.from(selHistory.options).some(o => o.value === prevHistory)) {
+      selHistory.value = prevHistory;
+    }
   } catch (e) { console.error('loadClientsList:', e); }
 }
 
